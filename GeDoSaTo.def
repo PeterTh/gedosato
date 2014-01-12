@@ -1,0 +1,5 @@
+LIBRARY GeDoSaTo
+
+EXPORTS
+	GeDoSaToHook
+	GeDoSaToVersion

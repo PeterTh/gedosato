@@ -26,8 +26,7 @@ using std::string;
 
 #define SETTINGS_FILE_NAME (INTERCEPTOR_NAME".ini")
 #define KEY_FILE_NAME (INTERCEPTOR_NAME"Keys.ini")
-#define LOG_FILE_NAME (INTERCEPTOR_NAME".log")
-#define REG_KEY_PATH "SOFTWARE\\Durante\\GeDoSaTo" /*("Software\\Durante\\" INTERCEPTOR_NAME)*/
+#define REG_KEY_PATH ("Software\\Durante\\" INTERCEPTOR_NAME)
 
 //#define RELEASE_VER
 
@@ -57,10 +56,6 @@ const string& getInstallDirectory();
 const string& getExeFileName();
 string getInstalledFileName(string filename);
 string getAssetFileName(string filename);
+string getTimeString();
 
-// D3D9 exports
-
-#define EXPORTED(__rettype, __convention, __name, ...) \
-typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
-extern __name##_FNType True##__name;
-#include "Exports.def"
+LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);

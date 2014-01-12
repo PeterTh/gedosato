@@ -78,16 +78,17 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\dev\minhook\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">d3d9</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">d3d9</TargetName>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">DINPUT8</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d9</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LibraryPath>C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\dev\Detours Express 3.0\include;$(IncludePath)</IncludePath>
+    <IncludePath>C:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -116,11 +117,12 @@
       </ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <ModuleDefinitionFile>d3d9.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
       <AdditionalDependencies>libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -135,18 +137,14 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>cp $(TargetPath) "E:\Installs\The Witcher 2\bin"
-cp $(TargetPath) "E:\Steam\steamapps\common\ys origin"
-cp $(TargetPath) "E:\Installs\Bionic Commando Rearmed"
-cp $(TargetPath) "E:\Installs\Might &amp; Magic X Legacy"
-cp $(TargetPath) "E:\Installs\Alice Madness Returns\Game\Alice2\Binaries\Win32"
-cp $(TargetPath) "E:\Installs\Divinity II - DKS\bin"
-cp $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"
-cp $(TargetPath) "E:\Steam\steamapps\common\Half-Life 2\bin"
-cp $(TargetPath) "E:\Steam\steamapps\common\legend of grimrock"
-cp $(TargetPath) "E:\Steam\steamapps\common\Consortium\bin"
-cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
+      <Command>cp $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>ruby version.rb</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Versioning</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -183,7 +181,7 @@ cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;WIN32_LEAN_AND_MEAN;WIN32;NDEBUG;_WINDOWS;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
@@ -202,6 +200,9 @@ cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -215,6 +216,15 @@ cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0409</Culture>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>cp $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>ruby version.rb</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Versioning</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -252,21 +262,8 @@ cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="d3d9.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MaxSpeed</Optimization>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
-    </ClCompile>
     <ClCompile Include="d3dutil.cpp" />
     <ClCompile Include="Detouring.cpp" />
     <ClCompile Include="Effect.cpp" />
@@ -321,11 +318,13 @@ cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
     <ClCompile Include="SMAA.cpp" />
     <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="version.cpp" />
     <ClCompile Include="WindowManager.cpp" />
     <ClCompile Include="winutil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AreaTex.h" />
+    <ClInclude Include="blacklist.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3d9.h" />
     <ClInclude Include="d3dutil.h" />
@@ -346,16 +345,17 @@ cp $(TargetPath) "E:\Steam\steamapps\common\FORCED"</Command>
     <ClInclude Include="Settings.h" />
     <ClInclude Include="SSAO.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="WindowManager.h" />
     <ClInclude Include="winutil.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Actions.def" />
-    <None Include="d3d9.def" />
-    <None Include="Exports.def" />
+    <None Include="GeDoSaTo.def" />
     <None Include="Hooks.def" />
     <None Include="Keys.def" />
     <None Include="Settings.def" />
+    <None Include="version.rb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

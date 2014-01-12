@@ -14,6 +14,8 @@
 
 #include "Settings.h"
 #include "RenderstateManager.h"
+
+#include "d3d9.h"
 #include "d3dutil.h"
 #include "winutil.h"
 
@@ -66,6 +68,22 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryExW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFil
 	if(mod) restartDetour(CW2A(lpLibFileName));
 	return mod;
 }
+
+// D3D9 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GENERATE_INTERCEPT_HEADER(Direct3DCreate9, IDirect3D9*, APIENTRY, UINT SDKVersion) {
+	SDLOG(0, "=== DetrouredDirect3DCreate9 V:%d\n", SDKVersion);
+	IDirect3D9 *d3dint = NULL;
+	d3dint = TrueDirect3DCreate9(SDKVersion);
+
+	if(d3dint != NULL) {
+		hkIDirect3D9 *ret = new hkIDirect3D9(&d3dint);
+		SDLOG(0, "=== Direct3DCreate9 hooking %p\n", ret);
+	}
+	SDLOG(0, "=== Direct3DCreate9 returning\n");
+	return d3dint;
+}
+
 
 // D3DX Textures & Shaders /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

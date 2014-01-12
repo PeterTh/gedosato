@@ -46,25 +46,6 @@ using namespace std;
 
 #include "Settings.h"
 
-
-#pragma region Useful Macros from DXUT (copy-pasted here as we prefer this to be as self-contained as possible)
-#if defined(DEBUG) || defined(_DEBUG)
-#ifndef V
-#define V(x) { hr = (x); if (FAILED(hr)) { DXTrace(__FILE__, (DWORD)__LINE__, hr, L#x, true); } }
-#endif
-#ifndef V_RETURN
-#define V_RETURN(x) { hr = (x); if (FAILED(hr)) { return DXTrace(__FILE__, (DWORD)__LINE__, hr, L#x, true); } }
-#endif
-#else
-#ifndef V
-#define V(x) { hr = (x); }
-#endif
-#ifndef V_RETURN
-#define V_RETURN(x) { hr = (x); if( FAILED(hr) ) { return hr; } }
-#endif
-#endif
-#pragma endregion
-
 SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const ExternalStorage &storage)
         : Effect(device),
           threshold(0.1f),
@@ -113,8 +94,8 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         edgeSurface = storage.edgeSurface;
         releaseEdgeResources = false;
     } else {
-        V(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &edgeTex, NULL));
-        V(edgeTex->GetSurfaceLevel(0, &edgeSurface));
+        device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &edgeTex, NULL);
+        edgeTex->GetSurfaceLevel(0, &edgeSurface);
         releaseEdgeResources = true;
     }
 
@@ -124,8 +105,8 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         blendSurface = storage.blendSurface;
         releaseBlendResources = false;
     } else {
-        V(device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &blendTex, NULL));
-        V(blendTex->GetSurfaceLevel(0, &blendSurface));
+        device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &blendTex, NULL);
+        blendTex->GetSurfaceLevel(0, &blendSurface);
         releaseBlendResources = true;
     }
 
@@ -172,10 +153,8 @@ void SMAA::go(IDirect3DTexture9 *edges,
               IDirect3DTexture9 *src, 
               IDirect3DSurface9 *dst,
               Input input) {
-    HRESULT hr;
-
     // Setup the layout for our fullscreen quad.
-    V(device->SetVertexDeclaration(vertexDeclaration));
+    device->SetVertexDeclaration(vertexDeclaration);
 
     // And here we go!
     edgesDetectionPass(edges, input); 
@@ -185,52 +164,49 @@ void SMAA::go(IDirect3DTexture9 *edges,
 
 
 void SMAA::loadAreaTex() {
-    HRESULT hr;
-    V(device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8, D3DPOOL_DEFAULT, &areaTex, NULL));
+    device->CreateTexture(AREATEX_WIDTH, AREATEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8L8, D3DPOOL_DEFAULT, &areaTex, NULL);
     D3DLOCKED_RECT rect;
-    V(areaTex->LockRect(0, &rect, NULL, D3DLOCK_DISCARD));
+    areaTex->LockRect(0, &rect, NULL, D3DLOCK_DISCARD);
     for (int i = 0; i < AREATEX_HEIGHT; i++)
         CopyMemory(((char *) rect.pBits) + i * rect.Pitch, areaTexBytes + i * AREATEX_PITCH, AREATEX_PITCH);
-    V(areaTex->UnlockRect(0));
+    areaTex->UnlockRect(0);
 }
 
 
 void SMAA::loadSearchTex() {
-    HRESULT hr;
-    V(device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8, D3DPOOL_DEFAULT, &searchTex, NULL));
+    device->CreateTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, 1, D3DUSAGE_DYNAMIC, D3DFMT_L8, D3DPOOL_DEFAULT, &searchTex, NULL);
     D3DLOCKED_RECT rect;
-    V(searchTex->LockRect(0, &rect, NULL, D3DLOCK_DISCARD));
+    searchTex->LockRect(0, &rect, NULL, D3DLOCK_DISCARD);
     for (int i = 0; i < SEARCHTEX_HEIGHT; i++)
         CopyMemory(((char *) rect.pBits) + i * rect.Pitch, searchTexBytes + i * SEARCHTEX_PITCH, SEARCHTEX_PITCH);
-    V(searchTex->UnlockRect(0));
+    searchTex->UnlockRect(0);
 }
 
 
 void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 1st pass");
-    HRESULT hr;
 
     // Set the render target and clear both the color and the stencil buffers.
-    V(device->SetRenderTarget(0, edgeSurface));
-    V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
+    device->SetRenderTarget(0, edgeSurface);
+    device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
     // Setup variables.
-    V(effect->SetFloat(thresholdHandle, threshold));
-    V(effect->SetFloat(maxSearchStepsHandle, float(maxSearchSteps)));
+    effect->SetFloat(thresholdHandle, threshold);
+    effect->SetFloat(maxSearchStepsHandle, float(maxSearchSteps));
 
     // Select the technique accordingly.
     switch (input) {
         case INPUT_LUMA:
-            V(effect->SetTexture(colorTexHandle, edges));
-            V(effect->SetTechnique(lumaEdgeDetectionHandle));
+            effect->SetTexture(colorTexHandle, edges);
+            effect->SetTechnique(lumaEdgeDetectionHandle);
             break;
         case INPUT_COLOR:
-            V(effect->SetTexture(colorTexHandle, edges));
-            V(effect->SetTechnique(colorEdgeDetectionHandle));
+            effect->SetTexture(colorTexHandle, edges);
+            effect->SetTechnique(colorEdgeDetectionHandle);
             break;
         case INPUT_DEPTH:
-            V(effect->SetTexture(depthTexHandle, edges));
-            V(effect->SetTechnique(depthEdgeDetectionHandle));
+            effect->SetTexture(depthTexHandle, edges);
+            effect->SetTechnique(depthEdgeDetectionHandle);
             break;
         default:
             throw logic_error("unexpected error");
@@ -238,11 +214,11 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
 
     // Do it!
     UINT passes;
-    V(effect->Begin(&passes, 0));
-    V(effect->BeginPass(0));
+    effect->Begin(&passes, 0);
+    effect->BeginPass(0);
     quad(width, height);
-    V(effect->EndPass());
-    V(effect->End());
+    effect->EndPass();
+    effect->End();
 
     //D3DPERF_EndEvent();
 }
@@ -250,25 +226,24 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
 
 void SMAA::blendingWeightsCalculationPass() {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 2nd pass");
-    HRESULT hr;
 
     // Set the render target and clear it.
-    V(device->SetRenderTarget(0, blendSurface));
-    V(device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0));
+    device->SetRenderTarget(0, blendSurface);
+    device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
     // Setup the variables and the technique (yet again).
-    V(effect->SetTexture(edgesTexHandle, edgeTex));
-    V(effect->SetTexture(areaTexHandle, areaTex));
-    V(effect->SetTexture(searchTexHandle, searchTex));
-    V(effect->SetTechnique(blendWeightCalculationHandle));
+    effect->SetTexture(edgesTexHandle, edgeTex);
+    effect->SetTexture(areaTexHandle, areaTex);
+    effect->SetTexture(searchTexHandle, searchTex);
+    effect->SetTechnique(blendWeightCalculationHandle);
 
     // And here we go!
     UINT passes;
-    V(effect->Begin(&passes, 0));
-    V(effect->BeginPass(0));
+    effect->Begin(&passes, 0);
+    effect->BeginPass(0);
     quad(width, height);
-    V(effect->EndPass());
-    V(effect->End());
+    effect->EndPass();
+    effect->End();
 
     //D3DPERF_EndEvent();
 }
@@ -276,21 +251,20 @@ void SMAA::blendingWeightsCalculationPass() {
 
 void SMAA::neighborhoodBlendingPass(IDirect3DTexture9 *src, IDirect3DSurface9 *dst) {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 3rd pass");
-    HRESULT hr;
 
     // Blah blah blah
-    V(device->SetRenderTarget(0, dst));
-    V(effect->SetTexture(colorTexHandle, src));
-    V(effect->SetTexture(blendTexHandle, blendTex));
-    V(effect->SetTechnique(neighborhoodBlendingHandle));
+    device->SetRenderTarget(0, dst);
+    effect->SetTexture(colorTexHandle, src);
+    effect->SetTexture(blendTexHandle, blendTex);
+    effect->SetTechnique(neighborhoodBlendingHandle);
 
     // Yeah! We will finally have the antialiased image :D
     UINT passes;
-    V(effect->Begin(&passes, 0));
-    V(effect->BeginPass(0));
+    effect->Begin(&passes, 0);
+    effect->BeginPass(0);
     quad(width, height);
-    V(effect->EndPass());
-    V(effect->End());
+    effect->EndPass();
+    effect->End();
 
     //D3DPERF_EndEvent();
 }

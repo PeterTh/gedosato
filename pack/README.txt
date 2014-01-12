@@ -12,9 +12,8 @@ to use downsampling in games.
 How do I use it? (INSTALLATION INSTRUCTIONS)
 ===========================================
 1) Extract the contents of the zip to some permanent directory
-2) Run (e.g. double click in explorer) "install_here.bat"
-2) Copy d3d9.dll to the directory where the target game's *.exe is
-3) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
+2) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
+3) Run GeDoSaToTool.exe
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================

@@ -11,35 +11,53 @@
 #include <strsafe.h>
 #include <future>
 
+#include <boost/algorithm/string.hpp>
+
 #include "main.h"
 #include "d3d9.h"
+#include "version.h"
 #include "d3dutil.h"
 #include "Settings.h"
 #include "KeyActions.h"
 #include "Detouring.h"
 #include "Registry.h"
+#include "blacklist.h"
 
-// globals
-std::ofstream g_ofile;
+FILE* g_oFile = NULL;
+bool g_active = false;
 
-#define EXPORTED(__rettype, __convention, __name, ...) \
-__name##_FNType True##__name;
-#include "Exports.def"
+LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
+	SDLOG(16, "GeDoSaToHook called\n");
+	return CallNextHookEx(NULL, nCode, wParam, lParam); 
+}
+
+const char* GeDoSaToVersion() {
+	static string verString;
+	if(verString.empty()) verString = format("%s (%s)", VER_STRING, MODE_STRING);
+	return verString.c_str();
+}
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
 	if(dwReason == DLL_PROCESS_ATTACH) {
+		// don't attach to GeDoSaToTool
+		if(onBlacklist(getExeFileName())) return true;
+		g_active = true;
+
 		// read install location from registry
 		getInstallDirectory();
 		
+		// initialize log	
+		string logFn = format("logs\\%s_%s.log", getExeFileName().c_str(), getTimeString().c_str());
+		boost::replace_all(logFn, ":", "-");
+		boost::replace_all(logFn, " ", "_");
+		logFn = getInstalledFileName(logFn);
+		fopen_s(&g_oFile, logFn.c_str(), "w");
+		if(!g_oFile) OutputDebugString(format("GeDoSaTo: Error opening log fn %s", logFn.c_str()).c_str());
+		else OutputDebugString(format("GeDoSaTo: Opening log fn %s, handle: %p", logFn.c_str(), g_oFile).c_str());
+
 		// startup
-		char dlldir[512];
-		DisableThreadLibraryCalls(hDll);
-		GetModuleFileName(hDll, dlldir, 512);
-		for(int i = strlen(dlldir); i > 0; i--) { if(dlldir[i] == '\\') { dlldir[i+1] = 0; break; } }
-		g_ofile.open(getInstalledFileName(LOG_FILE_NAME), std::ios::out);
 		sdlogtime(-1);
 		SDLOG(-1, "===== start "INTERCEPTOR_NAME" %s = fn: %s\n", VERSION, getExeFileName().c_str());
-		SDLOG(-1, "===== in directory: %s\n", dlldir);
 		SDLOG(-1, "===== installation directory: %s\n", getInstallDirectory().c_str());
 
 		// load settings
@@ -51,36 +69,14 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 
 		// detour
 		startDetour();
-
-		// load original d3d9.dll
-		HMODULE hMod;
-		if(Settings::get().getDinput8dllWrapper().empty() || (Settings::get().getDinput8dllWrapper().find("none") == 0)) {
-			char syspath[320];
-			GetSystemDirectory(syspath, 320);
-			strcat_s(syspath, "\\d3d9.dll");
-			hMod = LoadLibrary(syspath);
-		} else {
-			sdlog(0, "Loading dinput wrapper %s\n", Settings::get().getDinput8dllWrapper().c_str());
-			hMod = LoadLibrary(Settings::get().getDinput8dllWrapper().c_str());
-		}
-		if(!hMod) {
-			sdlog("Could not load original dinput8.dll\nABORTING.\n");
-			errorExit("Loading of specified dinput wrapper");
-		}
-
-		// get original symbols for exports
-		#define EXPORTED(__rettype, __convention, __name, ...) \
-		True##__name = (__name##_FNType) GetProcAddress(hMod, #__name);
-		#include "Exports.def"
-
 		return true;
-	} else if(dwReason == DLL_PROCESS_DETACH) {
+	}
+	if(dwReason == DLL_PROCESS_DETACH && g_active) {
 		Settings::get().shutdown();
 		endDetour();
 		SDLOG(-1, "===== end =\n");
-		if(g_ofile) { g_ofile.close(); }
+		fclose(g_oFile);
 	}
-
     return false;
 }
 
@@ -118,31 +114,31 @@ string getAssetFileName(string filename) {
 	return getInstallDirectory() + "assets\\" + filename;
 }
 
-void __cdecl sdlogtime(int level) {
+string getTimeString() {
 	char timebuf[26];
     time_t ltime;
     struct tm gmt;
 	time(&ltime);
-    _gmtime64_s(&gmt, &ltime);
+    _localtime64_s(&gmt, &ltime);
     asctime_s(timebuf, 26, &gmt);
 	timebuf[24] = '\0'; // remove newline
-	SDLOG(level, "===== %s =====\n", timebuf);
+	return string(timebuf);
+}
+
+void __cdecl sdlogtime(int level) {
+	SDLOG(level, "===== %s =====\n", getTimeString().c_str());
 }
 
 void __cdecl sdlog(const char *fmt, ...) {
-	if(g_ofile != NULL) {
-		if(!fmt) { return; }
+	if(!fmt) { return; }
 
-		va_list va_alist;
-		char logbuf[8192] = {0};
+	va_list va_alist;
 
-		va_start (va_alist, fmt);
-		_vsnprintf_s(logbuf+strlen(logbuf), sizeof(logbuf) - strlen(logbuf), _TRUNCATE, fmt, va_alist);
-		va_end (va_alist);
+	va_start (va_alist, fmt);
+	vfprintf(g_oFile, fmt, va_alist);
+	va_end (va_alist);
 
-		g_ofile << logbuf;
-		g_ofile.flush();
-	}
+	fflush(g_oFile);
 }
 
 void errorExit(LPTSTR lpszFunction) { 

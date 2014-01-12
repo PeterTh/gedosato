@@ -10,6 +10,3 @@
 #include "d3d9int.h"
 #include "d3d9dev.h"
 
-#define EXPORTED(__rettype, __convention, __name, ...) \
-__rettype __convention __name(__VA_ARGS__);
-#include "Exports.def"

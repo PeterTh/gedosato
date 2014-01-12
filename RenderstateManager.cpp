@@ -43,10 +43,11 @@ void RSManager::initResources(unsigned rw, unsigned rh) {
 	
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
+		
+	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
+	d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
 
 	if(downsampling) {
-		rw = Settings::get().getRenderWidth();
-		rh = Settings::get().getRenderHeight();
 		// generate backbuffers
 		SDLOG(2, "Generating backbuffers:\n")
 		backBuffers = new IDirect3DSurface9*[numBackBuffers];
@@ -56,7 +57,6 @@ void RSManager::initResources(unsigned rw, unsigned rh) {
 			backBufferTextures[i]->GetSurfaceLevel(0, &backBuffers[i]);
 			SDLOG(2, "Backbuffer %u: %p  tex: %p\n", i, backBuffers[i], backBufferTextures[i]);
 		}
-		d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
 
 		// set back buffer 0 as initial rendertarget
 		d3ddev->SetRenderTarget(0, backBuffers[0]);
@@ -64,8 +64,6 @@ void RSManager::initResources(unsigned rw, unsigned rh) {
 		d3ddev->SetDepthStencilSurface(depthStencilSurf);
 
 		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
-	
-		d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
 	}
 
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
@@ -249,6 +247,7 @@ void RSManager::reloadAA() {
 }
 
 void RSManager::storeRenderState() {
+	SDLOG(8, "storing render state\n");
 	prevStateBlock->Capture();
 	prevVDecl = NULL;
 	prevDepthStencilSurf = NULL;
@@ -256,9 +255,11 @@ void RSManager::storeRenderState() {
 	d3ddev->GetDepthStencilSurface(&prevDepthStencilSurf);
 	d3ddev->SetDepthStencilSurface(depthStencilSurf);
 	d3ddev->GetRenderTarget(0, &prevRenderTarget);
+	SDLOG(8, " - completed\n");
 }
 
 void RSManager::restoreRenderState() {
+	SDLOG(8, "restore render state\n");
 	if(prevVDecl) {
 		d3ddev->SetVertexDeclaration(prevVDecl);
 		prevVDecl->Release();
@@ -272,6 +273,7 @@ void RSManager::restoreRenderState() {
 		prevRenderTarget->Release();
 	}
 	prevStateBlock->Apply();
+	SDLOG(8, " - completed\n");
 }
 
 const char* RSManager::getTextureName(IDirect3DBaseTexture9* pTexture) {
