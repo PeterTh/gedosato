@@ -1,0 +1,33 @@
+Microsoft (R) COFF/PE Dumper Version 11.00.50727.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file dinput.dll
+
+File Type: DLL
+
+  Section contains the following exports for DINPUT.dll
+
+    00000000 characteristics
+    4A5BB4FA time date stamp Tue Jul 14 00:28:10 2009
+        0.00 version
+           1 ordinal base
+           7 number of functions
+           7 number of names
+
+    ordinal hint RVA      name
+
+          1    0 0000B845 DirectInputCreateA
+          2    1 0000B8AD DirectInputCreateEx
+          3    2 0000B879 DirectInputCreateW
+          4    3 0000B5BB DllCanUnloadNow
+          5    4 0000B544 DllGetClassObject
+          6    5 0001631A DllRegisterServer
+          7    6 0001632A DllUnregisterServer
+
+  Summary
+
+        5000 .data
+        2000 .reloc
+        1000 .rsrc
+       1C000 .text

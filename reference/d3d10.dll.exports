@@ -1,0 +1,57 @@
+Microsoft (R) COFF/PE Dumper Version 11.00.50727.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file d3d10.dll
+
+File Type: DLL
+
+  Section contains the following exports for d3d10.dll
+
+    00000000 characteristics
+    50F2AD13 time date stamp Sun Jan 13 13:48:19 2013
+        0.00 version
+           1 ordinal base
+          30 number of functions
+          30 number of names
+
+    ordinal hint RVA      name
+
+          2    0 000CCF31 D3D10CompileEffectFromMemory
+          3    1 0003169E D3D10CompileShader
+          4    2 00031500 D3D10CreateBlob
+          5    3 00030EE3 D3D10CreateDevice
+          6    4 00031109 D3D10CreateDeviceAndSwapChain
+          7    5 000CCE9B D3D10CreateEffectFromMemory
+          8    6 000CCEF6 D3D10CreateEffectPoolFromMemory
+          9    7 000EBD25 D3D10CreateStateBlock
+         10    8 000EA912 D3D10DisassembleEffect
+         11    9 000EA8AD D3D10DisassembleShader
+         12    A 000318A6 D3D10GetGeometryShaderProfile
+         13    B 0003234D D3D10GetInputAndOutputSignatureBlob
+         14    C 0003230D D3D10GetInputSignatureBlob
+         15    D 0003232D D3D10GetOutputSignatureBlob
+         16    E 0003188C D3D10GetPixelShaderProfile
+         17    F 000318B3 D3D10GetShaderDebugInfo
+         18   10 00030ECD D3D10GetVersion
+         19   11 00031899 D3D10GetVertexShaderProfile
+         20   12 00032166 D3D10PreprocessShader
+         21   13 000CE12C D3D10ReflectShader
+         22   14 00030ED8 D3D10RegisterLayers
+         23   15 000EBE4A D3D10StateBlockMaskDifference
+         24   16 000EBF97 D3D10StateBlockMaskDisableAll
+         25   17 000EBEFB D3D10StateBlockMaskDisableCapture
+         26   18 000EBF6B D3D10StateBlockMaskEnableAll
+         27   19 000EBE8D D3D10StateBlockMaskEnableCapture
+         28   1A 000EBFC3 D3D10StateBlockMaskGetSetting
+         29   1B 000EBE07 D3D10StateBlockMaskIntersect
+         30   1C 000EBDC4 D3D10StateBlockMaskUnion
+          1   1D 00030F47 RevertToOldImplementation
+
+  Summary
+
+        F000 .data
+        1000 .idata
+        B000 .reloc
+        1000 .rsrc
+       F2000 .text

@@ -1,0 +1,28 @@
+
+// Cursor Actions
+
+ACTION(toggleCursorVisibility, WindowManager::get().toggleCursorVisibility())
+ACTION(toggleCursorCapture, WindowManager::get().toggleCursorCapture())
+
+// Window Actions
+
+ACTION(toggleBorderlessFullscreen, WindowManager::get().toggleBorderlessFullscreen())
+
+// Screenshot Actions
+
+ACTION(takeFullScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_FULL))
+ACTION(takeScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_STANDARD))
+
+// Graphics Actions
+
+ACTION(toggleAA, RSManager::get().toggleAA())
+ACTION(setBilinearScaling, RSManager::get().getScaler()->setScaling(Scaler::BILINEAR))
+ACTION(setBicubicScaling, RSManager::get().getScaler()->setScaling(Scaler::BICUBIC))
+
+// Development Actions
+
+ACTION(showStatus, RSManager::get().getScaler()->showStatus())
+
+ACTION(reloadAAEffect, RSManager::get().reloadAA())
+
+ACTION(userTrigger, SDLOG(0, "================================================================= USER TRIGGER ===\n"))

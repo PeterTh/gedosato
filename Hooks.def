@@ -1,0 +1,28 @@
+
+HOOK(LoadLibraryA, "Kernel32.dll")
+HOOK(LoadLibraryW, "Kernel32.dll")
+HOOK(LoadLibraryExA, "Kernel32.dll")
+HOOK(LoadLibraryExW, "Kernel32.dll")
+
+HOOK(EnumDisplaySettingsExA, "User32.dll")
+HOOK(EnumDisplaySettingsExW, "User32.dll")
+
+HOOK(GetSystemMetrics, "User32.dll")
+
+HOOK(GetClientRect, "User32.dll")
+HOOK(GetWindowRect, "User32.dll")
+
+HOOK(GetCursorPos, "User32.dll")
+HOOK(SetCursorPos, "User32.dll")
+HOOK(SetCursor, "User32.dll")
+
+HOOK(PeekMessageA, "User32.dll")
+HOOK(GetMessageA, "User32.dll")
+HOOK(GetMessagePos, "User32.dll")
+
+HOOK(DirectInput8Create, "dinput8.dll")
+HOOK(DirectInputCreateEx, "dinput.dll");
+HOOK(DirectInputCreateA, "dinput.dll");
+HOOK(DirectInputCreateW, "dinput.dll");
+
+#undef HOOK

@@ -1,0 +1,29 @@
+// xmacro file for .ini setting definition
+// format: (type, cname, ininame, default value) 
+	
+// Graphics Options
+SETTING(unsigned, RenderWidth, "renderWidth", 2560);
+SETTING(unsigned, RenderHeight, "renderHeight", 1440);
+SETTING(unsigned, ReportedHz, "reportedHz", 60);
+
+SETTING(unsigned, PresentWidth, "presentWidth", 1920);
+SETTING(unsigned, PresentHeight, "presentHeight", 1080);
+SETTING(unsigned, PresentHz, "presentHz", 60);
+
+SETTING(unsigned, OverrideWidth, "overrideWidth", 1280);
+SETTING(unsigned, OverrideHeight, "overrideHeight", 720);
+
+SETTING(std::string, ScalingType, "scalingType", "linear");
+
+// Mouse options
+SETTING(bool, ModifyGetCursorPos, "modifyGetCursorPos", true);
+SETTING(bool, AdjustMessagePt, "adjustMessagePt", true);
+
+// Logging Options
+SETTING(int, LogLevel, "logLevel", 0);
+	
+// Wrapper chaining options
+SETTING(std::string, Dinput8dllWrapper, "dinput8dllWrapper", "");
+
+// Folder options
+SETTING(std::string, ScreenshotDir, "screenshotDir", ".");

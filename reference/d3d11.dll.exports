@@ -1,0 +1,75 @@
+Microsoft (R) COFF/PE Dumper Version 11.00.50727.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file d3d11.dll
+
+File Type: DLL
+
+  Section contains the following exports for d3d11.dll
+
+    00000000 characteristics
+    515376C7 time date stamp Wed Mar 27 23:46:31 2013
+        0.00 version
+           1 ordinal base
+          47 number of functions
+          47 number of names
+
+    ordinal hint RVA      name
+
+         14    0 00010FA0 D3D11CoreCreateDevice
+         15    1 0000FCE4 D3D11CoreCreateLayeredDevice
+         16    2 0000FC2F D3D11CoreGetLayeredDeviceSize
+         17    3 0000FB59 D3D11CoreRegisterLayers
+         18    4 00011BB1 D3D11CreateDevice
+         19    5 00011BE6 D3D11CreateDeviceAndSwapChain
+          1    6 0000F54D D3DKMTCloseAdapter
+         20    7 0000F54D D3DKMTCreateAllocation
+         21    8 0000F54D D3DKMTCreateContext
+         22    9 0000F54D D3DKMTCreateDevice
+         23    A 0000F54D D3DKMTCreateSynchronizationObject
+          2    B 0000F54D D3DKMTDestroyAllocation
+          3    C 0000F54D D3DKMTDestroyContext
+          4    D 0000F54D D3DKMTDestroyDevice
+          5    E 0000F54D D3DKMTDestroySynchronizationObject
+         24    F 0000F54D D3DKMTEscape
+         25   10 0000F54D D3DKMTGetContextSchedulingPriority
+         26   11 0000F5D0 D3DKMTGetDeviceState
+         27   12 0000F54D D3DKMTGetDisplayModeList
+         28   13 0000F54D D3DKMTGetMultisampleMethodList
+         29   14 0000F54D D3DKMTGetRuntimeData
+         30   15 0000F54D D3DKMTGetSharedPrimaryHandle
+         31   16 0000F54D D3DKMTLock
+         32   17 0000F5AC D3DKMTOpenAdapterFromHdc
+         33   18 0000F540 D3DKMTOpenResource
+         34   19 0000F54D D3DKMTPresent
+          6   1A 0000F557 D3DKMTQueryAdapterInfo
+         35   1B 0000F54D D3DKMTQueryAllocationResidency
+         36   1C 0000F540 D3DKMTQueryResourceInfo
+         37   1D 0000F54D D3DKMTRender
+         38   1E 0000F54D D3DKMTSetAllocationPriority
+         39   1F 0000F54D D3DKMTSetContextSchedulingPriority
+         40   20 0000F54D D3DKMTSetDisplayMode
+          7   21 0000F54D D3DKMTSetDisplayPrivateDriverFormat
+         41   22 0000F54D D3DKMTSetGammaRamp
+         42   23 0000F54D D3DKMTSetVidPnSourceOwner
+          8   24 0000F54D D3DKMTSignalSynchronizationObject
+          9   25 0000F54D D3DKMTUnlock
+         10   26 0000F54D D3DKMTWaitForSynchronizationObject
+         43   27 0000F54D D3DKMTWaitForVerticalBlankEvent
+         44   28 00010F44 D3DPerformance_BeginEvent
+         45   29 00010F5C D3DPerformance_EndEvent
+         46   2A 00010F89 D3DPerformance_GetStatus
+         47   2B 00010F74 D3DPerformance_SetMarker
+         11   2C 00010ED8 EnableFeatureLevelUpgrade
+         12   2D 0000F4B2 OpenAdapter10
+         13   2E 0000F4F1 OpenAdapter10_2
+
+  Summary
+
+        5000 .data
+        2000 .idata
+        C000 .reloc
+       7D000 .rsrc
+       80000 .text
+       64000 .text_hf

@@ -1,0 +1,77 @@
+Microsoft (R) COFF/PE Dumper Version 11.00.50727.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file dxgi.dll
+
+File Type: DLL
+
+  Section contains the following exports for dxgi.dll
+
+    00000000 characteristics
+    50F2A12D time date stamp Sun Jan 13 12:57:33 2013
+        0.00 version
+           1 ordinal base
+          50 number of functions
+          50 number of names
+
+    ordinal hint RVA      name
+
+          1    0 00015749 CheckETWTLS
+          2    1 00015485 CompatString
+          3    2 0001565F CompatValue
+         20    3 00017542 CreateDXGIFactory
+         19    4 000175FB CreateDXGIFactory1
+          4    5 0002C8F1 D3DKMTCloseAdapter
+         21    6 0002C8F1 D3DKMTCreateAllocation
+         22    7 0002C8F1 D3DKMTCreateContext
+         23    8 0002C8F1 D3DKMTCreateDevice
+         24    9 0002C8F1 D3DKMTCreateSynchronizationObject
+          5    A 0002C8F1 D3DKMTDestroyAllocation
+          6    B 0002C8F1 D3DKMTDestroyContext
+          7    C 0002C8F1 D3DKMTDestroyDevice
+          8    D 0002C8F1 D3DKMTDestroySynchronizationObject
+         25    E 0002C8F1 D3DKMTEscape
+         26    F 0002C8F1 D3DKMTGetContextSchedulingPriority
+         27   10 0002C8F1 D3DKMTGetDeviceState
+         28   11 0002C8F1 D3DKMTGetDisplayModeList
+         29   12 0002C8F1 D3DKMTGetMultisampleMethodList
+         30   13 0002C8F1 D3DKMTGetRuntimeData
+         31   14 0002C8F1 D3DKMTGetSharedPrimaryHandle
+         32   15 0002C8F1 D3DKMTLock
+         33   16 0002C8F1 D3DKMTOpenAdapterFromHdc
+         34   17 0002C8F1 D3DKMTOpenResource
+         35   18 0002C8F1 D3DKMTPresent
+          9   19 0002C8F1 D3DKMTQueryAdapterInfo
+         36   1A 0002C8F1 D3DKMTQueryAllocationResidency
+         37   1B 0002C8F1 D3DKMTQueryResourceInfo
+         38   1C 0002C8F1 D3DKMTRender
+         39   1D 0002C8F1 D3DKMTSetAllocationPriority
+         40   1E 0002C8F1 D3DKMTSetContextSchedulingPriority
+         41   1F 0002C8F1 D3DKMTSetDisplayMode
+         10   20 0002C8F1 D3DKMTSetDisplayPrivateDriverFormat
+         42   21 0002C8F1 D3DKMTSetGammaRamp
+         43   22 0002C8F1 D3DKMTSetVidPnSourceOwner
+         11   23 0002C8F1 D3DKMTSignalSynchronizationObject
+         12   24 0002C8F1 D3DKMTUnlock
+         13   25 0002C8F1 D3DKMTWaitForSynchronizationObject
+         44   26 0002C8F1 D3DKMTWaitForVerticalBlankEvent
+         45   27 0001604A DXGID3D10CreateDevice
+         46   28 0001603D DXGID3D10CreateLayeredDevice
+         47   29 0001CBA5 DXGID3D10ETWRundown
+         48   2A 0001D6E8 DXGID3D10GetLayeredDeviceSize
+         49   2B 0001D6E8 DXGID3D10RegisterLayers
+         14   2C 00015162 DXGIDumpJournal
+         50   2D 0002C236 DXGIReportAdapterConfiguration
+         15   2E 000156DD DXGIRevertToSxS
+         16   2F 0002C8F1 OpenAdapter10
+         17   30 0002C8F1 OpenAdapter10_2
+         18   31 00015275 SetAppCompatStringPointer
+
+  Summary
+
+        3000 .data
+        2000 .idata
+        4000 .reloc
+       10000 .rsrc
+       32000 .text

@@ -1,0 +1,40 @@
+Microsoft (R) COFF/PE Dumper Version 11.00.50727.1
+Copyright (C) Microsoft Corporation.  All rights reserved.
+
+
+Dump of file d3d9.dll
+
+File Type: DLL
+
+  Section contains the following exports for d3d9.dll
+
+    00000000 characteristics
+    4CE79150 time date stamp Sat Nov 20 10:13:52 2010
+        0.00 version
+           1 ordinal base
+          14 number of functions
+          14 number of names
+
+    ordinal hint RVA      name
+
+          4    0 000A71DB D3DPERF_BeginEvent
+          5    1 000A7249 D3DPERF_EndEvent
+          6    2 000A746D D3DPERF_GetStatus
+          7    3 000A738D D3DPERF_QueryRepeatFrame
+          8    4 000A72B5 D3DPERF_SetMarker
+          9    5 000A7402 D3DPERF_SetOptions
+         10    6 000A7321 D3DPERF_SetRegion
+         11    7 000A88B1 DebugSetLevel
+         12    8 000366C6 DebugSetMute
+         13    9 00060A62 Direct3DCreate9
+         14    A 0000CCD5 Direct3DCreate9Ex
+          1    B 0003F5AF Direct3DShaderValidatorCreate9
+          2    C 0009D77B PSGPError
+          3    D 0009D709 PSGPSampleTexture
+
+  Summary
+
+        A000 .data
+        F000 .reloc
+        1000 .rsrc
+      1A8000 .text
