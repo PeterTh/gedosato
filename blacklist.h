@@ -2,4 +2,4 @@
 
 #include <string>
 
-bool onBlacklist(const std::string& fn);
+bool onBlacklist(std::string fn);

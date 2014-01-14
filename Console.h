@@ -48,9 +48,7 @@ public:
 	}
 	~Console() {
 		SDLOG(0, "Deleting Console on device %p\n", device);
-		SAFERELEASE(vertexDeclaration);
-		SAFERELEASE(fontTex);
-		SAFERELEASE(effect);
+		cleanup();
 	}
 
 	static Console& get() { 
@@ -67,12 +65,13 @@ public:
 		lineHeight = 1.0f;
 	}
 
-	bool needsDrawing() { return lineHeight > 0.0f; } 
+	bool needsDrawing() { return device && lineHeight > 0.0f; } 
 	void draw();
 
 	void print(float x, float y, const char *text);
 
 	void initialize(IDirect3DDevice9* device, int w, int h);
+	void cleanup();
 
 	int getW() { return width; }
 	int getH() { return height; }

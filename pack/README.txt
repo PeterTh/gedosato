@@ -13,7 +13,7 @@ How do I use it? (INSTALLATION INSTRUCTIONS)
 ===========================================
 1) Extract the contents of the zip to some permanent directory
 2) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
-3) Run GeDoSaToTool.exe
+3) Run GeDoSaToTool.exe (*as Administrator*)
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
@@ -26,7 +26,7 @@ Advantages:
 - Not limited by display hardware
 Disadvantages:
 - Compatibility is limited compared to driver-level downsampling (only DirectX9 supported currently)
-- Requires slightly more per-game effort (copying the file)
+- Bugs :P
 
 Will it work?
 =============

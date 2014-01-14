@@ -16,6 +16,7 @@
 #include "RenderstateManager.h"
 
 #include "d3d9.h"
+#include "d3d9int_ex.h"
 #include "d3dutil.h"
 #include "winutil.h"
 
@@ -84,6 +85,17 @@ GENERATE_INTERCEPT_HEADER(Direct3DCreate9, IDirect3D9*, APIENTRY, UINT SDKVersio
 	return d3dint;
 }
 
+GENERATE_INTERCEPT_HEADER(Direct3DCreate9Ex, HRESULT, APIENTRY, UINT SDKVersion, IDirect3D9Ex** pRet) {
+	SDLOG(0, "=== DetrouredDirect3DCreate9Ex V:%d\n", SDKVersion);
+	HRESULT res = TrueDirect3DCreate9Ex(SDKVersion, pRet);
+	
+	if(*pRet != NULL) {
+		*pRet = new hkIDirect3D9Ex(pRet);
+		SDLOG(0, "=== Direct3DCreate9Ex hooking %p\n", *pRet);
+	}
+	SDLOG(0, "=== Direct3DCreate9Ex returning\n");
+	return res;
+}
 
 // D3DX Textures & Shaders /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

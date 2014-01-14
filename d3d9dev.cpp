@@ -14,24 +14,9 @@
 
 using namespace std;
 
-hkIDirect3DDevice9::hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9) {
-	m_pD3Ddev = *ppReturnedDeviceInterface;
-	*ppReturnedDeviceInterface = this;
-	m_PresentParam = *pPresentParam;
-	m_pD3Dint = pIDirect3D9;
-	rsMan = new RSManager();
-	rsMan->setD3DDevice(m_pD3Ddev);
-	rsMan->initResources(pPresentParam->BackBufferWidth, pPresentParam->BackBufferHeight);
-	RSManager::setLatest(rsMan);
-}
-
 HRESULT APIENTRY hkIDirect3DDevice9::Present(CONST RECT *pSourceRect, CONST RECT *pDestRect, HWND hDestWindowOverride, CONST RGNDATA *pDirtyRegion) {
 	RSManager::setLatest(rsMan);
 	SDLOG(3, "!!!!!!!!!!!!!!!!!!!!!!! Present !!!!!!!!!!!!!!!!!!\n");
-	KeyActions::get().processIO();
-	//WindowManager::get().applyCursorCapture();
-	//if(Settings::get().getBorderlessFullscreen()) WindowManager::get().maintainBorderlessFullscreen();
-	//if(Settings::get().getForceWindowed()) WindowManager::get().maintainWindowSize();
 	return rsMan->redirectPresent(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
 
@@ -471,10 +456,6 @@ HRESULT APIENTRY hkIDirect3DDevice9::MultiplyTransform(D3DTRANSFORMSTATETYPE Sta
 	return m_pD3Ddev->MultiplyTransform(State, pMatrix);
 }
 
-void APIENTRY WINAPI D3DPERF_SetOptions(DWORD options){
-	SDLOG(0, "D3DPERF_SetOptions %d\n", options);
-}
-
 HRESULT APIENTRY hkIDirect3DDevice9::ProcessVertices(UINT SrcStartIndex, UINT DestIndex, UINT VertexCount, IDirect3DVertexBuffer9* pDestBuffer, IDirect3DVertexDeclaration9* pVertexDecl, DWORD Flags) {
 	RSManager::setLatest(rsMan);
 	return m_pD3Ddev->ProcessVertices(SrcStartIndex, DestIndex, VertexCount, pDestBuffer,pVertexDecl, Flags);
@@ -516,13 +497,13 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetCurrentTexturePalette(UINT PaletteNumber
 
 void APIENTRY hkIDirect3DDevice9::SetCursorPosition(int X, int Y, DWORD Flags) {
 	RSManager::setLatest(rsMan);
-	SDLOG(0, "SetCursorPosition\n");
+	SDLOG(5, "SetCursorPosition\n");
 	RSManager::get().redirectSetCursorPosition(X, Y, Flags);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetCursorProperties(UINT XHotSpot, UINT YHotSpot, IDirect3DSurface9 *pCursorBitmap) {
 	RSManager::setLatest(rsMan);
-	SDLOG(0, "SetCursorProperties\n");
+	SDLOG(3, "SetCursorProperties\n");
 	return m_pD3Ddev->SetCursorProperties(XHotSpot, YHotSpot, pCursorBitmap);
 }
 
@@ -654,6 +635,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetTexture(DWORD Stage, IDirect3DBaseTextur
 			D3DSURFACE_DESC desc;
 			tex->GetLevelDesc(0, &desc);
 			SDLOG(10, " -- size: %dx%d RT? %s\n", desc.Width, desc.Height, (desc.Usage & D3DUSAGE_RENDERTARGET) ? "true" : "false");
+			tex->Release();
 		}
 	}
 	return m_pD3Ddev->SetTexture(Stage, pTexture);

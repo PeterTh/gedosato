@@ -7,3 +7,5 @@ Debug
 *.zip
 *.log
 *.exe
+*.vcd
+*SyncToy*

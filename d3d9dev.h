@@ -7,20 +7,14 @@ class RSManager;
 
 interface hkIDirect3DDevice9 : public IDirect3DDevice9
 {
-public:
-	hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9);
-
 	// callback interface
 	IDirect3DDevice9 *m_pD3Ddev;
 	IDirect3D9 *m_pD3Dint;
-
-	// need to fake this
-	D3DDISPLAYMODE displayMode;
 	
-	// PresentationParameters
-	D3DPRESENT_PARAMETERS m_PresentParam;
-
 	RSManager *rsMan;
+
+public:
+	hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9);
 	
 	// original interface
     STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);

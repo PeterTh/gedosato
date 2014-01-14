@@ -5,6 +5,7 @@ HOOK(LoadLibraryExA, "Kernel32.dll")
 HOOK(LoadLibraryExW, "Kernel32.dll")
 
 HOOK(Direct3DCreate9, "D3d9.dll")
+HOOK(Direct3DCreate9Ex, "D3d9.dll")
 
 HOOK(EnumDisplaySettingsExA, "User32.dll")
 HOOK(EnumDisplaySettingsExW, "User32.dll")

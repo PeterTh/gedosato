@@ -36,11 +36,15 @@ void Console::initialize(IDirect3DDevice9* device, int w, int h) {
 	fread(ttf_buffer, 1, 1<<20, ff);
 	fclose(ff);
 	stbtt_BakeFontBitmap(ttf_buffer, 0, 44.0, temp_bitmap, BMPSIZE, BMPSIZE, 32, 96, cdata); // no guarantee this fits!
-	device->CreateTexture(BMPSIZE, BMPSIZE, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8, D3DPOOL_MANAGED, &fontTex, NULL);
+	device->CreateTexture(BMPSIZE, BMPSIZE, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8, D3DPOOL_DEFAULT, &fontTex, NULL);
+	IDirect3DTexture9 *tempTex;
+	device->CreateTexture(BMPSIZE, BMPSIZE, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8, D3DPOOL_SYSTEMMEM, &tempTex, NULL);
 	D3DLOCKED_RECT rect;
-	fontTex->LockRect(0, &rect, NULL, 0);
+	tempTex->LockRect(0, &rect, NULL, 0);
 	memcpy(rect.pBits, temp_bitmap, BMPSIZE*BMPSIZE);
-	fontTex->UnlockRect(0);
+	tempTex->UnlockRect(0);
+	device->UpdateTexture(tempTex, fontTex);
+	tempTex->Release();
 	delete ttf_buffer;
 	delete temp_bitmap;
 	
@@ -68,6 +72,14 @@ void Console::initialize(IDirect3DDevice9* device, int w, int h) {
 	textTex2DHandle = effect->GetParameterByName(NULL, "textTex2D");
 
 	SDLOG(0, " - done\n");
+}
+
+void Console::cleanup() {
+	SDLOG(2, "Console cleanup\n")
+	device = NULL;
+	SAFERELEASE(vertexDeclaration);
+	SAFERELEASE(fontTex);
+	SAFERELEASE(effect);
 }
 
 void Console::draw() {

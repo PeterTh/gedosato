@@ -7,11 +7,13 @@ using namespace std;
 
 #include <boost/algorithm/string.hpp>
 
-bool onBlacklist(const std::string& fn) {
+bool onBlacklist(std::string fn) {
 	std::ifstream infile(getAssetFileName("blacklist.txt"));
 	string line;
-	while (std::getline(infile, line)) {
-		if(boost::iequals(getExeFileName(), line)) return true;
+	boost::algorithm::trim(fn);
+	while(std::getline(infile, line)) {
+		boost::algorithm::trim(line);
+		if(boost::iequals(fn, line)) return true;
 	}
 	return false;
 }

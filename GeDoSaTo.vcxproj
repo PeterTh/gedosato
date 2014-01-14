@@ -264,6 +264,9 @@
   <ItemGroup>
     <ClCompile Include="blacklist.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="d3d9dev_ex.cpp" />
+    <ClCompile Include="d3d9dev_init.cpp" />
+    <ClCompile Include="d3d9int_ex.cpp" />
     <ClCompile Include="d3dutil.cpp" />
     <ClCompile Include="Detouring.cpp" />
     <ClCompile Include="Effect.cpp" />
@@ -327,6 +330,8 @@
     <ClInclude Include="blacklist.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3d9.h" />
+    <ClInclude Include="d3d9dev_ex.h" />
+    <ClInclude Include="d3d9int_ex.h" />
     <ClInclude Include="d3dutil.h" />
     <ClInclude Include="Detouring.h" />
     <ClInclude Include="Effect.h" />

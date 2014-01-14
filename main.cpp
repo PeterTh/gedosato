@@ -39,8 +39,11 @@ const char* GeDoSaToVersion() {
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
 	if(dwReason == DLL_PROCESS_ATTACH) {
-		// don't attach to GeDoSaToTool
-		if(onBlacklist(getExeFileName())) return true;
+		// don't attach to processes on the blacklist
+		if(onBlacklist(getExeFileName())) {
+			if(getExeFileName() == "GeDoSaToTool") return true;
+			return false;
+		}
 		g_active = true;
 
 		// read install location from registry
@@ -85,7 +88,7 @@ const std::string& getInstallDirectory() {
 	if(installDir.empty()) {
 		installDir = getRegString(REG_KEY_PATH, "InstallPath");
 		if(installDir.empty()) {
-			messageErrorAndExit("Could not read the install location from the registry.\nMake sure to extract the downloaded files to a suitable location and run install_here.bat.");
+			messageErrorAndExit("Could not read the install location from the registry.\nMake sure to extract the downloaded files to a suitable location and run GeDoSaToTool.exe");
 		}
 	}
 	return installDir;
@@ -94,12 +97,13 @@ const string& getExeFileName() {
 	static string exeFn;
 	if(exeFn.empty()) {
 		char fileName[2048];
-		GetModuleFileName(NULL, fileName, 2048);
+		GetModuleFileNameA(NULL, fileName, 2048);
 		exeFn = string(fileName);
 		size_t pos = exeFn.rfind("\\");
 		if(pos != string::npos) {
 			exeFn = exeFn.substr(pos+1);
 			pos = exeFn.rfind(".exe");
+			if(pos == string::npos) pos = exeFn.rfind(".EXE");
 			if(pos != string::npos) {
 				exeFn = exeFn.substr(0, pos);
 			}

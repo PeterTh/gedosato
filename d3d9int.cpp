@@ -77,7 +77,7 @@ HRESULT APIENTRY hkIDirect3D9::EnumAdapterModes(UINT Adapter, D3DFORMAT Format, 
 	if(SUCCEEDED(ret) && pMode->Width == Settings::get().getOverrideWidth() && pMode->Height == Settings::get().getOverrideHeight()) {
 		pMode->Width = Settings::get().getRenderWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		SDLOG(2, "-> Overrride D3D9\n");
+		SDLOG(2, "-> Override D3D9\n");
 	}
 	return ret;
 }
@@ -109,7 +109,6 @@ HMONITOR APIENTRY hkIDirect3D9::GetAdapterMonitor(UINT Adapter) {
 	HMONITOR res = m_pD3Dint->GetAdapterMonitor(Adapter);
 	SDLOG(0, "-> %p\n", res);
 	return res;
-
 }
 
 HRESULT APIENTRY hkIDirect3D9::GetDeviceCaps(UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS9 *pCaps) {
@@ -125,5 +124,4 @@ HRESULT APIENTRY hkIDirect3D9::RegisterSoftwareDevice(void *pInitializeFunction)
 ULONG APIENTRY hkIDirect3D9::Release() {
 	SDLOG(20, "Release hkIDirect3D9 ------ %p \n", this);
 	return m_pD3Dint->Release();
-	//return D3D_OK;
 }
