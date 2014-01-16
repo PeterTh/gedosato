@@ -21,7 +21,7 @@ private:
 	bool inited, downsampling;
 	IDirect3DDevice9 *d3ddev;
 
-	bool doAA;
+	bool doAA, dumpingFrame;
 	SMAA* smaa;
 	FXAA* fxaa;
 	Scaler* scaler;
@@ -29,10 +29,12 @@ private:
 	
 	screenshotType takeScreenshot;
 
-	unsigned numBackBuffers, lastBackBuffer, renderWidth, renderHeight;
+	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect;
+	unsigned numBackBuffers, renderWidth, renderHeight;
 	D3DFORMAT backbufferFormat;
 	IDirect3DTexture9** backBufferTextures;
 	IDirect3DSurface9** backBuffers;
+	IDirect3DSurface9* extraBuffer;
 	IDirect3DSurface9* depthStencilSurf;
 	
 	unsigned dumpCaptureIndex;
@@ -61,7 +63,7 @@ private:
 
 	void captureRTScreen(string stype = "normal");
 
-	void prePresent();
+	void prePresent(bool doNotFlip);
 	
 public:
 	static RSManager& get();
@@ -70,9 +72,9 @@ public:
 		return latest && latest->downsampling;
 	}
 
-	RSManager() : inited(false), downsampling(false), doAA(true), smaa(NULL), fxaa(NULL), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
-				  numBackBuffers(0), lastBackBuffer(0), renderWidth(0), renderHeight(0),
-				  backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), depthStencilSurf(NULL),
+	RSManager() : inited(false), downsampling(false), doAA(true), dumpingFrame(false), smaa(NULL), fxaa(NULL), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
+				  swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
+				  backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), extraBuffer(NULL), depthStencilSurf(NULL),
 				  dumpCaptureIndex(0), numKnownTextures(0), foundKnownTextures(0),
 				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
@@ -86,11 +88,13 @@ public:
 	
 	void setD3DDevice(IDirect3DDevice9 *pD3Ddev) { d3ddev = pD3Ddev; }
 
-	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat);
+	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff);
 	void releaseResources();
 
 	void enableTakeScreenshot(screenshotType type);
 	bool takingScreenshot() { return takeScreenshot != SCREENSHOT_NONE; }
+
+	void dumpFrame() { dumpingFrame = true; }
 
 	void toggleAA() { doAA = !doAA; }
 	void reloadAA();

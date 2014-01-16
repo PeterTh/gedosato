@@ -30,7 +30,7 @@ void RSManager::setLatest(RSManager *man) {
 	Console::setLatest(&man->console);
 }
 
-void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat) {
+void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff) {
 	if(inited) releaseResources();
 	SDLOG(0, "RenderstateManager resource initialization started\n");
 	this->downsampling = downsampling;
@@ -38,6 +38,8 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	renderHeight = rh;
 	numBackBuffers = numBBs;
 	bbFormat = bbFormat;
+	swapEffect = swapEff == D3DSWAPEFFECT_COPY ? SWAP_COPY : (swapEff == D3DSWAPEFFECT_DISCARD ? SWAP_DISCARD : SWAP_FLIP);
+	if(swapEffect == SWAP_FLIP) numBackBuffers++; // account for the "front buffer" in the swap chain
 
 	//if(Settings::get().getAAQuality()) {
 	//	if(Settings::get().getAAType() == "SMAA") {
@@ -68,6 +70,10 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 		d3ddev->SetRenderTarget(0, backBuffers[0]);
 		// set our depth stencil surface
 		d3ddev->SetDepthStencilSurface(depthStencilSurf);
+		// generate additional buffer to emulate flip if required
+		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour()) {
+			d3ddev->CreateRenderTarget(rw, rh, backbufferFormat, D3DMULTISAMPLE_NONE, 0, false, &extraBuffer, NULL);
+		}
 
 		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 	}
@@ -79,6 +85,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 void RSManager::releaseResources() {
 	SDLOG(0, "RenderstateManager releasing resources\n");
 	SAFERELEASE(depthStencilSurf);
+	SAFERELEASE(extraBuffer);
 	SAFERELEASE(prevStateBlock);
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
@@ -98,11 +105,26 @@ void RSManager::releaseResources() {
 	SDLOG(0, "RenderstateManager resource release completed\n");
 }
 
-void RSManager::prePresent() {
+void RSManager::prePresent(bool doNotFlip) {
+	if(dumpingFrame) {
+		dumpSurface("framedump", backBuffers[0]);
+		SDLOG(0, "============================================\nFinished dumping frame.\n");
+		Settings::get().restoreLogLevel();
+		dumpingFrame = false;
+	}
+
+	////////////////////////////////////////// IO
 	KeyActions::get().processIO();
+	////////////////////////////////////////// IO
+
+	if(dumpingFrame) {
+		Settings::get().elevateLogLevel(50);
+		SDLOG(0, "============================================\nStarting frame dump.\n");
+	}
 
 	if(takeScreenshot == SCREENSHOT_FULL || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
 		takeScreenshot = SCREENSHOT_NONE;
+		d3ddev->SetRenderTarget(0, backBuffers[0]);
 		captureRTScreen("full resolution");
 	}
 
@@ -110,11 +132,11 @@ void RSManager::prePresent() {
 	if(downsampling) {
 		storeRenderState();
 		d3ddev->BeginScene();
-		SDLOG(2, "Scaling fake backbuffer %u (%p)\n", lastBackBuffer, backBuffers[lastBackBuffer]);
+		SDLOG(2, "Scaling fake backbuffer (%p)\n", backBuffers[0]);
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
 		SDLOG(2, "- to backbuffer %p\n", realBackBuffer);
-		scaler->go(backBufferTextures[lastBackBuffer], realBackBuffer);
+		scaler->go(backBufferTextures[0], realBackBuffer);
 		realBackBuffer->Release();
 		SDLOG(2, "- scaling complete!\n");
 		d3ddev->EndScene();
@@ -123,6 +145,17 @@ void RSManager::prePresent() {
 			captureRTScreen();
 		}
 		restoreRenderState();
+		
+		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
+			d3ddev->StretchRect(backBuffers[0], NULL, extraBuffer, NULL, D3DTEXF_NONE);
+			for(unsigned bb=0; bb<numBackBuffers; ++bb) {
+				d3ddev->StretchRect(backBuffers[bb+1], NULL, backBuffers[bb], NULL, D3DTEXF_NONE);
+			}
+			d3ddev->StretchRect(extraBuffer, NULL, backBuffers[numBackBuffers-1], NULL, D3DTEXF_NONE);
+			SDLOG(2, "Advanced flip queue\n");
+		} else {
+			SDLOG(2, "Not \"flipping\" backbuffers\n");
+		}
 	}
 
 	// Draw console
@@ -137,15 +170,17 @@ void RSManager::prePresent() {
 		d3ddev->EndScene();
 		restoreRenderState();
 	}
+	SDLOG(2, "Pre-present complete\n");
 }
 
 HRESULT RSManager::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDestRect, HWND hDestWindowOverride, CONST RGNDATA *pDirtyRegion) {
-	prePresent();	
+	prePresent(false);	
 	return d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
 }
 
 HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
-	prePresent();	
+	SDLOG(1, "- PresentEx flags: %s\n", D3DPresentExFlagsToString(dwFlags).c_str());
+	prePresent((dwFlags & D3DPRESENT_DONOTFLIP) != 0);	
 	return ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 }
 
@@ -173,7 +208,8 @@ void RSManager::captureRTScreen(string stype) {
 
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
 	char fullname[128];
-	sprintf_s(fullname, 128, "dump%03d_%s.tga", dumpCaptureIndex++, name);
+	sprintf_s(fullname, 128, "dump%03d_%s_p.tga", dumpCaptureIndex++, name, surface);
+	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname);
 	D3DXSaveSurfaceToFile(fullname, D3DXIFF_TGA, surface, NULL, NULL);
 }
 
@@ -201,22 +237,31 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 	//	aaDone = true;
 	//}
 
+	if(RenderTargetIndex==0 && dumpingFrame) {
+		IDirect3DSurface9* rt;
+		d3ddev->GetRenderTarget(0, &rt);
+		if(rt) {
+			dumpSurface("framedump", rt);
+		}
+		SAFERELEASE(rt);
+	}
+
 	return d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
 }
 
 void RSManager::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) {
 	SDLOG(1, "RenderstateManager: registerD3DXCreateTextureFromFileInMemory %p | %p (size %d)\n", pTexture, pSrcData, SrcDataSize);
-	//if(Settings::get().getEnableTextureDumping()) {
-	//	UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
-	//	SDLOG(1, " - size: %8u, hash: %8x\n", SrcDataSize, hash);
+	if(Settings::get().getEnableTextureDumping()) {
+		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
+		SDLOG(1, " - size: %8u, hash: %8x\n", SrcDataSize, hash);
 
-	//	IDirect3DSurface9* surf;
-	//	((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
-	//	char buffer[128];
-	//	sprintf_s(buffer, "dpfix/tex_dump/%08x.tga", hash);
-	//	D3DXSaveSurfaceToFile(GetDirectoryFile(buffer), D3DXIFF_TGA, surf, NULL, NULL);
-	//	surf->Release();
-	//}
+		IDirect3DSurface9* surf;
+		((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
+		string directory = getInstalledFileName(format("textures\\%s\\dump\\", getExeFileName().c_str()));
+		CreateDirectory(directory.c_str(), NULL);
+		D3DXSaveSurfaceToFile(format("%s%08x.tga", directory.c_str(), hash).c_str(), D3DXIFF_TGA, surf, NULL, NULL);
+		surf->Release();
+	}
 	registerKnowTexture(pSrcData, SrcDataSize, pTexture);
 }
 
@@ -324,7 +369,6 @@ HRESULT RSManager::redirectGetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DB
 		SDLOG(4, "redirectGetBackBuffer\n");
 		*ppBackBuffer = backBuffers[iBackBuffer];
 		(*ppBackBuffer)->AddRef();
-		lastBackBuffer = iBackBuffer;
 		return D3D_OK;
 	}
 	return d3ddev->GetBackBuffer(iSwapChain, iBackBuffer, Type, ppBackBuffer);
@@ -374,7 +418,8 @@ namespace {
 	void logMode(const char* operation, D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode = NULL) {
 		SDLOG(0, " - %s requested mode:\n", operation);
 		SDLOG(0, " - - Backbuffer(s): %4u x %4u %16s *%d \n", pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, D3DFormatToString(pPresentationParameters->BackBufferFormat), pPresentationParameters->BackBufferCount);
-		SDLOG(0, " - - PresentationInterval: %2u   Windowed: %5s    Refresh: %3u Hz\n", pPresentationParameters->PresentationInterval, pPresentationParameters->Windowed ? "true" : "false", pPresentationParameters->FullScreen_RefreshRateInHz);
+		SDLOG(0, " - - PresentationInterval: %2u   Windowed: %5s    Refresh: %3u Hz    SwapEffect: %s\n", pPresentationParameters->PresentationInterval, 
+			pPresentationParameters->Windowed ? "true" : "false", pPresentationParameters->FullScreen_RefreshRateInHz, D3DSwapEffectToString(pPresentationParameters->SwapEffect));
 		if(pFullscreenDisplayMode != NULL) {
 			SDLOG(0, " - D3DDISPLAYMODEEX set\n")
 			SDLOG(0, " - - FS: %4u x %4u @ %3u Hz %16s\n", pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height, pFullscreenDisplayMode->RefreshRate, D3DFormatToString(pFullscreenDisplayMode->Format));
@@ -422,7 +467,7 @@ HRESULT RSManager::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTY
 		HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &copy, ppReturnedDeviceInterface);
 		if(SUCCEEDED(ret)) {
 			new hkIDirect3DDevice9(ppReturnedDeviceInterface, &copy, d3d9);
-			get().initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat);
+			get().initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
 		} else SDLOG(0, "FAILED creating downsampling device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 		return ret;
 	}
@@ -430,7 +475,7 @@ HRESULT RSManager::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTY
 	HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 	if(SUCCEEDED(ret)) {
 		new hkIDirect3DDevice9(ppReturnedDeviceInterface, pPresentationParameters, d3d9);
-		get().initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN);
+		get().initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
 	} else SDLOG(0, "FAILED creating non-downsampling device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 	return ret;
 }
@@ -447,7 +492,7 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 		HRESULT ret = d3d9ex->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &copy, pCopyEx, ppReturnedDeviceInterface);
 		if(SUCCEEDED(ret)) {
 			new hkIDirect3DDevice9Ex(ppReturnedDeviceInterface, &copy, d3d9ex);
-			get().initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat);
+			get().initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
 		} else SDLOG(0, "FAILED creating downsampling ex device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 		return ret;
 	}
@@ -455,7 +500,7 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 	HRESULT ret = d3d9ex->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
 	if(SUCCEEDED(ret)) {
 		new hkIDirect3DDevice9Ex(ppReturnedDeviceInterface, pPresentationParameters, d3d9ex);
-		get().initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN);
+		get().initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
 	} else SDLOG(0, "FAILED creating non-downsampling ex device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 	return ret;
 }
@@ -464,21 +509,21 @@ HRESULT RSManager::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParameters
 	logMode("redirectReset", pPresentationParameters);
 
 	releaseResources();
-
+	
 	if(isDownsamplingRequest(pPresentationParameters)) {
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
 		HRESULT ret = d3ddev->Reset(&copy);
 		if(!SUCCEEDED(ret)) { 
 			SDLOG(0, "FAILED resetting to downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-		} else initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat);
+		} else initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
 		return ret;
 	}
 
 	HRESULT ret = d3ddev->Reset(pPresentationParameters);
 	if(!SUCCEEDED(ret)) { 
 		SDLOG(0, "FAILED resetting to non-downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-	} else initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN);
+	} else initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
 	return ret;
 }
 
@@ -495,14 +540,14 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 		HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(&copy, pCopyEx);
 		if(!SUCCEEDED(ret)) { 
 			SDLOG(0, "FAILED resetting to downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-		} else initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat);
+		} else initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
 		return ret;
 	}
 
 	HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(pPresentationParameters, pFullscreenDisplayMode);
 	if(!SUCCEEDED(ret)) { 
 		SDLOG(0, "FAILED resetting to non-downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-	} else initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN);
+	} else initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
 	return ret;
 }
 
