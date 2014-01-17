@@ -124,11 +124,13 @@ HRESULT APIENTRY hkIDirect3DDevice9::BeginStateBlock() {
 
 HRESULT APIENTRY hkIDirect3DDevice9::Clear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
 	RSManager::setLatest(rsMan);
+	SDLOG(4, "Clear");
 	return m_pD3Ddev->Clear(Count, pRects, Flags, Color, Z, Stencil);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::ColorFill(IDirect3DSurface9* pSurface,CONST RECT* pRect, D3DCOLOR color) {	
 	RSManager::setLatest(rsMan);
+	SDLOG(6, "ColorFill");
 	return m_pD3Ddev->ColorFill(pSurface,pRect,color);
 }
 
@@ -525,6 +527,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetFVF(DWORD FVF) {
 
 void APIENTRY hkIDirect3DDevice9::SetGammaRamp(UINT iSwapChain,DWORD Flags,CONST D3DGAMMARAMP* pRamp) {
 	RSManager::setLatest(rsMan);
+	SDLOG(3, "SetGammaRamp\n");
 	m_pD3Ddev->SetGammaRamp(iSwapChain,Flags, pRamp);
 }
 
@@ -616,13 +619,13 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9* pStreamData,UINT OffsetInBytes,UINT Stride) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "SetStreamSource %d: %p (%u, %u)\n", StreamNumber, pStreamData, OffsetInBytes, Stride);
+	SDLOG(8, "SetStreamSource %d: %p (%u, %u)\n", StreamNumber, pStreamData, OffsetInBytes, Stride);
 	return m_pD3Ddev->SetStreamSource(StreamNumber, pStreamData,OffsetInBytes, Stride);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT Divider) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "SetStreamSourceFreq %d: %u\n", StreamNumber, Divider);
+	SDLOG(8, "SetStreamSourceFreq %d: %u\n", StreamNumber, Divider);
 	return m_pD3Ddev->SetStreamSourceFreq(StreamNumber, Divider);
 }
 

@@ -84,11 +84,11 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d9</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\dev\boost\stage\lib;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>C:\dev\minhook\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\dev\boost\stage\lib;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -320,6 +320,7 @@
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SMAA.cpp" />
     <ClCompile Include="SSAO.cpp" />
+    <ClCompile Include="string_utils.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="version.cpp" />
     <ClCompile Include="WindowManager.cpp" />
@@ -342,6 +343,7 @@
     <ClInclude Include="KeyActions.h" />
     <ClInclude Include="SearchTex.h" />
     <ClInclude Include="SMAA.h" />
+    <ClInclude Include="string_utils.h" />
     <ClInclude Include="Textures.def" />
     <ClInclude Include="RenderstateManager.h" />
     <ClInclude Include="main.h" />

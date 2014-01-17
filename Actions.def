@@ -23,6 +23,8 @@ ACTION(setBicubicScaling, RSManager::get().getScaler()->setScaling(Scaler::BICUB
 
 ACTION(showStatus, RSManager::get().getScaler()->showStatus())
 
+ACTION(dumpFrame, RSManager::get().dumpFrame())
+
 ACTION(reloadAAEffect, RSManager::get().reloadAA())
 
 ACTION(userTrigger, SDLOG(0, "================================================================= USER TRIGGER ===\n"))

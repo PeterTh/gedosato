@@ -27,7 +27,7 @@ FILE* g_oFile = NULL;
 bool g_active = false;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
-	SDLOG(16, "GeDoSaToHook called\n");
+	SDLOG(18, "GeDoSaToHook called\n");
 	return CallNextHookEx(NULL, nCode, wParam, lParam); 
 }
 
@@ -39,24 +39,30 @@ const char* GeDoSaToVersion() {
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
 	if(dwReason == DLL_PROCESS_ATTACH) {
+		OutputDebugString("GeDoSaTo: startup");
+
+		// read install location from registry
+		getInstallDirectory();
+		OutputDebugString("GeDoSaTo: Got install dir");
+
 		// don't attach to processes on the blacklist
 		if(onBlacklist(getExeFileName())) {
+			OutputDebugString("GeDoSaTo: Blacklisted");
 			if(getExeFileName() == "GeDoSaToTool") return true;
 			return false;
 		}
 		g_active = true;
-
-		// read install location from registry
-		getInstallDirectory();
+		OutputDebugString("GeDoSaTo: Active");
 		
-		// initialize log	
+		// initialize log
 		string logFn = format("logs\\%s_%s.log", getExeFileName().c_str(), getTimeString().c_str());
-		boost::replace_all(logFn, ":", "-");
-		boost::replace_all(logFn, " ", "_");
+		std::replace(logFn.begin(), logFn.end(), ':', '-');
+		std::replace(logFn.begin(), logFn.end(), ' ', '_');
 		logFn = getInstalledFileName(logFn);
 		fopen_s(&g_oFile, logFn.c_str(), "w");
 		if(!g_oFile) OutputDebugString(format("GeDoSaTo: Error opening log fn %s", logFn.c_str()).c_str());
 		else OutputDebugString(format("GeDoSaTo: Opening log fn %s, handle: %p", logFn.c_str(), g_oFile).c_str());
+		OutputDebugString("GeDoSaTo: Log file initialized, let that take over");
 
 		// startup
 		sdlogtime(-1);
@@ -96,9 +102,9 @@ const std::string& getInstallDirectory() {
 const string& getExeFileName() {
 	static string exeFn;
 	if(exeFn.empty()) {
-		char fileName[2048];
-		GetModuleFileNameA(NULL, fileName, 2048);
-		exeFn = string(fileName);
+		char fileName[MAX_PATH];
+		GetModuleFileNameA(NULL, fileName, MAX_PATH);
+		exeFn = fileName;
 		size_t pos = exeFn.rfind("\\");
 		if(pos != string::npos) {
 			exeFn = exeFn.substr(pos+1);
@@ -179,10 +185,10 @@ void messageErrorAndExit(string error) {
 #include <stdarg.h>
 
 string format(const char* formatString, ...) {
-	va_list arglist;
-	va_start(arglist, formatString);
 	const unsigned BUFFER_SIZE = 2048*8;
 	char buffer[BUFFER_SIZE];
+	va_list arglist;
+	va_start(arglist, formatString);
 	vsnprintf_s(buffer, BUFFER_SIZE, formatString, arglist);
 	va_end(arglist);
 	return string(buffer);

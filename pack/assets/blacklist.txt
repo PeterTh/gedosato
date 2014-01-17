@@ -27,7 +27,7 @@ Uplay
 WerFault
 AvastUI
 DllHost
-FlashPlayerPlugin_11_9_900_170
+FlashPlayerPlugin_*
 FSViewer
 HsMgr
 NvBackend
@@ -36,3 +36,9 @@ regsvr32
 runonce
 plugin-container
 Dbgview
+javaw
+jucheck
+reader_sl
+KiesTrayAgent
+foobar2000
+thunderbird

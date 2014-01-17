@@ -11,5 +11,7 @@ TCHAR* D3DDeclUsageToString(D3DDECLUSAGE type);
 TCHAR* D3DDevTypeToString(D3DDEVTYPE type);
 TCHAR* D3DResourceTypeToString(D3DRESOURCETYPE type);
 TCHAR* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type);
+TCHAR* D3DSwapEffectToString(D3DSWAPEFFECT swap);
 
 string D3DMatrixToString(const D3DMATRIX* pMatrix);
+string D3DPresentExFlagsToString(DWORD flags);

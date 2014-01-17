@@ -15,15 +15,18 @@ SETTING(unsigned, OverrideHeight, "overrideHeight", 720);
 
 SETTING(std::string, ScalingType, "scalingType", "linear");
 
+SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", true);
+
+// Texture options
+SETTING(bool, EnableTextureDumping, "enableTextureDumping", false);
+SETTING(bool, EnableTextureOverride, "enableTextureOverride", false);
+
 // Mouse options
 SETTING(bool, ModifyGetCursorPos, "modifyGetCursorPos", true);
 SETTING(bool, AdjustMessagePt, "adjustMessagePt", true);
 
 // Logging Options
 SETTING(int, LogLevel, "logLevel", 0);
-	
-// Wrapper chaining options
-SETTING(std::string, Dinput8dllWrapper, "dinput8dllWrapper", "");
 
 // Folder options
 SETTING(std::string, ScreenshotDir, "screenshotDir", ".");

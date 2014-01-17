@@ -6,6 +6,8 @@
 #include <fstream>
 #include <string>
 
+#include <boost/filesystem.hpp>
+
 #include "d3dutil.h"
 #include "d3d9dev_ex.h"
 #include "Settings.h"
@@ -258,9 +260,14 @@ void RSManager::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, UINT
 		IDirect3DSurface9* surf;
 		((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
 		string directory = getInstalledFileName(format("textures\\%s\\dump\\", getExeFileName().c_str()));
-		CreateDirectory(directory.c_str(), NULL);
-		D3DXSaveSurfaceToFile(format("%s%08x.tga", directory.c_str(), hash).c_str(), D3DXIFF_TGA, surf, NULL, NULL);
-		surf->Release();
+		SDLOG(0, "%s\n", boost::filesystem::path(directory).string().c_str())
+		try {
+			boost::filesystem::create_directories(boost::filesystem::path(directory));
+			D3DXSaveSurfaceToFile(format("%s%08x.tga", directory.c_str(), hash).c_str(), D3DXIFF_TGA, surf, NULL, NULL);
+		} catch(boost::filesystem::filesystem_error e) {
+			SDLOG(0, "ERROR - Filesystem error while trying to create directory:\n%s\n", e.what());
+		}
+		SAFERELEASE(surf);
 	}
 	registerKnowTexture(pSrcData, SrcDataSize, pTexture);
 }
@@ -344,23 +351,22 @@ const char* RSManager::getTextureName(IDirect3DBaseTexture9* pTexture) {
 }
 
 HRESULT RSManager::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette, LPDIRECT3DTEXTURE9* ppTexture) {
-	//if(Settings::get().getEnableTextureOverride()) {
-	//	UINT ssize = (SrcDataSize == 2147483647u) ? (Width*Height/2) : SrcDataSize;
-	//	UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), ssize);
-	//	SDLOG(4, "Trying texture override size: %8u, hash: %8x\n", ssize, hash);
-	//	
-	//	char buffer[128];
-	//	sprintf_s(buffer, "dpfix/tex_override/%08x.dds", hash);
-	//	if(fileExists(buffer)) {
-	//		SDLOG(3, "Texture override (dds)! hash: %8x\n", hash);
-	//		return D3DXCreateTextureFromFileEx(pDevice, buffer, D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
-	//	}
-	//	sprintf_s(buffer, "dpfix/tex_override/%08x.png", hash);
-	//	if(fileExists(buffer)) {
-	//		SDLOG(3, "Texture override (png)! hash: %8x\n", hash);
-	//		return D3DXCreateTextureFromFileEx(pDevice, buffer, D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
-	//	}
-	//}
+	if(Settings::get().getEnableTextureOverride()) {
+		UINT ssize = (SrcDataSize == 2147483647u) ? (Width*Height/2) : SrcDataSize;
+		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), ssize);
+		SDLOG(4, "Trying texture override size: %8u, hash: %8x\n", ssize, hash);
+		
+		string fn = getInstalledFileName(format("textures\\%s\\override\\%08x.dds", getExeFileName().c_str(), hash));
+		if(fileExists(fn.c_str())) {
+			SDLOG(3, "Texture override (dds)! hash: %8x\n", hash);
+			return D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+		}
+		fn = getInstalledFileName(format("textures\\%s\\override\\%08x.png", getExeFileName().c_str(), hash));
+		if(fileExists(fn.c_str())) {
+			SDLOG(3, "Texture override (png)! hash: %8x\n", hash);
+			return D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+		}
+	}
 	return TrueD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 }
 

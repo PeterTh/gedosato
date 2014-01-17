@@ -190,6 +190,17 @@ TCHAR* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type) {
 	return "Unknown D3D multisample type";
 }
 
+TCHAR* D3DSwapEffectToString(D3DSWAPEFFECT swap) {
+	switch(swap) {
+	case D3DSWAPEFFECT_DISCARD: return "D3DSWAPEFFECT_DISCARD";
+    case D3DSWAPEFFECT_FLIP: return "D3DSWAPEFFECT_FLIP";
+    case D3DSWAPEFFECT_COPY: return "D3DSWAPEFFECT_COPY";
+    case D3DSWAPEFFECT_OVERLAY: return "D3DSWAPEFFECT_OVERLAY";
+    case D3DSWAPEFFECT_FLIPEX: return "D3DSWAPEFFECT_FLIPEX";
+	}
+	return "Unknown swap effect";
+}
+
 string D3DMatrixToString(const D3DMATRIX* pMatrix) {
 	std::stringstream ss;
 	if(!pMatrix) return string("NULL_MATRIX");
@@ -201,4 +212,17 @@ string D3DMatrixToString(const D3DMATRIX* pMatrix) {
 		ss << "\n";
 	}
 	return ss.str();
+}
+
+string D3DPresentExFlagsToString(DWORD flags) {
+	string ret;
+	if(flags & D3DPRESENT_DONOTFLIP) ret += "D3DPRESENT_DONOTFLIP | ";
+	if(flags & D3DPRESENT_DONOTWAIT) ret += "D3DPRESENT_DONOTWAIT | ";
+	if(flags & D3DPRESENT_FORCEIMMEDIATE) ret += "D3DPRESENT_FORCEIMMEDIATE | ";
+	if(flags & D3DPRESENT_LINEAR_CONTENT) ret += "D3DPRESENT_LINEAR_CONTENT | ";
+	if(flags & D3DPRESENT_VIDEO_RESTRICT_TO_MONITOR) ret += "D3DPRESENT_VIDEO_RESTRICT_TO_MONITOR | ";
+	if(flags & D3DPRESENT_UPDATEOVERLAYONLY) ret += "D3DPRESENT_UPDATEOVERLAYONLY | ";
+	if(flags & D3DPRESENT_HIDEOVERLAY) ret += "D3DPRESENT_HIDEOVERLAY | ";
+	if(flags & D3DPRESENT_UPDATECOLORKEY) ret += "D3DPRESENT_UPDATECOLORKEY | ";
+	return ret;
 }

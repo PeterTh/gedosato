@@ -4,13 +4,14 @@
 #include <atlbase.h>
 #include <atlconv.h>
 #include <mmsystem.h>
+#include <Psapi.h>
 
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 
 #include <MinHook.h>
 
-#include <boost/algorithm/string/case_conv.hpp>
+#include "string_utils.h"
 
 #include "Settings.h"
 #include "RenderstateManager.h"
@@ -347,10 +348,31 @@ GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ H
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+HMODULE findDll(const string& name) {
+	if(name.find("*") != name.npos) {
+		SDLOG(16, "Dll pattern search...\n");
+		HMODULE modules[1024];
+		DWORD needed;
+		if(EnumProcessModules(GetCurrentProcess(), modules, 1024*sizeof(HMODULE), &needed)) {
+			for(unsigned i=0; i < (needed / sizeof(HMODULE)); i++) {
+				TCHAR modname[MAX_PATH];
+				if(GetModuleFileNameEx(GetCurrentProcess(), modules[i], modname, sizeof(modname)/sizeof(TCHAR))) {
+					SDLOG(16, " - checking against module %s\n", modname);
+					if(matchWildcard(modname, name)) {
+						SDLOG(1, "Found dll matching pattern %s in %s\n", name.c_str(), modname);
+						return modules[i];
+					}
+				}
+			}
+		}
+	}
+	return GetModuleHandle(name.c_str());
+}
+
 void hookFunction(const char* name, const char* dllname, void **ppTarget, void* const pDetour, void** ppOriginal, bool& flag) {
 	if(!flag) {
-		SDLOG(1, "Trying to hook %s in %s\n", name, dllname);
-		HMODULE dllhandle = GetModuleHandle(dllname);
+		SDLOG(6, "Trying to hook %s in %s\n", name, dllname);
+		HMODULE dllhandle = findDll(dllname);
 		if(dllhandle) {
 			*ppTarget = GetProcAddress(dllhandle, name);
 			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); \
@@ -362,7 +384,7 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 				flag = true;
 			} \
 			else { SDLOG(0, " -> ERROR enabling hook for %s\n", name); } \
-		} else SDLOG(1, " -> DLL not loaded!\n")
+		} else SDLOG(6, " -> DLL not found!\n")
 	}
 }
 

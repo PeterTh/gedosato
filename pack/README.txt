@@ -13,7 +13,7 @@ How do I use it? (INSTALLATION INSTRUCTIONS)
 ===========================================
 1) Extract the contents of the zip to some permanent directory
 2) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
-3) Run GeDoSaToTool.exe (*as Administrator*)
+3) Run GeDoSaToTool.exe *as Administrator*
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
@@ -25,8 +25,15 @@ Advantages:
 - Support downsampling to high-frequency (e.g. 120 Hz or 144 Hz) target modes
 - Not limited by display hardware
 Disadvantages:
-- Compatibility is limited compared to driver-level downsampling (only DirectX9 supported currently)
+- Compatibility is limited compared to driver-level downsampling 
+  (only DirectX9 and DirectX9Ex supported currently)
 - Bugs :P
+
+What additional features are there?
+===================================
+- take screenshots of either the pre-downsampled full buffer or the actual image displayed on screen
+  (automatically sorted in per-game folders!)
+- generic texture overriding for all textures loaded using D3DX
 
 Will it work?
 =============
@@ -36,7 +43,7 @@ or not have any adverse effect on your game/computer. Use at your own risk!*
 
 Are there known issues?
 =======================
-The mouse cursor position and/or click detection is broken in some games. Still working on that.
+The mouse cursor position and/or click detection is broken in some games.
 
 Will it cause performance problems?
 ===================================

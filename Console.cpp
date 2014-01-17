@@ -111,10 +111,7 @@ void Console::draw() {
 	else lineHeight = y + 15.0f;
 }
 
-void Console::print(float x, float y, const char *text) {
-	// assume orthographic projection with units = screen pixels, origin at top left
-	//float wF = 1.0f/Console::get().getW(), hF = 1.0f/Console::get().getH();
-	
+void Console::print(float x, float y, const char *text) {	
 	unsigned passes;
 	effect->SetTexture(textTex2DHandle, fontTex);
 	effect->Begin(&passes, 0);
