@@ -207,6 +207,33 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lps
 	return ret;
 }
 
+// Display Changing /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template<typename DEVM>
+void fixDevMode(DEVM* lpDevMode) {
+	if(lpDevMode->dmPelsWidth == Settings::get().getRenderWidth() && lpDevMode->dmPelsHeight == Settings::get().getRenderHeight()) {
+		SDLOG(2, " -> Overriding\n");
+		lpDevMode->dmPelsWidth = Settings::get().getPresentWidth();
+		lpDevMode->dmPelsHeight = Settings::get().getPresentHeight();
+		lpDevMode->dmDisplayFrequency = Settings::get().getPresentHz();
+	}
+}
+
+GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExA, LONG, WINAPI, _In_opt_ LPCSTR lpszDeviceName, _In_opt_ DEVMODEA* lpDevMode, _Reserved_ HWND hwnd, _In_ DWORD dwflags, _In_opt_ LPVOID lParam) {
+	SDLOG(2, "ChangeDisplaySettingsExA\n");
+	if(lpDevMode == NULL) return TrueChangeDisplaySettingsExA(lpszDeviceName, NULL, hwnd, dwflags, lParam);
+	DEVMODEA copy = *lpDevMode;
+	fixDevMode(&copy);
+	return TrueChangeDisplaySettingsExA(lpszDeviceName, &copy, hwnd, dwflags, lParam);
+}
+GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExW, LONG, WINAPI, _In_opt_ LPCWSTR lpszDeviceName, _In_opt_ DEVMODEW* lpDevMode, _Reserved_ HWND hwnd, _In_ DWORD dwflags, _In_opt_ LPVOID lParam) {
+	SDLOG(2, "ChangeDisplaySettingsExW\n");
+	if(lpDevMode == NULL) return TrueChangeDisplaySettingsExW(lpszDeviceName, NULL, hwnd, dwflags, lParam);
+	DEVMODEW copy = *lpDevMode;
+	fixDevMode(&copy);
+	return TrueChangeDisplaySettingsExW(lpszDeviceName, &copy, hwnd, dwflags, lParam);
+}
+
 // Rect Queries /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect) {

@@ -12,6 +12,8 @@ HOOK(D3DXCreateTextureFromFileInMemoryEx, "d3dx9_*.dll")
 
 HOOK(EnumDisplaySettingsExA, "User32.dll")
 HOOK(EnumDisplaySettingsExW, "User32.dll")
+HOOK(ChangeDisplaySettingsExA, "User32.dll")
+HOOK(ChangeDisplaySettingsExW, "User32.dll")
 
 HOOK(GetSystemMetrics, "User32.dll")
 
