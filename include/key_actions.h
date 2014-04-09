@@ -10,7 +10,7 @@ class KeyActions {
 
 	#define ACTION(_name, _action) \
 	void _name();
- 	#include "Actions.def"
+ 	#include "actions.def"
 	#undef ACTION
 	
 	void performAction(const char* name);

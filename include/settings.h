@@ -24,7 +24,7 @@ class Settings {
 	#define SETTING(_type, _var, _inistring, _defaultval) \
 	private: _type _var; \
 	public: _type get##_var() const { return _var; };
-	#include "Settings.def"
+	#include "settings.def"
 	#undef SETTING
 
 public:

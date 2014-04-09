@@ -10,12 +10,6 @@ using namespace std;
 
 #include "Settings.h"
 
-namespace {
-	double log2(double n) {  
-		return log(n)/log(2.0);  
-	}
-};
-
 Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height) 
 	: Effect(device), inputwidth(inputwidth), inputheight(inputheight), width(width), height(height),
 	  levels(0), levelBufferTextures(NULL), levelBuffers(NULL), levelInputSizes(NULL) {

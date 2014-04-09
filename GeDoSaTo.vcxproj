@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -21,7 +21,6 @@
   <PropertyGroup Label="Globals">
     <SccProjectName />
     <SccLocalPath />
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
     <ProjectName>GeDoSaTo</ProjectName>
     <ProjectGuid>{E004A114-54E0-B15C-BDA5-46681084E257}</ProjectGuid>
   </PropertyGroup>
@@ -30,25 +29,25 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>CTP_Nov2013</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -76,7 +75,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">include;defs;C:\dev\boost\boost_1_55_0\;C:\dev\Selene\Selene-0.3.1\include;C:\dev\lua\32\include;C:\dev\minhook\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">d3d9</TargetName>
@@ -84,11 +83,11 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d9</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>C:\dev\boost\stage\lib;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\dev\minhook\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\dev\boost\stage\lib;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>include;defs;C:\dev\boost\boost_1_55_0\;C:\dev\Selene\Selene-0.3.1\include;C:\dev\lua\32\include;C:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,7 +117,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
-      <AdditionalDependencies>libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua52.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -200,7 +199,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua52.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -262,19 +261,20 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="blacklist.cpp" />
-    <ClCompile Include="console.cpp" />
-    <ClCompile Include="d3d9dev_ex.cpp" />
-    <ClCompile Include="d3d9dev_init.cpp" />
-    <ClCompile Include="d3d9int_ex.cpp" />
-    <ClCompile Include="d3dutil.cpp" />
-    <ClCompile Include="detouring.cpp" />
-    <ClCompile Include="effect.cpp" />
-    <ClCompile Include="FXAA.cpp" />
-    <ClCompile Include="registry.cpp" />
-    <ClCompile Include="scaling.cpp" />
-    <ClCompile Include="key_actions.cpp" />
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="source\blacklist.cpp" />
+    <ClCompile Include="source\console.cpp" />
+    <ClCompile Include="source\d3d9dev_ex.cpp" />
+    <ClCompile Include="source\d3d9dev_init.cpp" />
+    <ClCompile Include="source\d3d9int_ex.cpp" />
+    <ClCompile Include="source\d3dutil.cpp" />
+    <ClCompile Include="source\detouring.cpp" />
+    <ClCompile Include="source\effect.cpp" />
+    <ClCompile Include="source\fxaa.cpp" />
+    <ClCompile Include="source\lua_integration.cpp" />
+    <ClCompile Include="source\registry.cpp" />
+    <ClCompile Include="source\scaling.cpp" />
+    <ClCompile Include="source\key_actions.cpp" />
+    <ClCompile Include="source\main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
@@ -288,7 +288,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="d3d9dev.cpp">
+    <ClCompile Include="source\d3d9dev.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
@@ -302,7 +302,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="d3d9int.cpp">
+    <ClCompile Include="source\d3d9int.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
@@ -316,52 +316,53 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="renderstate_manager.cpp" />
-    <ClCompile Include="settings.cpp" />
-    <ClCompile Include="SMAA.cpp" />
-    <ClCompile Include="SSAO.cpp" />
-    <ClCompile Include="string_utils.cpp" />
-    <ClCompile Include="timer.cpp" />
-    <ClCompile Include="version.cpp" />
-    <ClCompile Include="window_manager.cpp" />
-    <ClCompile Include="winutil.cpp" />
+    <ClCompile Include="source\renderstate_manager.cpp" />
+    <ClCompile Include="source\settings.cpp" />
+    <ClCompile Include="source\smaa.cpp" />
+    <ClCompile Include="source\ssao.cpp" />
+    <ClCompile Include="source\string_utils.cpp" />
+    <ClCompile Include="source\timer.cpp" />
+    <ClCompile Include="source\version.cpp" />
+    <ClCompile Include="source\window_manager.cpp" />
+    <ClCompile Include="source\winutil.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="area_tex.h" />
-    <ClInclude Include="blacklist.h" />
-    <ClInclude Include="Console.h" />
-    <ClInclude Include="d3d9.h" />
-    <ClInclude Include="d3d9dev_ex.h" />
-    <ClInclude Include="d3d9int_ex.h" />
-    <ClInclude Include="d3dutil.h" />
-    <ClInclude Include="detouring.h" />
-    <ClInclude Include="effect.h" />
-    <ClInclude Include="FXAA.h" />
-    <ClInclude Include="registry.h" />
-    <ClInclude Include="scaling.h" />
-    <ClInclude Include="hash.h" />
-    <ClInclude Include="key_actions.h" />
-    <ClInclude Include="search_tex.h" />
-    <ClInclude Include="SMAA.h" />
-    <ClInclude Include="string_utils.h" />
-    <ClInclude Include="textures.def" />
-    <ClInclude Include="renderstate_manager.h" />
-    <ClInclude Include="main.h" />
-    <ClInclude Include="d3d9dev.h" />
-    <ClInclude Include="d3d9int.h" />
-    <ClInclude Include="settings.h" />
-    <ClInclude Include="SSAO.h" />
-    <ClInclude Include="timer.h" />
-    <ClInclude Include="version.h" />
-    <ClInclude Include="window_manager.h" />
-    <ClInclude Include="winutil.h" />
+    <ClInclude Include="include\area_tex.h" />
+    <ClInclude Include="include\blacklist.h" />
+    <ClInclude Include="include\Console.h" />
+    <ClInclude Include="include\d3d9.h" />
+    <ClInclude Include="include\d3d9dev_ex.h" />
+    <ClInclude Include="include\d3d9int_ex.h" />
+    <ClInclude Include="include\d3dutil.h" />
+    <ClInclude Include="include\detouring.h" />
+    <ClInclude Include="include\effect.h" />
+    <ClInclude Include="include\fxaa.h" />
+    <ClInclude Include="include\lua_integration.h" />
+    <ClInclude Include="include\registry.h" />
+    <ClInclude Include="include\scaling.h" />
+    <ClInclude Include="include\hash.h" />
+    <ClInclude Include="include\key_actions.h" />
+    <ClInclude Include="include\search_tex.h" />
+    <ClInclude Include="include\smaa.h" />
+    <ClInclude Include="include\string_utils.h" />
+    <ClInclude Include="defs\textures.def" />
+    <ClInclude Include="include\renderstate_manager.h" />
+    <ClInclude Include="include\main.h" />
+    <ClInclude Include="include\d3d9dev.h" />
+    <ClInclude Include="include\d3d9int.h" />
+    <ClInclude Include="include\settings.h" />
+    <ClInclude Include="include\ssao.h" />
+    <ClInclude Include="include\timer.h" />
+    <ClInclude Include="include\version.h" />
+    <ClInclude Include="include\window_manager.h" />
+    <ClInclude Include="include\winutil.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="actions.def" />
-    <None Include="GeDoSaTo.def" />
-    <None Include="hooks.def" />
-    <None Include="keys.def" />
-    <None Include="settings.def" />
+    <None Include="defs\actions.def" />
+    <None Include="defs\GeDoSaTo.def" />
+    <None Include="defs\hooks.def" />
+    <None Include="defs\keys.def" />
+    <None Include="defs\settings.def" />
     <None Include="version.rb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

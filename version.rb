@@ -1,4 +1,4 @@
-FN = "version.cpp"
+FN = "source/version.cpp"
 
 v = IO.read(FN)
 ver_major = v.match(/const unsigned VER_MAJOR = (\d+)/)[1]

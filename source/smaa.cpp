@@ -41,7 +41,7 @@
 #include <sstream>
 #include "SMAA.h"
 #include "search_tex.h"
-#include "AreaTex.h"
+#include "area_tex.h"
 using namespace std;
 
 #include "Settings.h"

@@ -176,7 +176,7 @@ void errorExit(LPTSTR lpszFunction) {
 
 bool fileExists(const char *filename) {
   std::ifstream ifile(filename);
-  return NULL != ifile;
+  return !!ifile;
 }
 
 void messageErrorAndExit(string error) {
