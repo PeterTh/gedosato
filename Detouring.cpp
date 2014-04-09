@@ -131,6 +131,8 @@ GENERATE_INTERCEPT_HEADER(D3DXCompileShader, HRESULT, WINAPI, _In_ LPCSTR pSrcDa
 
 // Display Enum /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+bool g_FakeChangedDisplaySettings = false;
+
 // TODO: Refactor these 2
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODE *lpDevMode, _In_ DWORD dwFlags) {
 	SDLOG(2, "EnumDisplaySettingsExA %s -- %u\n", lpszDeviceName?lpszDeviceName:"NULL", iModeNum);
@@ -153,7 +155,8 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lps
 	// enter our mode, either if its number is requested
 	if((emptyMode != 0 && iModeNum == emptyMode && ret == NULL)
 	// or if we are downsampling and need to fake it as current
-	 /*|| (RSManager::currentlyDownsampling() && iModeNum == ENUM_CURRENT_SETTINGS)*/ ) {
+	 || (RSManager::currentlyDownsampling() && iModeNum == ENUM_CURRENT_SETTINGS) 
+	 || g_FakeChangedDisplaySettings) {
 		lpDevMode->dmBitsPerPel = 32;
 		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
 		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
@@ -209,18 +212,22 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lps
 
 // Display Changing /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename DEVM>
-void fixDevMode(DEVM* lpDevMode) {
-	if(lpDevMode->dmPelsWidth == Settings::get().getRenderWidth() && lpDevMode->dmPelsHeight == Settings::get().getRenderHeight()) {
-		SDLOG(2, " -> Overriding\n");
-		lpDevMode->dmPelsWidth = Settings::get().getPresentWidth();
-		lpDevMode->dmPelsHeight = Settings::get().getPresentHeight();
-		lpDevMode->dmDisplayFrequency = Settings::get().getPresentHz();
+namespace {
+	template<typename DEVM>
+	void fixDevMode(DEVM* lpDevMode) {
+		if(lpDevMode->dmPelsWidth == Settings::get().getRenderWidth() && lpDevMode->dmPelsHeight == Settings::get().getRenderHeight()) {
+			SDLOG(2, " -> Overriding\n");
+			lpDevMode->dmPelsWidth = Settings::get().getPresentWidth();
+			lpDevMode->dmPelsHeight = Settings::get().getPresentHeight();
+			lpDevMode->dmDisplayFrequency = Settings::get().getPresentHz();
+			g_FakeChangedDisplaySettings = true;
+		}
 	}
 }
 
 GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExA, LONG, WINAPI, _In_opt_ LPCSTR lpszDeviceName, _In_opt_ DEVMODEA* lpDevMode, _Reserved_ HWND hwnd, _In_ DWORD dwflags, _In_opt_ LPVOID lParam) {
 	SDLOG(2, "ChangeDisplaySettingsExA\n");
+	g_FakeChangedDisplaySettings = false;
 	if(lpDevMode == NULL) return TrueChangeDisplaySettingsExA(lpszDeviceName, NULL, hwnd, dwflags, lParam);
 	DEVMODEA copy = *lpDevMode;
 	fixDevMode(&copy);
@@ -228,6 +235,7 @@ GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExA, LONG, WINAPI, _In_opt_ LPCST
 }
 GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExW, LONG, WINAPI, _In_opt_ LPCWSTR lpszDeviceName, _In_opt_ DEVMODEW* lpDevMode, _Reserved_ HWND hwnd, _In_ DWORD dwflags, _In_opt_ LPVOID lParam) {
 	SDLOG(2, "ChangeDisplaySettingsExW\n");
+	g_FakeChangedDisplaySettings = false;
 	if(lpDevMode == NULL) return TrueChangeDisplaySettingsExW(lpszDeviceName, NULL, hwnd, dwflags, lParam);
 	DEVMODEW copy = *lpDevMode;
 	fixDevMode(&copy);
@@ -264,7 +272,7 @@ GENERATE_INTERCEPT_HEADER(GetWindowRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPR
 GENERATE_INTERCEPT_HEADER(GetSystemMetrics, int, WINAPI, _In_ int nIndex) {
 	SDLOG(1, "DetouredGetSystemMetrics %d - %s\n", nIndex, SystemMetricToString(nIndex));
 	int ret = TrueGetSystemMetrics(nIndex);
-	//if(RSManager::currentlyDownsampling()) {
+	if(RSManager::currentlyDownsampling()) {
 		switch(nIndex) {
 		case SM_CXSCREEN:
 			ret = Settings::get().getRenderWidth();
@@ -279,7 +287,7 @@ GENERATE_INTERCEPT_HEADER(GetSystemMetrics, int, WINAPI, _In_ int nIndex) {
 			ret = Settings::get().getRenderHeight();
 			break;
 		} 
-	//}
+	}
 	SDLOG(1, " -> %d\n", ret);
 	return ret;
 }
@@ -298,13 +306,17 @@ GENERATE_INTERCEPT_HEADER(GetCursorPos, BOOL, WINAPI, __out LPPOINT lpPoint) {
 }
 GENERATE_INTERCEPT_HEADER(SetCursorPos, BOOL, WINAPI, _In_ int X, _In_ int Y) {
 	SDLOG(2, "DetouredSetCursorPos %d/%d\n", X, Y);
-	if(false && RSManager::currentlyDownsampling()) {
-		X = X * Settings::get().getPresentWidth() / Settings::get().getRenderWidth();
-		Y = Y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
-		return TrueSetCursorPos(X, Y);
-	} else {
+	if(RSManager::currentlyDownsampling() && Settings::get().getModifySetCursorPos()) {
+		if(X == Settings::get().getRenderHeight()/2 && Y == Settings::get().getRenderWidth()/2) {
+			X = Settings::get().getPresentWidth()/2;
+			Y = Settings::get().getPresentHeight()/2;
+		} else {
+			X = X * Settings::get().getPresentWidth() / Settings::get().getRenderWidth();
+			Y = Y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
+		}
 		return TrueSetCursorPos(X, Y);
 	}
+	return TrueSetCursorPos(X, Y);
 }
 GENERATE_INTERCEPT_HEADER(SetCursor, HCURSOR, WINAPI, _In_opt_ HCURSOR hCursor) {
 	SDLOG(2, "DetouredSetCursor %p\n", hCursor);
@@ -340,8 +352,64 @@ GENERATE_INTERCEPT_HEADER(GetMessagePos, DWORD, WINAPI) {
 	return ret;
 }
 
+// WindowProc ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma region WindowProc
+
+namespace {
+	std::map<HWND, WNDPROC> prevWndProcs;
+	LRESULT CALLBACK InterceptWindowProc(_In_  HWND hwnd, _In_  UINT uMsg, _In_  WPARAM wParam, _In_  LPARAM lParam) {
+		SDLOG(2, "InterceptWindowProc hwnd: %p\n", hwnd);
+		if(RSManager::currentlyDownsampling() && uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) {
+			POINTS p = MAKEPOINTS(lParam);
+			p.x = p.x * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
+			p.y = p.y * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
+			return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, MAKELPARAM(p.x,p.y));
+		}
+		SDLOG(2, " -> calling original: %d\n", prevWndProcs[hwnd]);
+		return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, lParam);
+	}
+}
+
+GENERATE_INTERCEPT_HEADER(GetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex) {
+	SDLOG(2, "DetouredGetWindowLongA hwnd: %p -- index: %s\n", hWnd, WindowLongOffsetToString(nIndex));
+	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
+		SDLOG(2, " -> return from table\n");
+		if(prevWndProcs.count(hWnd)>0) return (LONG)prevWndProcs[hWnd];
+	}
+	return TrueGetWindowLongA(hWnd, nIndex);
+}
+GENERATE_INTERCEPT_HEADER(GetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex) {
+	SDLOG(2, "DetouredGetWindowLongW hwnd: %p -- index: %s\n", hWnd, WindowLongOffsetToString(nIndex));
+	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
+		SDLOG(2, " -> return from table\n");
+		if(prevWndProcs.count(hWnd)>0) return (LONG)prevWndProcs[hWnd];
+	}
+	return TrueGetWindowLongW(hWnd, nIndex);
+}
+
+GENERATE_INTERCEPT_HEADER(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong) {
+	SDLOG(2, "DetouredSetWindowLongA hwnd: %p -- index: %s -- value: %d\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
+	LONG ret = TrueSetWindowLongA(hWnd, nIndex, dwNewLong);
+	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
+		prevWndProcs[hWnd] = (WNDPROC)dwNewLong;
+		TrueSetWindowLongA(hWnd, GWL_WNDPROC, (LONG)&InterceptWindowProc);
+	}
+	return ret;
+}
+GENERATE_INTERCEPT_HEADER(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong) {
+	SDLOG(2, "DetouredSetWindowLongW hwnd: %p -- index: %s -- value: %d\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
+	LONG ret = TrueSetWindowLongW(hWnd, nIndex, dwNewLong);
+	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
+		prevWndProcs[hWnd] = (WNDPROC)dwNewLong;
+		TrueSetWindowLongW(hWnd, GWL_WNDPROC, (LONG)&InterceptWindowProc);
+	}
+	return ret;
+}
+
+#pragma endregion
 
 // DirectInput 8 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma region DirectInput 8
 
 GENERATE_INTERCEPT_HEADER(DirectInput8Create, HRESULT, WINAPI, HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID * ppvOut, LPUNKNOWN punkOuter) {
 	SDLOG(0, "DetouredDirectInput8Create!\n");
@@ -359,6 +427,8 @@ GENERATE_INTERCEPT_HEADER(DirectInputCreateW, HRESULT, WINAPI, HINSTANCE hinst, 
 	SDLOG(0, "DetouredDirectInputCreateW!\n");
 	return TrueDirectInputCreateW(hinst, dwVersion, ppDI, punkOuter);
 }
+
+#pragma endregion
 
 // Window stuff /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -100,8 +100,70 @@ const char* SystemMetricToString(int metric) {
 	return "Unknown Metric!";
 }
 
+const char* WindowLongOffsetToString(int nIndex) {
+	switch(nIndex) {
+	case GWL_WNDPROC: return "GWL_WNDPROC";
+	case GWL_HINSTANCE: return "GWL_HINSTANCE";
+	case GWL_HWNDPARENT: return "GWL_HWNDPARENT";
+	case GWL_STYLE: return "GWL_STYLE";
+	case GWL_EXSTYLE: return "GWL_EXSTYLE";
+	case GWL_USERDATA: return "GWL_USERDATA";
+	case GWL_ID: return "GWL_ID";
+	}
+	return "Unknown Offset!";
+}
+
 string RectToString(const RECT* rect) {
 	if(!rect) return string("NULL_RECT");
 	return format("RECT[%4ld/%4ld/%4ld/%4ld]", rect->left, rect->top, rect->right, rect->bottom);
 }
 
+DWORD RunSilent(const char* command) {
+	STARTUPINFO StartupInfo;
+	PROCESS_INFORMATION ProcessInfo;
+	char Args[4096];
+	char *pEnvCMD = NULL;
+	char *pDefaultCMD = "CMD.EXE";
+	ULONG rc;
+	
+	memset(&StartupInfo, 0, sizeof(StartupInfo));
+	StartupInfo.cb = sizeof(STARTUPINFO);
+	StartupInfo.dwFlags = STARTF_USESHOWWINDOW;
+	StartupInfo.wShowWindow = SW_HIDE;
+
+	Args[0] = 0;
+
+	pEnvCMD = getenv("COMSPEC");
+
+	if(pEnvCMD){
+		strcpy(Args, pEnvCMD);
+	}
+	else{
+		strcpy(Args, pDefaultCMD);
+	}
+
+	// "/c" option - Do the command then terminate the command window
+	strcat(Args, " /c "); 
+	// the application you would like to run from the command window
+	strcat(Args, command);
+
+	if (!CreateProcess( NULL, Args, NULL, NULL, FALSE,
+		CREATE_NEW_CONSOLE, 
+		NULL, 
+		NULL,
+		&StartupInfo,
+		&ProcessInfo))
+	{
+		return GetLastError();		
+	}
+
+	WaitForSingleObject(ProcessInfo.hProcess, INFINITE);
+	if(!GetExitCodeProcess(ProcessInfo.hProcess, &rc))
+		rc = 0;
+
+	CloseHandle(ProcessInfo.hThread);
+	CloseHandle(ProcessInfo.hProcess);
+
+	return rc;
+	
+}

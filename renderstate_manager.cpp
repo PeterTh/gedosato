@@ -9,6 +9,7 @@
 #include <boost/filesystem.hpp>
 
 #include "d3dutil.h"
+#include "winutil.h"
 #include "d3d9dev_ex.h"
 #include "Settings.h"
 #include "Hash.h"
@@ -53,9 +54,21 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
-		
+	
+	// create state block for state save/restore
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
-	d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
+
+	// determine depth/stencil surf type and create
+	D3DFORMAT fmt = D3DFMT_D24S8;
+	IDirect3DSurface9 *realDepthStencil = NULL;
+	if(D3D_OK == d3ddev->GetDepthStencilSurface(&realDepthStencil) && realDepthStencil) {
+		D3DSURFACE_DESC depthStencilDesc;
+		realDepthStencil->GetDesc(&depthStencilDesc);
+		SAFERELEASE(realDepthStencil);
+	}
+	d3ddev->CreateDepthStencilSurface(rw, rh, fmt, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
+	SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(fmt));
+	//d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
 
 	if(downsampling) {
 		// generate backbuffers
@@ -125,9 +138,11 @@ void RSManager::prePresent(bool doNotFlip) {
 	}
 
 	if(takeScreenshot == SCREENSHOT_FULL || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
+		storeRenderState();
 		takeScreenshot = SCREENSHOT_NONE;
 		d3ddev->SetRenderTarget(0, backBuffers[0]);
 		captureRTScreen("full resolution");
+		restoreRenderState();
 	}
 
 	// downsample offscreen backbuffer to screen
@@ -146,7 +161,6 @@ void RSManager::prePresent(bool doNotFlip) {
 			takeScreenshot = SCREENSHOT_NONE;
 			captureRTScreen();
 		}
-		restoreRenderState();
 		
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
 			d3ddev->StretchRect(backBuffers[0], NULL, extraBuffer, NULL, D3DTEXF_NONE);
@@ -158,6 +172,7 @@ void RSManager::prePresent(bool doNotFlip) {
 		} else {
 			SDLOG(2, "Not \"flipping\" backbuffers\n");
 		}
+		restoreRenderState();
 	}
 
 	// Draw console
@@ -177,7 +192,9 @@ void RSManager::prePresent(bool doNotFlip) {
 
 HRESULT RSManager::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDestRect, HWND hDestWindowOverride, CONST RGNDATA *pDirtyRegion) {
 	prePresent(false);	
-	return d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+	HRESULT hr = d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+	//d3ddev->SetRenderTarget(0, backBuffers[0]);
+	return hr;
 }
 
 HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
@@ -323,6 +340,7 @@ void RSManager::storeRenderState() {
 	prevStateBlock->Capture();
 	prevVDecl = NULL;
 	prevDepthStencilSurf = NULL;
+	prevRenderTarget = NULL;
 	d3ddev->GetVertexDeclaration(&prevVDecl);
 	d3ddev->GetDepthStencilSurface(&prevDepthStencilSurf);
 	d3ddev->SetDepthStencilSurface(depthStencilSurf);
@@ -350,24 +368,47 @@ const char* RSManager::getTextureName(IDirect3DBaseTexture9* pTexture) {
 	return "Unknown";
 }
 
-HRESULT RSManager::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette, LPDIRECT3DTEXTURE9* ppTexture) {
+HRESULT RSManager::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, UINT MipLevels, DWORD Usage, 
+															   D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO* pSrcInfo, PALETTEENTRY* pPalette, LPDIRECT3DTEXTURE9* ppTexture) {
+	HRESULT hr = D3DERR_NOTAVAILABLE;
+	// calculate hash
+	UINT ssize;
+	UINT32 hash;
+	if(Settings::get().getEnableTextureOverride() || Settings::get().getEnableTextureMarking()) {
+		ssize = (SrcDataSize == 2147483647u) ? (Width*Height/2) : SrcDataSize;
+		hash = SuperFastHash((char*)const_cast<void*>(pSrcData), ssize);
+	}
+	// try override
 	if(Settings::get().getEnableTextureOverride()) {
-		UINT ssize = (SrcDataSize == 2147483647u) ? (Width*Height/2) : SrcDataSize;
-		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), ssize);
 		SDLOG(4, "Trying texture override size: %8u, hash: %8x\n", ssize, hash);
-		
 		string fn = getInstalledFileName(format("textures\\%s\\override\\%08x.dds", getExeFileName().c_str(), hash));
 		if(fileExists(fn.c_str())) {
 			SDLOG(3, "Texture override (dds)! hash: %8x\n", hash);
-			return D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+			hr = D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 		}
 		fn = getInstalledFileName(format("textures\\%s\\override\\%08x.png", getExeFileName().c_str(), hash));
 		if(fileExists(fn.c_str())) {
 			SDLOG(3, "Texture override (png)! hash: %8x\n", hash);
-			return D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+			hr = D3DXCreateTextureFromFileEx(pDevice, fn.c_str(), D3DX_DEFAULT, D3DX_DEFAULT, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 		}
 	}
-	return TrueD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+	if(hr == D3DERR_NOTAVAILABLE) {
+		hr = TrueD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+	}
+	// add text
+	if(hr == D3D_OK && Settings::get().getEnableTextureMarking()) {
+		if(pSrcInfo->Width >= 32 && pSrcInfo->Height >= 32) {
+			D3DXSaveTextureToFileA(getInstalledFileName("tmp\\temp.png").c_str(), D3DXIFF_PNG, *ppTexture, NULL);
+			(*ppTexture)->Release();
+			string fn = getInstalledFileName("tmp\\temp.png");
+			string outfn = getInstalledFileName("tmp\\temp_out.png");
+			string command = format("\"\"%s\" \"%s\" %08p \"%s\"\"", getAssetFileName("GeDoSaToTexM.exe").c_str(), fn.c_str(), hash, outfn.c_str());
+			SDLOG(4, "Texture marking, executing command: \n : %s", command.c_str());
+			RunSilent(command.c_str());
+			D3DXCreateTextureFromFileExA(pDevice, outfn.c_str(), Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+		}
+	}
+	return hr;
 }
 
 HRESULT RSManager::redirectGetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9** ppBackBuffer) {
@@ -450,6 +491,13 @@ namespace {
 		copy->BackBufferHeight = Settings::get().getPresentHeight();
 		copy->FullScreen_RefreshRateInHz = Settings::get().getPresentHz();
 		copy->BackBufferCount = 1;
+		switch(Settings::get().getPresentInterval()) {
+		case 0: copy->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+		case 1: copy->PresentationInterval = D3DPRESENT_INTERVAL_ONE; break;
+		case 2: copy->PresentationInterval = D3DPRESENT_INTERVAL_TWO; break;
+		case 3: copy->PresentationInterval = D3DPRESENT_INTERVAL_THREE; break;
+		case 4: copy->PresentationInterval = D3DPRESENT_INTERVAL_FOUR; break;
+		}
 	}
 	void initDisplayMode(D3DDISPLAYMODEEX* d, D3DDISPLAYMODEEX** copy) {
 		if(d) {

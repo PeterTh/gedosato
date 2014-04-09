@@ -53,6 +53,7 @@ void errorExit(LPTSTR lpszFunction);
 string format(const char* formatString, ...);
 
 const string& getInstallDirectory();
+const bool getUseBlacklist();
 const string& getExeFileName();
 string getInstalledFileName(string filename);
 string getAssetFileName(string filename);

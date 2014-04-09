@@ -1,4 +1,4 @@
-GeDoSaToTool
+GeDoSaTo*
 svchost
 SciTE
 devenv
@@ -42,3 +42,16 @@ reader_sl
 KiesTrayAgent
 foobar2000
 thunderbird
+utorrent
+NclMSBTSrvEx
+Dropbox
+MSIAfterburner
+AdobeARM
+AutoHotkey
+VC*Tray
+RTSS
+mumble
+powerpnt
+winword
+AcroRd32
+dotnetfx35

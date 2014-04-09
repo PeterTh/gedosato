@@ -13,7 +13,8 @@ How do I use it? (INSTALLATION INSTRUCTIONS)
 ===========================================
 1) Extract the contents of the zip to some permanent directory
 2) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
-3) Run GeDoSaToTool.exe *as Administrator*
+3) add your game executable names to "whitelist.txt" in the "assets" folder
+4) Run GeDoSaToTool.exe *as Administrator*
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
@@ -34,10 +35,12 @@ What additional features are there?
 - take screenshots of either the pre-downsampled full buffer or the actual image displayed on screen
   (automatically sorted in per-game folders!)
 - generic texture overriding for all textures loaded using D3DX
+- framerate limiting using double/triple/quadruple V-sync
 
 Will it work?
 =============
-It's a very early release, so you tell me.
+It currently works relatively reliably for a number of games, but fails to work for others.
+Compatibility will hopefully improve with future versions.
 *I can not and will not guarantee that it will work for anyone else, 
 or not have any adverse effect on your game/computer. Use at your own risk!*
 
@@ -50,8 +53,8 @@ Will it cause performance problems?
 That depends on your system configuration. 
 Usually, performance scales rather linearly with framebuffer size. 
 
-Can I donate?
-=============
+Can I donate to motivate further GeDoSaTo development?
+======================================================
 You can find donation links on my blog, where I'll also release new versions:
 http://blog.metaclassofnil.com/
 You can also simply Paypal to peter@metaclassofnil.com

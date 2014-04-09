@@ -45,9 +45,9 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		getInstallDirectory();
 		OutputDebugString("GeDoSaTo: Got install dir");
 
-		// don't attach to processes on the blacklist
-		if(onBlacklist(getExeFileName())) {
-			OutputDebugString("GeDoSaTo: Blacklisted");
+		// don't attach to processes on the blacklist / not on the whitelist
+		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist.txt") : !onList(getExeFileName(), "whitelist.txt")) {
+			OutputDebugString("GeDoSaTo: blacklisted / not whitelisted");
 			if(getExeFileName() == "GeDoSaToTool") return true;
 			return false;
 		}
@@ -99,6 +99,11 @@ const std::string& getInstallDirectory() {
 	}
 	return installDir;
 }
+const bool getUseBlacklist() {
+	return getRegString(REG_KEY_PATH, "UseBlacklist") == "True";
+}
+
+
 const string& getExeFileName() {
 	static string exeFn;
 	if(exeFn.empty()) {

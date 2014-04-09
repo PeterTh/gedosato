@@ -7,8 +7,8 @@
 using namespace std;
 
 
-bool onBlacklist(std::string fn) {
-	std::ifstream infile(getAssetFileName("blacklist.txt"));
+bool onList(std::string fn, const std::string& listfn) {
+	std::ifstream infile(getAssetFileName(listfn));
 	string line;
 	boost::algorithm::trim(fn);
 	while(std::getline(infile, line)) {
@@ -17,3 +17,4 @@ bool onBlacklist(std::string fn) {
 	}
 	return false;
 }
+

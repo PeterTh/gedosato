@@ -28,6 +28,11 @@ HOOK(PeekMessageA, "User32.dll")
 HOOK(GetMessageA, "User32.dll")
 HOOK(GetMessagePos, "User32.dll")
 
+HOOK(SetWindowLongA, "User32.dll")
+HOOK(SetWindowLongW, "User32.dll")
+HOOK(GetWindowLongA, "User32.dll")
+HOOK(GetWindowLongW, "User32.dll")
+
 HOOK(DirectInput8Create, "dinput8.dll")
 HOOK(DirectInputCreateEx, "dinput.dll");
 HOOK(DirectInputCreateA, "dinput.dll");

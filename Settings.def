@@ -9,6 +9,7 @@ SETTING(unsigned, ReportedHz, "reportedHz", 60);
 SETTING(unsigned, PresentWidth, "presentWidth", 1920);
 SETTING(unsigned, PresentHeight, "presentHeight", 1080);
 SETTING(unsigned, PresentHz, "presentHz", 60);
+SETTING(int, PresentInterval, "presentInterval", -1);
 
 SETTING(unsigned, OverrideWidth, "overrideWidth", 1280);
 SETTING(unsigned, OverrideHeight, "overrideHeight", 720);
@@ -20,13 +21,13 @@ SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", true);
 // Texture options
 SETTING(bool, EnableTextureDumping, "enableTextureDumping", false);
 SETTING(bool, EnableTextureOverride, "enableTextureOverride", false);
+SETTING(bool, EnableTextureMarking, "enableTextureMarking", false);
 
 // Mouse options
 SETTING(bool, ModifyGetCursorPos, "modifyGetCursorPos", true);
-SETTING(bool, AdjustMessagePt, "adjustMessagePt", true);
+SETTING(bool, ModifySetCursorPos, "modifySetCursorPos", true);
+SETTING(bool, InterceptWindowProc, "interceptWindowProc", true);
+SETTING(bool, AdjustMessagePt, "adjustMessagePt", false);
 
-// Logging Options
+// Internal Options
 SETTING(int, LogLevel, "logLevel", 0);
-
-// Folder options
-SETTING(std::string, ScreenshotDir, "screenshotDir", ".");

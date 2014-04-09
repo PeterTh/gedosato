@@ -2,4 +2,4 @@
 
 #include <string>
 
-bool onBlacklist(std::string fn);
+bool onList(std::string fn, const std::string& listfn);

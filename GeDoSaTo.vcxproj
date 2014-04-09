@@ -263,17 +263,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="blacklist.cpp" />
-    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="console.cpp" />
     <ClCompile Include="d3d9dev_ex.cpp" />
     <ClCompile Include="d3d9dev_init.cpp" />
     <ClCompile Include="d3d9int_ex.cpp" />
     <ClCompile Include="d3dutil.cpp" />
-    <ClCompile Include="Detouring.cpp" />
-    <ClCompile Include="Effect.cpp" />
+    <ClCompile Include="detouring.cpp" />
+    <ClCompile Include="effect.cpp" />
     <ClCompile Include="FXAA.cpp" />
-    <ClCompile Include="Registry.cpp" />
-    <ClCompile Include="Scaling.cpp" />
-    <ClCompile Include="KeyActions.cpp" />
+    <ClCompile Include="registry.cpp" />
+    <ClCompile Include="scaling.cpp" />
+    <ClCompile Include="key_actions.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -316,52 +316,52 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="RenderstateManager.cpp" />
-    <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="renderstate_manager.cpp" />
+    <ClCompile Include="settings.cpp" />
     <ClCompile Include="SMAA.cpp" />
     <ClCompile Include="SSAO.cpp" />
     <ClCompile Include="string_utils.cpp" />
-    <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="timer.cpp" />
     <ClCompile Include="version.cpp" />
-    <ClCompile Include="WindowManager.cpp" />
+    <ClCompile Include="window_manager.cpp" />
     <ClCompile Include="winutil.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AreaTex.h" />
+    <ClInclude Include="area_tex.h" />
     <ClInclude Include="blacklist.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="d3d9.h" />
     <ClInclude Include="d3d9dev_ex.h" />
     <ClInclude Include="d3d9int_ex.h" />
     <ClInclude Include="d3dutil.h" />
-    <ClInclude Include="Detouring.h" />
-    <ClInclude Include="Effect.h" />
+    <ClInclude Include="detouring.h" />
+    <ClInclude Include="effect.h" />
     <ClInclude Include="FXAA.h" />
-    <ClInclude Include="Registry.h" />
-    <ClInclude Include="Scaling.h" />
-    <ClInclude Include="Hash.h" />
-    <ClInclude Include="KeyActions.h" />
-    <ClInclude Include="SearchTex.h" />
+    <ClInclude Include="registry.h" />
+    <ClInclude Include="scaling.h" />
+    <ClInclude Include="hash.h" />
+    <ClInclude Include="key_actions.h" />
+    <ClInclude Include="search_tex.h" />
     <ClInclude Include="SMAA.h" />
     <ClInclude Include="string_utils.h" />
-    <ClInclude Include="Textures.def" />
-    <ClInclude Include="RenderstateManager.h" />
+    <ClInclude Include="textures.def" />
+    <ClInclude Include="renderstate_manager.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="d3d9dev.h" />
     <ClInclude Include="d3d9int.h" />
-    <ClInclude Include="Settings.h" />
+    <ClInclude Include="settings.h" />
     <ClInclude Include="SSAO.h" />
-    <ClInclude Include="Timer.h" />
+    <ClInclude Include="timer.h" />
     <ClInclude Include="version.h" />
-    <ClInclude Include="WindowManager.h" />
+    <ClInclude Include="window_manager.h" />
     <ClInclude Include="winutil.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Actions.def" />
+    <None Include="actions.def" />
     <None Include="GeDoSaTo.def" />
-    <None Include="Hooks.def" />
-    <None Include="Keys.def" />
-    <None Include="Settings.def" />
+    <None Include="hooks.def" />
+    <None Include="keys.def" />
+    <None Include="settings.def" />
     <None Include="version.rb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

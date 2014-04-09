@@ -1,5 +1,17 @@
 
-??-??-2014 -- version 0.1 alpha
-===============================
-- Initial release
-- This will probably break everything horribly, use at your own risk
+01-02-2014 -- alpha 1
+====================================
+- added whitelist option and made it default
+- fixed some device creation issues, making GeDoSaTo work with Might & Magic X Legacy (and maybe more)
+- added code to intercept & alter previously unhandled mouse querying behaviour 
+  (fixes mouse when downsampling in CONSORTIUM and probably many more)
+- added frame-limiting options (double, triple and quadruple V-sync)
+
+??-??-2014 -- prerelease 5
+====================================
+- added "-a" flag to the tool to auto-activate on start
+- added an option to mark textures in order to more easily find them (very slow)
+
+??-??-2014 -- prerelease 1,2,3 and 4
+====================================
+- wasn't tracking changes
