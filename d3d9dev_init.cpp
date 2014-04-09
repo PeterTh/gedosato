@@ -3,7 +3,7 @@
 
 #include "d3d9dev.h"
 
-#include "RenderstateManager.h"
+#include "renderstate_manager.h"
 
 hkIDirect3DDevice9::hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9) {
 	m_pD3Ddev = *ppReturnedDeviceInterface;

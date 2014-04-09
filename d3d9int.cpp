@@ -5,8 +5,8 @@
 #include "d3d9.h"
 #include "d3dutil.h"
 
-#include "Settings.h"
-#include "RenderstateManager.h"
+#include "settings.h"
+#include "renderstate_manager.h"
 
 HRESULT APIENTRY hkIDirect3D9::QueryInterface(REFIID riid,  void **ppvObj) {
 	SDLOG(1, "hkIDirect3D9::QueryInterface\n");

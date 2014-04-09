@@ -40,7 +40,7 @@
 #include <vector>
 #include <sstream>
 #include "SMAA.h"
-#include "SearchTex.h"
+#include "search_tex.h"
 #include "AreaTex.h"
 using namespace std;
 

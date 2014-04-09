@@ -7,10 +7,10 @@
 #include "d3d9.h"
 #include "d3dutil.h"
 #include "winutil.h"
-#include "RenderstateManager.h"
-#include "WindowManager.h"
+#include "renderstate_manager.h"
+#include "window_manager.h"
 #include "Settings.h"
-#include "KeyActions.h"
+#include "key_actions.h"
 
 using namespace std;
 

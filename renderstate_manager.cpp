@@ -1,4 +1,4 @@
-#include "RenderstateManager.h"
+#include "renderstate_manager.h"
 
 #include <time.h>
 #include <intsafe.h>
@@ -11,16 +11,16 @@
 #include "d3dutil.h"
 #include "winutil.h"
 #include "d3d9dev_ex.h"
-#include "Settings.h"
-#include "Hash.h"
-#include "Detouring.h"
-#include "WindowManager.h"
+#include "settings.h"
+#include "hash.h"
+#include "detouring.h"
+#include "window_manager.h"
 
 #include "SMAA.h"
 #include "FXAA.h"
-#include "Scaling.h"
-#include "Console.h"
-#include "KeyActions.h"
+#include "scaling.h"
+#include "console.h"
+#include "key_actions.h"
 
 RSManager* RSManager::latest = NULL;
 

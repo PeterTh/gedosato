@@ -1,10 +1,10 @@
-#include "Settings.h"
+#include "settings.h"
 
 #include <fstream>
 #include <string>
 
 #include "main.h"
-#include "WindowManager.h"
+#include "window_manager.h"
 
 Settings Settings::instance;
 

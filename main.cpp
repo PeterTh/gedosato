@@ -9,7 +9,6 @@
 #include <sys/types.h>
 #include <sys/timeb.h>
 #include <strsafe.h>
-#include <future>
 
 #include <boost/algorithm/string.hpp>
 
@@ -17,10 +16,10 @@
 #include "d3d9.h"
 #include "version.h"
 #include "d3dutil.h"
-#include "Settings.h"
-#include "KeyActions.h"
-#include "Detouring.h"
-#include "Registry.h"
+#include "settings.h"
+#include "key_actions.h"
+#include "detouring.h"
+#include "registry.h"
 #include "blacklist.h"
 
 FILE* g_oFile = NULL;

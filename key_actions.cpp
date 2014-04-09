@@ -1,4 +1,4 @@
-#include "KeyActions.h"
+#include "key_actions.h"
 
 #include <fstream>
 #include <string>
@@ -7,10 +7,10 @@
 using namespace std;
 
 #include "main.h"
-#include "WindowManager.h"
-#include "Settings.h"
-#include "RenderstateManager.h"
-#include "Scaling.h"
+#include "window_manager.h"
+#include "settings.h"
+#include "renderstate_manager.h"
+#include "scaling.h"
 
 KeyActions KeyActions::instance;
 

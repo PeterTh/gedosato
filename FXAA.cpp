@@ -5,8 +5,8 @@
 #include <vector>
 using namespace std;
 
-#include "Settings.h"
-#include "RenderstateManager.h"
+#include "settings.h"
+#include "renderstate_manager.h"
 
 FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality) 
 	: Effect(device), width(width), height(height) {

@@ -1,7 +1,7 @@
-#include "WindowManager.h"
+#include "window_manager.h"
 
-#include "Detouring.h"
-#include "Settings.h"
+#include "detouring.h"
+#include "settings.h"
 #include "d3dutil.h"
 #include "winutil.h"
 

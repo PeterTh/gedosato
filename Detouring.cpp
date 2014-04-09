@@ -13,8 +13,8 @@
 
 #include "string_utils.h"
 
-#include "Settings.h"
-#include "RenderstateManager.h"
+#include "settings.h"
+#include "renderstate_manager.h"
 
 #include "d3d9.h"
 #include "d3d9int_ex.h"
