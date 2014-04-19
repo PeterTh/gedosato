@@ -29,7 +29,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>CTP_Nov2013</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -86,8 +86,8 @@
     <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>include;defs;C:\dev\boost\boost_1_55_0\;C:\dev\Selene\Selene-0.3.1\include;C:\dev\lua\32\include;C:\dev\minhook\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>include;defs;C:\dev\boost\boost_1_55_0\;C:\Users\Peter\Documents\GitHub\Selene\include;C:\dev\lua\32\include;C:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\bin;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -199,7 +199,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua52.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua52.lib;MinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -270,7 +270,6 @@
     <ClCompile Include="source\detouring.cpp" />
     <ClCompile Include="source\effect.cpp" />
     <ClCompile Include="source\fxaa.cpp" />
-    <ClCompile Include="source\lua_integration.cpp" />
     <ClCompile Include="source\registry.cpp" />
     <ClCompile Include="source\scaling.cpp" />
     <ClCompile Include="source\key_actions.cpp" />

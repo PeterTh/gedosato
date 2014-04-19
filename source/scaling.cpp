@@ -10,6 +10,10 @@ using namespace std;
 
 #include "Settings.h"
 
+double Log2(double n) {  
+    return log(n) / log(2);  
+}
+
 Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height) 
 	: Effect(device), inputwidth(inputwidth), inputheight(inputheight), width(width), height(height),
 	  levels(0), levelBufferTextures(NULL), levelBuffers(NULL), levelInputSizes(NULL) {
@@ -41,8 +45,8 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 	stringstream ss;
 
 	// generate multi-level buffers
-	levels = max( max(0, static_cast<int>(ceil(log2(static_cast<double>(inputwidth)/width)-1))), 
-		          max(0, static_cast<int>(ceil(log2(static_cast<double>(inputheight)/height)-1))) );
+	levels = max( max(0, static_cast<int>(ceil(Log2(static_cast<double>(inputwidth)/width)-1))), 
+		          max(0, static_cast<int>(ceil(Log2(static_cast<double>(inputheight)/height)-1))) );
 	SDLOG(2, "Scaler: Generating %u multi-level buffers\n", levels);
 	ss << "Downsampling: " << levels+1 << " level" << (levels?"s ":" ");
 	levelBuffers = new IDirect3DSurface9*[levels];

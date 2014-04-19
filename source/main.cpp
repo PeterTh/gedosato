@@ -21,6 +21,7 @@
 #include "detouring.h"
 #include "registry.h"
 #include "blacklist.h"
+//#include "lua_integration.h"
 
 FILE* g_oFile = NULL;
 bool g_active = false;
@@ -74,6 +75,8 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		 
 		KeyActions::get().load();
 		KeyActions::get().report();
+
+//		LuaManager::get().init();
 
 		// detour
 		startDetour();

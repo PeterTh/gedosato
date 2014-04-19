@@ -39,6 +39,15 @@ namespace {
 			startDetour();
 		}
 	}
+
+	HMODULE GetCurrentModule() {
+		HMODULE hModule = NULL;
+		GetModuleHandleEx(
+			GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+			(LPCTSTR)GetCurrentModule,
+			&hModule);
+		return hModule;
+	}
 }
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName) {
@@ -58,6 +67,8 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileN
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
 	SDLOG(2, "DetouredLoadLibraryExA %s\n", lpLibFileName);
+	string fn(lpLibFileName);
+	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this 
 	HMODULE mod = TrueLoadLibraryExA(lpLibFileName, hFile, dwFlags);
 	// restart detour in case we missed anything
 	if(mod) restartDetour(lpLibFileName);
@@ -65,6 +76,8 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFile
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryExW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
 	SDLOG(2, "DetouredLoadLibraryExW %s\n", CW2A(lpLibFileName));
+	string fn((CW2A(lpLibFileName)));
+	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
 	HMODULE mod = TrueLoadLibraryExW(lpLibFileName, hFile, dwFlags);
 	// restart detour in case we missed anything
 	if(mod) restartDetour(CW2A(lpLibFileName));
@@ -473,14 +486,14 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 		if(dllhandle) {
 			*ppTarget = GetProcAddress(dllhandle, name);
 			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); \
-			if(ret == MH_OK) { SDLOG(1, " -> Created hook for %s\n", name); } \
-			else { SDLOG(0, " -> ERROR creating hook for %s\n", name); } \
+			if(ret == MH_OK) { SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); } \
+			else { SDLOG(0, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle); } \
 			ret = MH_EnableHook(*ppTarget); \
 			if(ret == MH_OK) { 
 				SDLOG(1, " -> Enabled hook for %s\n", name); 
 				flag = true;
 			} \
-			else { SDLOG(0, " -> ERROR enabling hook for %s\n", name); } \
+			else { SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); } \
 		} else SDLOG(6, " -> DLL not found!\n")
 	}
 }
