@@ -1,5 +1,5 @@
-GeDoSaTo by Durante -- README
-=============================
+GeDoSaTo DARK SOULS 2 edition by Durante -- README
+==================================================
 
 **Please read this whole document before running anything!**
 
@@ -9,12 +9,20 @@ The incredibly imaginatively named GeDoSaTo is a generalized downsampling tool f
 Its goal is to obviate the need for (often limited and hardware dependent) driver modifications
 to use downsampling in games.
 
+What is the DARK SOULS 2 edition?
+=================================
+This version of GeDoSaTo is extended specifically for Dark Souls 2, and adds several visual
+effects to the game.
+Note that you need to ENABLE IN-GAME ANTI ALIASING in order to use these effects.
+
 How do I use it? (INSTALLATION INSTRUCTIONS)
 ===========================================
 1) Extract the contents of the zip to some permanent directory
 2) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
-3) add your game executable names to "whitelist.txt" in the "assets" folder
+3) [optional] Add your game executable names to "whitelist.txt" in the "assets" folder 
+   (dark souls 2 is already included!)
 4) Run GeDoSaToTool.exe *as Administrator*
+5) ENABLE IN-GAME ANTI-ALIASING in Dark Souls 2
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
@@ -36,6 +44,7 @@ What additional features are there?
   (automatically sorted in per-game folders!)
 - generic texture overriding for all textures loaded using D3DX
 - framerate limiting using double/triple/quadruple V-sync
+- [Dark Souls 2] VSAO2, Bokeh DoF, Postprocessing and SMAA
 
 Will it work?
 =============

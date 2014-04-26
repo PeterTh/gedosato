@@ -16,8 +16,11 @@
 #include "detouring.h"
 #include "window_manager.h"
 
-#include "SMAA.h"
-#include "FXAA.h"
+#include "smaa.h"
+#include "ssao.h"
+#include "fxaa.h"
+#include "dof.h"
+#include "post.h"
 #include "scaling.h"
 #include "console.h"
 #include "key_actions.h"
@@ -33,6 +36,21 @@ void RSManager::setLatest(RSManager *man) {
 	Console::setLatest(&man->console);
 }
 
+void RSManager::showStatus() {
+	if(scaler) scaler->showStatus();
+	else console.add("Not downsampling");
+#ifdef DARKSOULSII
+	if(smaa && doAA) console.add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));
+	else console.add("SMAA disabled");
+	if(post && doPost) console.add("Postprocessing enabled");
+	else console.add("Postprocessing disabled");
+	if(dof && doDof) console.add(format("DoF enabled, type %s, base blur size %f", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
+	else console.add("DoF disabled");
+	if(ssao && doAO) console.add(format("SSAO enabled, strength %d, scale %d", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale()));
+	else console.add("SSAO disabled");
+#endif // DARKSOULSII
+}
+
 void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff) {
 	if(inited) releaseResources();
 	SDLOG(0, "RenderstateManager resource initialization started\n");
@@ -43,15 +61,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	bbFormat = bbFormat;
 	swapEffect = swapEff == D3DSWAPEFFECT_COPY ? SWAP_COPY : (swapEff == D3DSWAPEFFECT_DISCARD ? SWAP_DISCARD : SWAP_FLIP);
 	if(swapEffect == SWAP_FLIP) numBackBuffers++; // account for the "front buffer" in the swap chain
-
-	//if(Settings::get().getAAQuality()) {
-	//	if(Settings::get().getAAType() == "SMAA") {
-	//		smaa = new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
-	//	} else {
-	//		fxaa = new FXAA(d3ddev, rw, rh, (FXAA::Quality)(Settings::get().getAAQuality()-1));
-	//	}
-	//}
-	
+		
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
 	
@@ -92,6 +102,21 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 
 		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 	}
+	
+	//if(Settings::get().getAAQuality()) {
+	//	if(Settings::get().getAAType() == "SMAA") {
+	//		smaa = new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
+	//	} else {
+	//		fxaa = new FXAA(d3ddev, rw, rh, (FXAA::Quality)(Settings::get().getAAQuality()-1));
+	//	}
+	//}
+
+	#ifdef DARKSOULSII
+	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, rw, rh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius());
+	if(Settings::get().getAAQuality() > 0) smaa = new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
+	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, rw, rh, Settings::get().getSsaoStrength()-1, SSAO::VSSAO2);
+	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, rw, rh);
+	#endif // DARKSOULSII
 
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
 	inited = true;
@@ -99,13 +124,19 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 
 void RSManager::releaseResources() {
 	SDLOG(0, "RenderstateManager releasing resources\n");
+	#ifdef DARKSOULSII
+	SAFERELEASE(zBufferSurf);
+	SAFEDELETE(dof);
+	SAFEDELETE(smaa);
+	SAFEDELETE(ssao);
+	SAFEDELETE(post);
+	#endif // DARKSOULSII
 	SAFERELEASE(depthStencilSurf);
 	SAFERELEASE(extraBuffer);
 	SAFERELEASE(prevStateBlock);
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
 	SAFERELEASE(prevRenderTarget);
-	SAFEDELETE(smaa);
 	SAFEDELETE(fxaa);
 	SAFEDELETE(scaler);
 	if(backBuffers && backBufferTextures) {
@@ -122,7 +153,7 @@ void RSManager::releaseResources() {
 
 void RSManager::prePresent(bool doNotFlip) {
 	if(dumpingFrame) {
-		dumpSurface("framedump", backBuffers[0]);
+		dumpSurface("framedump_prePresent", backBuffers[0]);
 		SDLOG(0, "============================================\nFinished dumping frame.\n");
 		Settings::get().restoreLogLevel();
 		dumpingFrame = false;
@@ -140,7 +171,7 @@ void RSManager::prePresent(bool doNotFlip) {
 	if(takeScreenshot == SCREENSHOT_FULL || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
 		storeRenderState();
 		takeScreenshot = SCREENSHOT_NONE;
-		d3ddev->SetRenderTarget(0, backBuffers[0]);
+		if(downsampling) d3ddev->SetRenderTarget(0, backBuffers[0]);
 		captureRTScreen("full resolution");
 		restoreRenderState();
 	}
@@ -187,13 +218,23 @@ void RSManager::prePresent(bool doNotFlip) {
 		d3ddev->EndScene();
 		restoreRenderState();
 	}
+	
+	// reset per-frame vars
+	renderTargetSwitches = 0;
+	#ifdef DARKSOULSII
+	SAFERELEASE(zBufferSurf);
+	aaStepStarted = false;
+	#endif // DARKSOULSII
 	SDLOG(2, "Pre-present complete\n");
 }
 
 HRESULT RSManager::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDestRect, HWND hDestWindowOverride, CONST RGNDATA *pDirtyRegion) {
-	prePresent(false);	
+	prePresent(false);
+	
+	storeRenderState();
 	HRESULT hr = d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
-	//d3ddev->SetRenderTarget(0, backBuffers[0]);
+	restoreRenderState();
+	
 	return hr;
 }
 
@@ -203,7 +244,7 @@ HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestR
 	return ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 }
 
-void RSManager::captureRTScreen(string stype) {
+void RSManager::captureRTScreen(const string& stype) {
 	SDLOG(0, "Capturing screenshot\n");
 	char timebuf[128], dirbuff[512], buffer[512];
 	time_t ltime;
@@ -233,39 +274,36 @@ void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
 }
 
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
-	// if we know the main surface, and switch to the backbuffer, apply AA
-	//if(mainSurface && onBackbuffer && doAA && (smaa || fxaa) && !aaDone) { 
-	//	SDLOG(3, "~~ applying AA now\n");
-	//	// final renderbuffer has to be from texture, just making sure here
-	//	if(IDirect3DTexture9* tex = getSurfTexture(mainSurface)) {
-	//		// check size just to make even more sure
-	//		D3DSURFACE_DESC desc;
-	//		mainSurface->GetDesc(&desc);
-	//		if(desc.Width == Settings::get().getRenderWidth() && desc.Height == Settings::get().getRenderHeight()) {
-	//			storeRenderState();
-	//			d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
-	//			d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-	//			d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
-	//			if(smaa) smaa->go(tex, tex, rgbaBuffer1Surf, SMAA::INPUT_COLOR);
-	//			else fxaa->go(tex, rgbaBuffer1Surf);
-	//			d3ddev->StretchRect(rgbaBuffer1Surf, NULL, mainSurface, NULL, D3DTEXF_NONE);
-	//			restoreRenderState();
-	//		}
-	//		tex->Release();				
-	//	}
-	//	aaDone = true;
-	//}
 
-	if(RenderTargetIndex==0 && dumpingFrame) {
+	if(dumpingFrame) {
 		IDirect3DSurface9* rt;
-		d3ddev->GetRenderTarget(0, &rt);
+		d3ddev->GetRenderTarget(RenderTargetIndex, &rt);
 		if(rt) {
-			dumpSurface("framedump", rt);
+			dumpSurface(format("framedump_preswitch%03u_target%d_pointer%p", renderTargetSwitches, RenderTargetIndex, rt).c_str(), rt);
 		}
 		SAFERELEASE(rt);
 	}
 
-	return d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
+	#ifdef DARKSOULSII
+	if(RenderTargetIndex == 1 && pRenderTarget == NULL && zBufferSurf == NULL) {
+		SAFERELEASE(zBufferSurf);
+		d3ddev->GetRenderTarget(1, &zBufferSurf);
+	}
+	#endif // DARKSOULSII
+
+	renderTargetSwitches++;
+	HRESULT hr = d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
+
+	if(dumpingFrame) {
+		IDirect3DSurface9* rt;
+		d3ddev->GetRenderTarget(RenderTargetIndex, &rt);
+		if(rt) {
+			dumpSurface(format("framedump_postswitch%03u_target%d_pointer%p", renderTargetSwitches, RenderTargetIndex, rt).c_str(), rt);
+		}
+		SAFERELEASE(rt);
+	}
+
+	return hr;
 }
 
 void RSManager::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture) {
@@ -312,11 +350,12 @@ void RSManager::registerD3DXCompileShader(LPCSTR pSrcData, UINT srcDataLen, cons
 }
 
 IDirect3DTexture9* RSManager::getSurfTexture(IDirect3DSurface9* pSurface) {
+	IDirect3DTexture9 *ret = NULL;
 	IUnknown *pContainer = NULL;
 	HRESULT hr = pSurface->GetContainer(IID_IDirect3DTexture9, (void**)&pContainer);
-	if(D3D_OK == hr) return (IDirect3DTexture9*)pContainer;
+	if(D3D_OK == hr) ret = (IDirect3DTexture9*)pContainer;
 	SAFERELEASE(pContainer);
-	return NULL;
+	return ret;
 }
 
 void RSManager::enableTakeScreenshot(screenshotType type) {
@@ -612,4 +651,65 @@ void RSManager::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
 		Y = Y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
 	}
 	d3ddev->SetCursorPosition(X, Y, Flags);
+}
+
+HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
+	#ifdef DARKSOULSII
+	if(shaderMan.isDS2AAShader(pShader)) {
+		aaStepStarted = true;
+	}
+	#endif // DARKSOULSII
+	
+	return d3ddev->SetPixelShader(pShader);
+}
+
+HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, 
+										   CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
+	#ifdef DARKSOULSII
+	if(aaStepStarted && ((smaa && doAA) || (ssao && doAO) || (post && doPost) || (dof && doDof))) {
+		storeRenderState();
+		// Perform post-processing
+		IDirect3DSurface9 *rt = NULL, *framesurf = NULL;
+		IDirect3DBaseTexture9 *frame = NULL;
+		IDirect3DTexture9 *depth = NULL, *frametex = NULL;
+		d3ddev->GetTexture(0, &frame); // texture 0 is the frame texture
+		frametex = (IDirect3DTexture9*)frame;
+		if(frame) frametex->GetSurfaceLevel(0, &framesurf);
+		depth = getSurfTexture(zBufferSurf); // the depth buffer, stored previously
+		d3ddev->GetRenderTarget(0, &rt); // rt 0 is the FXAA target of the game
+		if(frame && depth && rt) {
+			if(ssao && doAO) {
+				ssao->go(frametex, depth, rt);
+				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
+			}
+			if(post && doPost) {
+				post->go(frametex, rt);
+				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
+			}
+			if(smaa && doAA) {
+				smaa->go(frametex, frametex, rt, SMAA::INPUT_COLOR);
+				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
+			}
+			if(dof && doDof) {
+				dof->go(frametex, depth, rt);
+			}
+		} else {
+			SDLOG(0, "ERROR performing frame processing: could not find required surfaces/textures");
+		}
+		SAFERELEASE(rt);
+		SAFERELEASE(framesurf);
+		SAFERELEASE(frame);
+
+		if(takeScreenshot == SCREENSHOT_HUDLESS) {
+			takeScreenshot = SCREENSHOT_NONE;
+			captureRTScreen("hudless");
+		}
+
+		restoreRenderState();
+		aaStepStarted = false;
+		return D3D_OK;
+	}
+	#endif // DARKSOULSII
+	
+	return d3ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }

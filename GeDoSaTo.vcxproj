@@ -87,7 +87,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>include;defs;C:\dev\boost\boost_1_55_0\;C:\Users\Peter\Documents\GitHub\Selene\include;C:\dev\lua\32\include;C:\dev\minhook\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\bin;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -199,7 +199,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua52.lib;MinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>lua52.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -268,8 +268,11 @@
     <ClCompile Include="source\d3d9int_ex.cpp" />
     <ClCompile Include="source\d3dutil.cpp" />
     <ClCompile Include="source\detouring.cpp" />
+    <ClCompile Include="source\dof.cpp" />
     <ClCompile Include="source\effect.cpp" />
     <ClCompile Include="source\fxaa.cpp" />
+    <ClCompile Include="source\hash.cpp" />
+    <ClCompile Include="source\post.cpp" />
     <ClCompile Include="source\registry.cpp" />
     <ClCompile Include="source\scaling.cpp" />
     <ClCompile Include="source\key_actions.cpp" />
@@ -334,14 +337,17 @@
     <ClInclude Include="include\d3d9int_ex.h" />
     <ClInclude Include="include\d3dutil.h" />
     <ClInclude Include="include\detouring.h" />
+    <ClInclude Include="include\dof.h" />
     <ClInclude Include="include\effect.h" />
     <ClInclude Include="include\fxaa.h" />
     <ClInclude Include="include\lua_integration.h" />
+    <ClInclude Include="include\post.h" />
     <ClInclude Include="include\registry.h" />
     <ClInclude Include="include\scaling.h" />
     <ClInclude Include="include\hash.h" />
     <ClInclude Include="include\key_actions.h" />
     <ClInclude Include="include\search_tex.h" />
+    <ClInclude Include="include\shader_manager.h" />
     <ClInclude Include="include\smaa.h" />
     <ClInclude Include="include\string_utils.h" />
     <ClInclude Include="defs\textures.def" />
@@ -362,6 +368,7 @@
     <None Include="defs\hooks.def" />
     <None Include="defs\keys.def" />
     <None Include="defs\settings.def" />
+    <None Include="defs\shaders.def" />
     <None Include="version.rb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

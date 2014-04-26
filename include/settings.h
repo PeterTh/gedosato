@@ -3,6 +3,8 @@
 #include <string>
 #include <Windows.h>
 
+#include "main.h"
+
 class Settings {
 	static Settings instance;
 	

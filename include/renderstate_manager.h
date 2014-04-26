@@ -5,15 +5,21 @@
 #include <vector>
 
 #include "d3d9.h"
-#include "Console.h"
+#include "console.h"
+#include "shader_manager.h"
 
+#pragma region Forward Declarations
 class SMAA;
 class FXAA;
+class DOF;
+class SSAO;
+class Post;
 class Scaler;
+#pragma endregion
 
 class RSManager {
 public:
-	typedef enum { SCREENSHOT_NONE, SCREENSHOT_STANDARD, SCREENSHOT_FULL } screenshotType;
+	typedef enum { SCREENSHOT_NONE, SCREENSHOT_STANDARD, SCREENSHOT_FULL, SCREENSHOT_HUDLESS } screenshotType;
 
 private:
 	static RSManager* latest;
@@ -22,10 +28,11 @@ private:
 	IDirect3DDevice9 *d3ddev;
 
 	bool doAA, dumpingFrame;
-	SMAA* smaa;
 	FXAA* fxaa;
+	SMAA* smaa;
 	Scaler* scaler;
 	Console console;
+	ShaderManager shaderMan;
 	
 	screenshotType takeScreenshot;
 
@@ -37,7 +44,7 @@ private:
 	IDirect3DSurface9* extraBuffer;
 	IDirect3DSurface9* depthStencilSurf;
 	
-	unsigned dumpCaptureIndex;
+	unsigned dumpCaptureIndex, renderTargetSwitches;
 	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 
 	#define TEXTURE(_name, _hash) \
@@ -61,9 +68,19 @@ private:
 	IDirect3DSurface9* prevRenderTarget;
 	IDirect3DStateBlock9* prevStateBlock;
 
-	void captureRTScreen(string stype = "normal");
+	void captureRTScreen(const std::string &stype = "normal");
 
 	void prePresent(bool doNotFlip);
+
+	
+#ifdef DARKSOULSII
+	IDirect3DSurface9* zBufferSurf;
+	bool aaStepStarted;
+	DOF* dof;
+	SSAO* ssao;
+	Post* post;
+	bool doAO, doDof, doPost;
+#endif // DARKSOULSII
 	
 public:
 	static RSManager& get();
@@ -75,8 +92,14 @@ public:
 	RSManager() : inited(false), downsampling(false), doAA(true), dumpingFrame(false), smaa(NULL), fxaa(NULL), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
 				  swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
 				  backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), extraBuffer(NULL), depthStencilSurf(NULL),
-				  dumpCaptureIndex(0), numKnownTextures(0), foundKnownTextures(0),
-				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL) {
+				  dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
+				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL)
+				  #ifdef DARKSOULSII
+				  , zBufferSurf(NULL), aaStepStarted(false)
+				  , dof(NULL), ssao(NULL), post(NULL)
+				  , doAO(true), doDof(true), doPost(true)
+				  #endif // DARKSOULSII
+	{
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
 		#undef TEXTURE
@@ -85,6 +108,8 @@ public:
 	~RSManager() {
 		releaseResources();
 	}
+
+	void showStatus();
 	
 	void setD3DDevice(IDirect3DDevice9 *pD3Ddev) { d3ddev = pD3Ddev; }
 
@@ -96,10 +121,17 @@ public:
 
 	void dumpFrame() { dumpingFrame = true; }
 
-	void toggleAA() { doAA = !doAA; }
 	void reloadAA();
 
+#ifdef DARKSOULSII
+	void toggleAA() { if(smaa) { doAA = !doAA; console.add(doAA ? "AA enabled" : "AA disabled"); } else { console.add("AA disabled in configuration!"); } }
+	void toggleAO() { if(ssao) { doAO = !doAO; console.add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { console.add("SSAO disabled in configuration!"); } }
+	void toggleDOF() { if(dof) { doDof = !doDof; console.add(doDof ? "DoF enabled" : "DoF disabled"); } else { console.add("DoF disabled in configuration!"); } }
+	void togglePost() { if(post) { doPost = !doPost; console.add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { console.add("Postprocessing disabled in configuration!"); } }
+#endif // DARKSOULSII
+
 	Scaler* getScaler() { return scaler; }
+	ShaderManager& getShaderManager() { return shaderMan; }
 	
 	bool downsamplingEnabled() { return downsampling; }
 
@@ -121,4 +153,7 @@ public:
 	HRESULT redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* pMode, D3DDISPLAYROTATION* pRotation);
 	HRESULT redirectGetDepthStencilSurface(IDirect3DSurface9 ** ppZStencilSurface);
 	void redirectSetCursorPosition(int X, int Y, DWORD Flags);
+
+	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
+	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
 };

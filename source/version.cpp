@@ -4,9 +4,9 @@
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 1;
-const unsigned VER_BUILD = 298;
+const unsigned VER_BUILD = 359;
 
-const char* VER_STRING = "version 0.1.298 built on 2014/04/15 00:04:53";
+const char* VER_STRING = "version 0.1.359 built on 2014/04/26 10:25:52";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

@@ -83,7 +83,7 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     #endif
 
 	// Load effect from file
-	SDLOG(0, "SMAA load\n");	
+	SDLOG(0, "SMAA load, %s, %s\n", presetMacros[int(preset)].Name, pixelSizeText.c_str());	
 	ID3DXBuffer* errors;
 	hr = D3DXCreateEffectFromFile(device, getAssetFileName("SMAA.fx").c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());

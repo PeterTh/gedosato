@@ -786,7 +786,7 @@ float4 SMAAColorEdgeDetectionPS(float2 texcoord,
     // Local contrast adaptation in action:
     edges.xy *= step(0.5 * maxDelta, delta.xy);
 
-    return float4(edges, 0.0, 0.0);
+    return float4(edges, 1.0, 0.0);
 }
 
 /**

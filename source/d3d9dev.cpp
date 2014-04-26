@@ -70,7 +70,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveTyp
 HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void *pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	RSManager::setLatest(rsMan);
 	SDLOG(9, "DrawPrimitiveUP(%d, %u, %u, %u, %u, %p, %d, %p, %d)\n", PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
-	return m_pD3Ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+	return RSManager::get().redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawRectPatch(UINT Handle, CONST float *pNumSegs, CONST D3DRECTPATCH_INFO *pRectPatchInfo) {
@@ -165,7 +165,11 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateOffscreenPlainSurface(UINT Width, UIN
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreatePixelShader(CONST DWORD* pFunction,IDirect3DPixelShader9** ppShader) {
 	RSManager::setLatest(rsMan);
-	return m_pD3Ddev->CreatePixelShader(pFunction, ppShader);
+	HRESULT hr = m_pD3Ddev->CreatePixelShader(pFunction, ppShader);
+	if(SUCCEEDED(hr)) {
+		RSManager::get().getShaderManager().registerShader(pFunction, *ppShader);
+	}
+	return hr;
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9** ppQuery) {
@@ -558,8 +562,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPaletteEntries(UINT PaletteNumber, CONST
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShader(IDirect3DPixelShader9* pShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetPixelShader %p\n", pShader);
-	return m_pD3Ddev->SetPixelShader(pShader);
+	SDLOG(3, "SetPixelShader %p, %s\n", pShader, RSManager::get().getShaderManager().getName(pShader));
+	return RSManager::get().redirectSetPixelShader(pShader);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantB(UINT StartRegister,CONST BOOL* pConstantData,UINT  BoolCount) {

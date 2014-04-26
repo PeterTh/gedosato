@@ -33,7 +33,7 @@ LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
 
 const char* GeDoSaToVersion() {
 	static string verString;
-	if(verString.empty()) verString = format("%s (%s)", VER_STRING, MODE_STRING);
+	if(verString.empty()) verString = format("%s (%s %s)", VER_STRING, EDITION, MODE_STRING);
 	return verString.c_str();
 }
 

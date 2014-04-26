@@ -207,9 +207,9 @@ technique LumaEdgeDetection {
         AlphaTestEnable = false;
 
         // We will be creating the stencil buffer for later usage.
-        StencilEnable = true;
-        StencilPass = REPLACE;
-        StencilRef = 1;
+        //StencilEnable = true;
+        //StencilPass = REPLACE;
+        //StencilRef = 1;
     }
 }
 
@@ -223,9 +223,9 @@ technique ColorEdgeDetection {
         AlphaTestEnable = false;
 
         // We will be creating the stencil buffer for later usage.
-        StencilEnable = true;
-        StencilPass = REPLACE;
-        StencilRef = 1;
+        //StencilEnable = true;
+        //StencilPass = REPLACE;
+        //StencilRef = 1;
     }
 }
 
@@ -239,9 +239,9 @@ technique DepthEdgeDetection {
         AlphaTestEnable = false;
 
         // We will be creating the stencil buffer for later usage.
-        StencilEnable = true;
-        StencilPass = REPLACE;
-        StencilRef = 1;
+        //StencilEnable = true;
+        //StencilPass = REPLACE;
+        //StencilRef = 1;
     }
 }
 
@@ -255,10 +255,10 @@ technique BlendWeightCalculation {
         AlphaTestEnable = false;
 
         // Here we want to process only marked pixels.
-        StencilEnable = true;
-        StencilPass = KEEP;
-        StencilFunc = EQUAL;
-        StencilRef = 1;
+        //StencilEnable = true;
+        //StencilPass = KEEP;
+        //StencilFunc = EQUAL;
+        //StencilRef = 1;
     }
 }
 
@@ -267,11 +267,11 @@ technique NeighborhoodBlending {
         VertexShader = compile vs_3_0 DX9_SMAANeighborhoodBlendingVS();
         PixelShader = compile ps_3_0 DX9_SMAANeighborhoodBlendingPS(colorTex, blendTex);
         ZEnable = false;
-        SRGBWriteEnable = false;
+        SRGBWriteEnable = true;
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
 
         // Here we want to process all the pixels.
-        StencilEnable = false;
+        //StencilEnable = false;
     }
 }

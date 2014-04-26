@@ -1,6 +1,24 @@
+26-04-2014 -- DARK SOULS 2 edition - alpha 2
+============================================
+Bug fixes:
+- fixed crashes when taking screenshots
+- fixed broken rendering after Steam popups
+- partially fixed SSAO issues
+Improvements:
+- added hudless screenshot key
+- added "basic" pseudo-Bokeh DoF effect
+- improved SSAO performance outdoors
 
-01-02-2014 -- alpha 1
-====================================
+24-04-2014 -- DARK SOULS 2 edition - alpha 1
+============================================
+Added Dark Souls 2 specific effects:
+- VSSAO2
+- Postprocessing
+- Ultra SMAA
+- Bokeh DoF
+
+01-02-2014 -- closed alpha 1
+============================
 - added whitelist option and made it default
 - fixed some device creation issues, making GeDoSaTo work with Might & Magic X Legacy (and maybe more)
 - added code to intercept & alter previously unhandled mouse querying behaviour 
@@ -8,7 +26,7 @@
 - added frame-limiting options (double, triple and quadruple V-sync)
 
 ??-??-2014 -- prerelease 5
-====================================
+==========================
 - added "-a" flag to the tool to auto-activate on start
 - added an option to mark textures in order to more easily find them (very slow)
 

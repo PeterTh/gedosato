@@ -20,7 +20,15 @@
 #include <string>
 using std::string;
 
+#define DARKSOULSII
+
 #define VERSION "0.1"
+
+#ifdef DARKSOULSII
+#define EDITION "DS2E"
+#else // DARKSOULSII
+#define EDITION "GEN"
+#endif // DARKSOULSII
 
 #define INTERCEPTOR_NAME "GeDoSaTo"
 

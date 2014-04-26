@@ -31,3 +31,18 @@ SETTING(bool, AdjustMessagePt, "adjustMessagePt", false);
 
 // Internal Options
 SETTING(int, LogLevel, "logLevel", 0);
+
+
+// DS2 options
+#ifdef DARKSOULSII
+SETTING(unsigned, AAQuality, "aaQuality", 0);
+
+SETTING(unsigned, SsaoStrength, "ssaoStrength", 0);
+SETTING(unsigned, SsaoScale, "ssaoScale", 0);
+
+SETTING(bool, EnableDoF, "enableDoF", false);
+SETTING(float, DOFBaseRadius, "dofBaseRadius", 1.00);
+SETTING(string, DOFType, "dofType", "basic");
+
+SETTING(bool, EnablePostprocessing, "enablePostprocessing", false);
+#endif // DARKSOULSII

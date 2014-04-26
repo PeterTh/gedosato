@@ -1,4 +1,4 @@
-#include "SSAO.h"
+#include "dof.h"
 
 #include <string>
 #include <sstream>
@@ -8,7 +8,7 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type) 
+DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseRadius) 
 	: Effect(device), width(width), height(height) {
 	
 	// Setup the defines for compiling the effect
@@ -20,21 +20,11 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	string pixelSizeText = sp.str();
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
-	
-    // Setup scale macro
-	stringstream ss;
-	ss << Settings::get().getSsaoScale() << ".0";
-	string scaleText = ss.str();
-	D3DXMACRO scaleMacro = { "SCALE", scaleText.c_str() };
-	defines.push_back(scaleMacro);
-	
-	D3DXMACRO strengthMacros[] = {
-		{ "SSAO_STRENGTH_LOW", "1" },
-		{ "SSAO_STRENGTH_MEDIUM", "1" },
-		{ "SSAO_STRENGTH_HIGH", "1" }
-	};
-	defines.push_back(strengthMacros[strength]);
 
+	string radiusText = format("%f", baseRadius);
+	D3DXMACRO radiusMacro = { "DOF_BASE_BLUR_RADIUS", radiusText.c_str() };
+	defines.push_back(radiusMacro);
+	
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);
 
@@ -43,13 +33,11 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	// Load effect from file
 	string shaderFn;
 	switch(type) {
-		case VSSAO: shaderFn = "VSSAO.fx"; break;
-		case HBAO: shaderFn = "HBAO.fx"; break;
-		case SCAO: shaderFn = "SCAO.fx"; break;
-		case VSSAO2: shaderFn = "VSSAO2.fx"; break;
+		case BOKEH: shaderFn = "DOFBokeh.fx"; break;
+		case BASIC: shaderFn = "DOFPseudo.fx"; break;
 	}
 	shaderFn = getAssetFileName(shaderFn);
-	SDLOG(0, "%s load, scale %s, strength %s\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);	
+	SDLOG(0, "%s load\n", shaderFn.c_str());	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
@@ -61,12 +49,12 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
     buffer2Tex->GetSurfaceLevel(0, &buffer2Surf);
 
 	// get handles
-	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
-	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
-    prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
+	depthTexHandle = effect->GetParameterByName(NULL, "depthTex");
+	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
+    lastpassTexHandle = effect->GetParameterByName(NULL, "lastpassTex");
 }
 
-SSAO::~SSAO() {
+DOF::~DOF() {
 	SAFERELEASE(effect);
 	SAFERELEASE(buffer1Surf);
 	SAFERELEASE(buffer1Tex);
@@ -74,25 +62,21 @@ SSAO::~SSAO() {
 	SAFERELEASE(buffer2Tex);
 }
 
-void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
+void DOF::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
 	device->SetVertexDeclaration(vertexDeclaration);
 	
-    mainSsaoPass(depth, buffer1Surf);
-	
-	for(size_t i = 0; i<1; ++i) {
-		hBlurPass(depth, buffer1Tex, buffer2Surf);
-		vBlurPass(depth, buffer2Tex, buffer1Surf);
-	}
-
-	combinePass(frame, buffer1Tex, dst);
+    cocPass(frame, depth, buffer1Surf);
+	dofPass(buffer1Tex, buffer2Surf);
+	hBlurPass(buffer2Tex, buffer1Surf);
+	vBlurPass(buffer1Tex, dst);
 }
 
-void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
+void DOF::cocPass(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
 	device->SetRenderTarget(0, dst);
-    //device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 0, 0), 1.0f, 0);
 
     // Setup variables.
     effect->SetTexture(depthTexHandle, depth);
+    effect->SetTexture(thisframeTexHandle, frame);
 
     // Do it!
     UINT passes;
@@ -103,12 +87,11 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
 	effect->End();
 }
 
-void SSAO::hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst) {
+void DOF::dofPass(IDirect3DTexture9 *prev, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
 
     // Setup variables.
-    effect->SetTexture(prevPassTexHandle, src);
-    effect->SetTexture(depthTexHandle, depth);
+    effect->SetTexture(lastpassTexHandle, prev);
 	
     // Do it!
     UINT passes;
@@ -119,12 +102,11 @@ void SSAO::hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3D
 	effect->End();
 }
 
-void SSAO::vBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst) {
+void DOF::hBlurPass(IDirect3DTexture9 *prev, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
-
+	
     // Setup variables.
-    effect->SetTexture(prevPassTexHandle, src);
-    effect->SetTexture(depthTexHandle, depth);
+    effect->SetTexture(lastpassTexHandle, prev);
 	
     // Do it!
     UINT passes;
@@ -135,13 +117,11 @@ void SSAO::vBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3D
 	effect->End();
 }
 
-void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3DSurface9* dst) {
+void DOF::vBlurPass(IDirect3DTexture9 *prev, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
-    //device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 0, 255), 1.0f, 0);
-
+	
     // Setup variables.
-    effect->SetTexture(prevPassTexHandle, ao);
-    effect->SetTexture(frameTexHandle, frame);
+    effect->SetTexture(lastpassTexHandle, prev);
 	
     // Do it!
     UINT passes;

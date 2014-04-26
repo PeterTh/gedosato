@@ -10,18 +10,26 @@ ACTION(toggleBorderlessFullscreen, WindowManager::get().toggleBorderlessFullscre
 
 // Screenshot Actions
 
-ACTION(takeFullScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_FULL))
 ACTION(takeScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_STANDARD))
+ACTION(takeFullScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_FULL))
 
 // Graphics Actions
 
 ACTION(toggleAA, RSManager::get().toggleAA())
-ACTION(setBilinearScaling, RSManager::get().getScaler()->setScaling(Scaler::BILINEAR))
-ACTION(setBicubicScaling, RSManager::get().getScaler()->setScaling(Scaler::BICUBIC))
+ACTION(setBilinearScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BILINEAR))
+ACTION(setBicubicScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BICUBIC))
+
+#ifdef DARKSOULSII
+ACTION(toggleAO, RSManager::get().toggleAO())
+ACTION(toggleDOF, RSManager::get().toggleDOF())
+ACTION(togglePost, RSManager::get().togglePost())
+
+ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_HUDLESS))
+#endif // DARKSOULSII
 
 // Development Actions
 
-ACTION(showStatus, RSManager::get().getScaler()->showStatus())
+ACTION(showStatus, RSManager::get().showStatus())
 
 ACTION(dumpFrame, RSManager::get().dumpFrame())
 

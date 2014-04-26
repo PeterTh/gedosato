@@ -1,5 +1,7 @@
 #pragma once
 
+#include "main.h"
+
 #include <map>
 
 class KeyActions {
