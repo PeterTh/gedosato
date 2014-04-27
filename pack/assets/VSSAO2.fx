@@ -351,19 +351,10 @@ float4 Combine(VSOUT IN) : COLOR0
 	#endif
 	
 	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
 	color.rgb *= ao;
-
-	color.a = RGBLuminance(color.rgb);
-
-	return saturate(color);
-}
-
-float4 CombineShadow( VSOUT IN ) : COLOR0 {
-	float3 shadow = tex2D(frameSampler, IN.UVCoord).rgb;
-	float ao = tex2D(passSampler, IN.UVCoord/SCALE).r;
+	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
 	
-	return float4(shadow, ao*ao);
+	return saturate(color);
 }
 
 technique t0
@@ -376,6 +367,7 @@ technique t0
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		StencilEnable = false;
+		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass p1
 	{
@@ -385,6 +377,7 @@ technique t0
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		StencilEnable = false;
+		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass p2
 	{
@@ -394,6 +387,7 @@ technique t0
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		StencilEnable = false;
+		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass p3
 	{
@@ -403,14 +397,6 @@ technique t0
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		StencilEnable = false;
-	}
-	pass p4
-	{
-		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 CombineShadow();		
-		ZEnable = false;
-		AlphaBlendEnable = false;
-		AlphaTestEnable = false;
-		StencilEnable = false;
+		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 }

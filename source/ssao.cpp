@@ -59,6 +59,7 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
     buffer1Tex->GetSurfaceLevel(0, &buffer1Surf);
 	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer2Tex, NULL);
     buffer2Tex->GetSurfaceLevel(0, &buffer2Surf);
+	device->CreateRenderTarget(width, height, D3DFMT_A16B16G16R16F, D3DMULTISAMPLE_NONE, 0, false, &hdrBufferSurf, NULL);
 
 	// get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
@@ -72,6 +73,7 @@ SSAO::~SSAO() {
 	SAFERELEASE(buffer1Tex);
 	SAFERELEASE(buffer2Surf);
 	SAFERELEASE(buffer2Tex);
+	SAFERELEASE(hdrBufferSurf);
 }
 
 void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
@@ -89,11 +91,11 @@ void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurfa
 	dumping = false;
 }
 
-void SSAO::goToShadow(IDirect3DTexture9 *shadow, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
+void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
 	device->SetVertexDeclaration(vertexDeclaration);
 
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_PRE_shadow", shadow);
+		RSManager::get().dumpTexture("SSAO_PRE_frame", frame);
 		RSManager::get().dumpTexture("SSAO_PRE_depth", depth);
 		RSManager::get().dumpSurface("SSAO_PRE_dest", dst);
 	}
@@ -113,13 +115,13 @@ void SSAO::goToShadow(IDirect3DTexture9 *shadow, IDirect3DTexture9 *depth, IDire
 		RSManager::get().dumpTexture("SSAO_MD2_buffer1", buffer1Tex);
 	}
 
-	combineShadowPass(shadow, buffer1Tex, buffer2Surf);
+	combinePass(frame, buffer1Tex, hdrBufferSurf);
 	
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_END_buffer2", buffer2Tex);
+		RSManager::get().dumpSurface("SSAO_END_buffer2", hdrBufferSurf);
 	}
 
-	device->StretchRect(buffer2Surf, NULL, dst, NULL, D3DTEXF_NONE);
+	device->StretchRect(hdrBufferSurf, NULL, dst, NULL, D3DTEXF_NONE);
 
 	dumping = false;
 }

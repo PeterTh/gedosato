@@ -73,8 +73,9 @@ private:
 
 	
 #ifdef DARKSOULSII
+	IDirect3DStateBlock9* defaultState;
 	IDirect3DSurface9* zBufferSurf;
-	bool aaStepStarted, shadowStepStarted;
+	bool aaStepStarted, aoDone;
 	DOF* dof;
 	SSAO* ssao;
 	Post* post;
@@ -94,7 +95,7 @@ public:
 				  dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
 				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL)
 				  #ifdef DARKSOULSII
-				  , zBufferSurf(NULL), aaStepStarted(false), shadowStepStarted(false)
+				  , defaultState(NULL), zBufferSurf(NULL), aaStepStarted(false), aoDone(false)
 				  , dof(NULL), ssao(NULL), post(NULL)
 				  , doAO(true), doDof(true), doPost(true)
 				  #endif // DARKSOULSII

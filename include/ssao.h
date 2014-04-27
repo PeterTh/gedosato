@@ -15,7 +15,7 @@ public:
     virtual ~SSAO();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
-	void goToShadow(IDirect3DTexture9 *shadow, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
+	void goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
 
 	void dumpFrame();
 
@@ -29,6 +29,7 @@ private:
 	IDirect3DSurface9* buffer1Surf;
 	IDirect3DTexture9* buffer2Tex;
 	IDirect3DSurface9* buffer2Surf;
+	IDirect3DSurface9* hdrBufferSurf;
 
 	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle;
 	
