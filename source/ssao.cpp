@@ -9,7 +9,7 @@ using namespace std;
 #include "renderstate_manager.h"
 
 SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type) 
-	: Effect(device), width(width), height(height) {
+	: Effect(device), width(width), height(height), dumping(false) {
 	
 	// Setup the defines for compiling the effect
     vector<D3DXMACRO> defines;
@@ -85,6 +85,43 @@ void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurfa
 	}
 
 	combinePass(frame, buffer1Tex, dst);
+	
+	dumping = false;
+}
+
+void SSAO::goToShadow(IDirect3DTexture9 *shadow, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
+	device->SetVertexDeclaration(vertexDeclaration);
+
+	if(dumping) {
+		RSManager::get().dumpTexture("SSAO_PRE_shadow", shadow);
+		RSManager::get().dumpTexture("SSAO_PRE_depth", depth);
+		RSManager::get().dumpSurface("SSAO_PRE_dest", dst);
+	}
+	
+    mainSsaoPass(depth, buffer1Surf);
+
+	if(dumping) {
+		RSManager::get().dumpTexture("SSAO_MD1_buffer1", buffer1Tex);
+	}
+	
+	for(size_t i = 0; i<1; ++i) {
+		hBlurPass(depth, buffer1Tex, buffer2Surf);
+		vBlurPass(depth, buffer2Tex, buffer1Surf);
+	}
+	
+	if(dumping) {
+		RSManager::get().dumpTexture("SSAO_MD2_buffer1", buffer1Tex);
+	}
+
+	combineShadowPass(shadow, buffer1Tex, buffer2Surf);
+	
+	if(dumping) {
+		RSManager::get().dumpTexture("SSAO_END_buffer2", buffer2Tex);
+	}
+
+	device->StretchRect(buffer2Surf, NULL, dst, NULL, D3DTEXF_NONE);
+
+	dumping = false;
 }
 
 void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
@@ -150,4 +187,24 @@ void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
+}
+
+void SSAO::combineShadowPass(IDirect3DTexture9 *shadow, IDirect3DTexture9* ao, IDirect3DSurface9* dst) {
+	device->SetRenderTarget(0, dst);
+
+    // Setup variables.
+    effect->SetTexture(prevPassTexHandle, ao);
+    effect->SetTexture(frameTexHandle, shadow);
+	
+    // Do it!
+    UINT passes;
+	effect->Begin(&passes, 0);
+	effect->BeginPass(4);
+	quad(width, height);
+	effect->EndPass();
+	effect->End();
+}
+
+void SSAO::dumpFrame() {
+	dumping = true;
 }

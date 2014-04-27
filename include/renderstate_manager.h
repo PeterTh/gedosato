@@ -45,7 +45,6 @@ private:
 	IDirect3DSurface9* depthStencilSurf;
 	
 	unsigned dumpCaptureIndex, renderTargetSwitches;
-	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 
 	#define TEXTURE(_name, _hash) \
 	private: \
@@ -75,7 +74,7 @@ private:
 	
 #ifdef DARKSOULSII
 	IDirect3DSurface9* zBufferSurf;
-	bool aaStepStarted;
+	bool aaStepStarted, shadowStepStarted;
 	DOF* dof;
 	SSAO* ssao;
 	Post* post;
@@ -95,7 +94,7 @@ public:
 				  dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
 				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL)
 				  #ifdef DARKSOULSII
-				  , zBufferSurf(NULL), aaStepStarted(false)
+				  , zBufferSurf(NULL), aaStepStarted(false), shadowStepStarted(false)
 				  , dof(NULL), ssao(NULL), post(NULL)
 				  , doAO(true), doDof(true), doPost(true)
 				  #endif // DARKSOULSII
@@ -120,7 +119,10 @@ public:
 	bool takingScreenshot() { return takeScreenshot != SCREENSHOT_NONE; }
 
 	void dumpFrame() { dumpingFrame = true; }
-
+	
+	void dumpSurface(const char* name, IDirect3DSurface9* surface);
+	void dumpTexture(const char* name, IDirect3DTexture9* tex);
+	
 	void reloadAA();
 
 #ifdef DARKSOULSII
@@ -128,6 +130,7 @@ public:
 	void toggleAO() { if(ssao) { doAO = !doAO; console.add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { console.add("SSAO disabled in configuration!"); } }
 	void toggleDOF() { if(dof) { doDof = !doDof; console.add(doDof ? "DoF enabled" : "DoF disabled"); } else { console.add("DoF disabled in configuration!"); } }
 	void togglePost() { if(post) { doPost = !doPost; console.add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { console.add("Postprocessing disabled in configuration!"); } }
+	void dumpSSAO();
 #endif // DARKSOULSII
 
 	Scaler* getScaler() { return scaler; }

@@ -15,9 +15,13 @@ public:
     virtual ~SSAO();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
+	void goToShadow(IDirect3DTexture9 *shadow, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
+
+	void dumpFrame();
 
 private:
 	int width, height;
+	bool dumping;
 
 	ID3DXEffect *effect;
 	
@@ -32,4 +36,6 @@ private:
 	void vBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst);
 	void hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst);
 	void combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
+	void combineShadowPass(IDirect3DTexture9 *shadow, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
+
 };

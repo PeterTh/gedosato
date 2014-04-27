@@ -224,6 +224,7 @@ void RSManager::prePresent(bool doNotFlip) {
 	#ifdef DARKSOULSII
 	SAFERELEASE(zBufferSurf);
 	aaStepStarted = false;
+	shadowStepStarted = false;
 	#endif // DARKSOULSII
 	SDLOG(2, "Pre-present complete\n");
 }
@@ -268,9 +269,16 @@ void RSManager::captureRTScreen(const string& stype) {
 
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
 	char fullname[128];
-	sprintf_s(fullname, 128, "dump%03d_%s_p.tga", dumpCaptureIndex++, name, surface);
+	sprintf_s(fullname, 128, "dump%03d_%s_%p.tga", dumpCaptureIndex++, name, surface);
 	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname);
 	D3DXSaveSurfaceToFile(fullname, D3DXIFF_TGA, surface, NULL, NULL);
+}
+
+void RSManager::dumpTexture(const char* name, IDirect3DTexture9* tex) {
+	char fullname[128];
+	sprintf_s(fullname, 128, "dump%03d_%s_%p.tga", dumpCaptureIndex++, name, tex);
+	SDLOG(1, "!! dumped Tex %p to %s\n", tex, fullname);
+	D3DXSaveTextureToFile(fullname, D3DXIFF_TGA, tex, NULL);
 }
 
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
@@ -285,9 +293,13 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 	}
 
 	#ifdef DARKSOULSII
+	// At this point, we can grab the z and normal RTs
 	if(RenderTargetIndex == 1 && pRenderTarget == NULL && zBufferSurf == NULL) {
 		SAFERELEASE(zBufferSurf);
 		d3ddev->GetRenderTarget(1, &zBufferSurf);
+	}
+	if(RenderTargetIndex == 0) {
+
 	}
 	#endif // DARKSOULSII
 
@@ -658,6 +670,9 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	if(shaderMan.isDS2AAShader(pShader)) {
 		aaStepStarted = true;
 	}
+	else if(shaderMan.isDS2ShadowsShader(pShader)) {
+		shadowStepStarted = true;
+	}
 	#endif // DARKSOULSII
 	
 	return d3ddev->SetPixelShader(pShader);
@@ -665,10 +680,14 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 
 HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, 
 										   CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
+	// yeah yeah, I know
+	HRESULT hr = 42;
+	
 	#ifdef DARKSOULSII
-	if(aaStepStarted && ((smaa && doAA) || (ssao && doAO) || (post && doPost) || (dof && doDof))) {
+	if(aaStepStarted && ((smaa && doAA) || (post && doPost) || (dof && doDof))) {
 		storeRenderState();
 		// Perform post-processing
+		SDLOG(2, "Starting DS2 post-processing.")
 		IDirect3DSurface9 *rt = NULL, *framesurf = NULL;
 		IDirect3DBaseTexture9 *frame = NULL;
 		IDirect3DTexture9 *depth = NULL, *frametex = NULL;
@@ -678,18 +697,18 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 		depth = getSurfTexture(zBufferSurf); // the depth buffer, stored previously
 		d3ddev->GetRenderTarget(0, &rt); // rt 0 is the FXAA target of the game
 		if(frame && depth && rt) {
-			if(ssao && doAO) {
-				ssao->go(frametex, depth, rt);
+			if(smaa && doAA) {
+				smaa->go(frametex, frametex, rt, SMAA::INPUT_COLOR);
 				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
 			}
 			if(post && doPost) {
 				post->go(frametex, rt);
 				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
 			}
-			if(smaa && doAA) {
-				smaa->go(frametex, frametex, rt, SMAA::INPUT_COLOR);
-				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
-			}
+			//if(ssao && doAO) {
+			//	ssao->go(frametex, depth, rt);
+			//	d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
+			//}
 			if(dof && doDof) {
 				dof->go(frametex, depth, rt);
 			}
@@ -707,9 +726,39 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 
 		restoreRenderState();
 		aaStepStarted = false;
-		return D3D_OK;
+		SDLOG(2, "DS2 post-processing complete.")
+		hr = D3D_OK;
+	}
+	else if(shadowStepStarted && ssao && doAO) {
+		// first perform original shadow rendering
+		hr = d3ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+		// now perform AO
+		SDLOG(2, "Starting DS2 AO rendering.\n")
+		storeRenderState();
+		IDirect3DSurface9 *rt = NULL;
+		IDirect3DTexture9 *depth = NULL, *shadowTex = NULL;
+		depth = getSurfTexture(zBufferSurf); // the depth buffer, stored previously
+		d3ddev->GetRenderTarget(0, &rt); // rt 0 is the FXAA target of the game
+		shadowTex = getSurfTexture(rt);
+		if(depth && rt) {
+			ssao->goToShadow(shadowTex, depth, rt);
+		} else {
+			SDLOG(0, "ERROR performing AO processing: could not find required surfaces/textures");
+		}
+		SAFERELEASE(rt);
+		restoreRenderState();
+		shadowStepStarted = false;
+		SDLOG(2, "DS2 AO rendering complete.\n")
 	}
 	#endif // DARKSOULSII
 	
-	return d3ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+	if(hr == 42) {
+		hr = d3ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+	}
+
+	return hr;
+}
+
+void RSManager::dumpSSAO() {
+	ssao->dumpFrame();
 }

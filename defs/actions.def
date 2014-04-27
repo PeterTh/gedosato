@@ -32,6 +32,7 @@ ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::S
 ACTION(showStatus, RSManager::get().showStatus())
 
 ACTION(dumpFrame, RSManager::get().dumpFrame())
+ACTION(dumpSSAO, RSManager::get().dumpSSAO())
 
 ACTION(reloadAAEffect, RSManager::get().reloadAA())
 
