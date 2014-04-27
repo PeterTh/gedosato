@@ -1,1 +1,0 @@
-gdst_log(0, "Startup!")

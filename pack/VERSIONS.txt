@@ -1,3 +1,8 @@
+28-04-2014 -- DARK SOULS 2 edition - alpha 3
+============================================
+- apply SSAO to early linear HDR framebuffer 
+  (in order to avoid fog/alpha issues)
+
 26-04-2014 -- DARK SOULS 2 edition - alpha 2
 ============================================
 Bug fixes:

@@ -75,40 +75,23 @@ SamplerState passSampler
 	MaxAnisotropy = 16;
 };
 
-cbuffer ConstBuffer : register(b0)
+struct VSOUT
 {
-	matrix World : WORLD;
-	matrix View : VIEW;
-	matrix Projection : PROJECTION;
-	static const float GammaConst = 2.2;
+	float4 vertPos : POSITION;
+	float2 UVCoord : TEXCOORD0;
 };
-
+ 
 struct VSIN
 {
 	float4 vertPos : POSITION0;
 	float2 UVCoord : TEXCOORD0;
-	float3 Normal : NORMAL;
-	float Depth : DEPTH;
 };
-
-struct VSOUT
-{
-	float4 vertPos : SV_POSITION;
-	float2 UVCoord : TEXCOORD0;
-	float3 Normal : NORMAL;
-	float Depth : SV_Depth;
-};
-
+ 
 VSOUT FrameVS(VSIN IN)
-{	
-	VSOUT OUT;
-	
+{
+	VSOUT OUT = (VSOUT)0.0f;
 	OUT.vertPos = IN.vertPos;
 	OUT.UVCoord = IN.UVCoord;
-	OUT.Depth = IN.Depth;
-	OUT.Normal = mul(IN.Normal, (float3x3)World);
-	OUT.Normal = normalize(OUT.Normal);
-	
 	return OUT;
 }
 #if (SamplingType == 1)
@@ -203,34 +186,6 @@ float RGBLuminance(float3 color)
 	return dot(color.rgb, lumCoeff);
 }
 
-float3 RGBGammaToLinear(float3 color, float gamma)
-{
-	color = abs(color);
-
-	color.r = (color.r <= 0.0) ? saturate(color.r / 12.92) :
-	saturate(pow((color.r + 0.055) / 1.055, gamma));
-	color.g = (color.g <= 0.0) ? saturate(color.g / 12.92) :
-	saturate(pow((color.g + 0.055) / 1.055, gamma));
-	color.b = (color.b <= 0.0) ? saturate(color.b / 12.92) :
-	saturate(pow((color.b + 0.055) / 1.055, gamma));
-
-	return color;
-}
-
-float3 LinearToRGBGamma(float3 color, float gamma)
-{
-	color = abs(color);
-
-	color.r = (color.r <= 0.0) ? saturate(color.r * 12.92) : 1.055 *
-	saturate(pow(color.r, 1.0 / gamma)) - 0.055;
-	color.g = (color.g <= 0.0) ? saturate(color.g * 12.92) : 1.055 *
-	saturate(pow(color.g, 1.0 / gamma)) - 0.055;
-	color.b = (color.b <= 0.0) ? saturate(color.b * 12.92) : 1.055 *
-	saturate(pow(color.b, 1.0 / gamma)) - 0.055;
-
-	return color;
-}
-
 float2 rand(in float2 uv : TEXCOORD0)
 {
 	float noiseX = (frac(sin(dot(uv, float2(12.9898, 78.233) * 2.0)) * 43758.5453));
@@ -263,18 +218,18 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	
 	float2 d2 = readDepth(IN.UVCoord);
 	if(d2.y < 0.03) return (float4)1.0;
-	IN.Depth = d2.x;
+	float depth = d2.x;
 
-	float3 pos = getPosition(IN.UVCoord, IN.Depth);
+	float3 pos = getPosition(IN.UVCoord, depth);
 	float3 dx = ddx(pos);
 	float3 dy = ddy(pos);
 
 	float3 normal = normalize(cross(dx, dy));  normal.y *= -1.0;
 
 	float2 rand_vec = rand(IN.UVCoord);
-	float2 sample_vec_divisor = g_InvFocalLen * IN.Depth * depthRange / (aoRadiusMultiplier * 5000.0 * rcpres);
+	float2 sample_vec_divisor = g_InvFocalLen * depth * depthRange / (aoRadiusMultiplier * 5000.0 * rcpres);
 	float2 sample_center = IN.UVCoord + normal.xy / sample_vec_divisor * float2(1.0, aspect);
-	float sample_center_depth = IN.Depth * depthRange + normal.z * aoRadiusMultiplier * 8.0;
+	float sample_center_depth = depth * depthRange + normal.z * aoRadiusMultiplier * 8.0;
 	
 	float ao = 0.0;
 	float s = 0.0;
@@ -296,9 +251,9 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	ao /= s;
 	
 	//Adjust for close and far away
-	if(IN.Depth < 0.065)
+	if(depth < 0.065)
 	{
-		ao = lerp(ao, 0.0, (0.065 - IN.Depth) * 15.0);
+		ao = lerp(ao, 0.0, (0.065 - depth) * 15.0);
 	}
 
 	ao = (1.0 - ao * aoStrengthMultiplier);
@@ -350,9 +305,7 @@ float4 Combine(VSOUT IN) : COLOR0
 	ao = lerp(ao, white, luminance);
 	#endif
 	
-	color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
 	color.rgb *= ao;
-	color.rgb = LinearToRGBGamma(color.rgb, GammaConst);
 	
 	return saturate(color);
 }
@@ -363,40 +316,20 @@ technique t0
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 ssao_Main();
-		ZEnable = false;
-		AlphaBlendEnable = false;
-		AlphaTestEnable = false;
-		StencilEnable = false;
-		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass p1
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 HBlur();
-		ZEnable = false;
-		AlphaBlendEnable = false;
-		AlphaTestEnable = false;
-		StencilEnable = false;
-		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass p2
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 VBlur();
-		ZEnable = false;
-		AlphaBlendEnable = false;
-		AlphaTestEnable = false;
-		StencilEnable = false;
-		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass p3
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 Combine();
-		ZEnable = false;
-		AlphaBlendEnable = false;
-		AlphaTestEnable = false;
-		StencilEnable = false;
-		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 }
