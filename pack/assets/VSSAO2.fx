@@ -9,7 +9,7 @@
 //#[User Options]
 #define LUMINANCE_CONSIDERATION 1 			//[0 or 1] Culls occlusion based on scene luminance. This can help with haloing/noise.
 #define SamplingType 1						//[1|2|3] The type of sampling to use. 1: highest quality, 2: higher performance version of 1, & 3: lightweight sampling, similar to NV's.
-extern float aoRadiusMultiplier = 0.2;		//[0.05 to 1.00] Linearly multiplies the radius of the AO Sampling. Affects the density of occlusion.
+extern float aoRadiusMultiplier = 0.20;		//[0.05 to 1.00] Linearly multiplies the radius of the AO Sampling. Affects the density of occlusion.
 extern float ThicknessModel = 5.0; 			//[1.0 to 20.0] Units in space the AO assumes objects' thicknesses are. Can increase coverage, but also introduce haloing.
 extern float FOV = 70.0; 					//[10.00 to 100.00] Field of View in Degrees. Visually affects density of occlusion within the FOV.
 extern float aoClamp = 0.35;				//[0.00 to 1.00] Clamps occlusion blacks to a specified minimum. Keeps occluded areas looking like shadows, rather than pure black.
@@ -28,15 +28,15 @@ extern float luminosityThreshold = 0.50; 	//[0.00 to 1.00] This affects the degr
 #endif
 
 #ifdef SSAO_STRENGTH_LOW
-extern float aoStrengthMultiplier = 0.75;
+extern float aoStrengthMultiplier = 0.60;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-extern float aoStrengthMultiplier = 0.90;
+extern float aoStrengthMultiplier = 0.75;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-extern float aoStrengthMultiplier = 1.20;
+extern float aoStrengthMultiplier = 1.00;
 #endif
 
 //#End Of User Options

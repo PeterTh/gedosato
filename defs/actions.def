@@ -34,6 +34,4 @@ ACTION(showStatus, RSManager::get().showStatus())
 ACTION(dumpFrame, RSManager::get().dumpFrame())
 ACTION(dumpSSAO, RSManager::get().dumpSSAO())
 
-ACTION(reloadAAEffect, RSManager::get().reloadAA())
-
 ACTION(userTrigger, SDLOG(0, "================================================================= USER TRIGGER ===\n"))

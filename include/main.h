@@ -22,7 +22,7 @@ using std::string;
 
 #define DARKSOULSII
 
-#define VERSION "0.1"
+#define VERSION "0.3"
 
 #ifdef DARKSOULSII
 #define EDITION "DS2E"
@@ -68,3 +68,4 @@ string getAssetFileName(string filename);
 string getTimeString();
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
+const char* GeDoSaToVersion();

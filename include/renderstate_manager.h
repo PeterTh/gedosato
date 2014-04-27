@@ -70,7 +70,6 @@ private:
 	void captureRTScreen(const std::string &stype = "normal");
 
 	void prePresent(bool doNotFlip);
-
 	
 #ifdef DARKSOULSII
 	IDirect3DStateBlock9* defaultState;
@@ -124,8 +123,6 @@ public:
 	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 	void dumpTexture(const char* name, IDirect3DTexture9* tex);
 	
-	void reloadAA();
-
 #ifdef DARKSOULSII
 	void toggleAA() { if(smaa) { doAA = !doAA; console.add(doAA ? "AA enabled" : "AA disabled"); } else { console.add("AA disabled in configuration!"); } }
 	void toggleAO() { if(ssao) { doAO = !doAO; console.add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { console.add("SSAO disabled in configuration!"); } }

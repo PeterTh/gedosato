@@ -37,6 +37,7 @@ void RSManager::setLatest(RSManager *man) {
 }
 
 void RSManager::showStatus() {
+	console.add(GeDoSaToVersion());
 	if(scaler) scaler->showStatus();
 	else console.add("Not downsampling");
 #ifdef DARKSOULSII
@@ -103,14 +104,6 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 	}
 	
-	//if(Settings::get().getAAQuality()) {
-	//	if(Settings::get().getAAType() == "SMAA") {
-	//		smaa = new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
-	//	} else {
-	//		fxaa = new FXAA(d3ddev, rw, rh, (FXAA::Quality)(Settings::get().getAAQuality()-1));
-	//	}
-	//}
-
 	#ifdef DARKSOULSII
 	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, rw, rh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius());
 	if(Settings::get().getAAQuality() > 0) smaa = new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
@@ -400,17 +393,6 @@ IDirect3DTexture9* RSManager::getSurfTexture(IDirect3DSurface9* pSurface) {
 void RSManager::enableTakeScreenshot(screenshotType type) {
 	takeScreenshot = type; 
 	SDLOG(0, "takeScreenshot: %d\n", type);
-}
-
-void RSManager::reloadAA() {
-	//SAFEDELETE(smaa); 
-	//SAFEDELETE(fxaa); 
-	//if(Settings::get().getAAType() == "SMAA") {
-	//	smaa = new SMAA(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), (SMAA::Preset)(Settings::get().getAAQuality()-1));
-	//} else {
-	//	fxaa = new FXAA(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), (FXAA::Quality)(Settings::get().getAAQuality()-1));
-	//}
-	SDLOG(0, "Reloaded AA\n");
 }
 
 void RSManager::storeRenderState() {
