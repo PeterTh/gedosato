@@ -28,8 +28,6 @@ private:
 	IDirect3DDevice9 *d3ddev;
 
 	bool doAA, dumpingFrame;
-	FXAA* fxaa;
-	SMAA* smaa;
 	Scaler* scaler;
 	Console console;
 	ShaderManager shaderMan;
@@ -73,11 +71,13 @@ private:
 	
 #ifdef DARKSOULSII
 	IDirect3DStateBlock9* defaultState;
-	IDirect3DSurface9* zBufferSurf;
+	IDirect3DSurface9 *zBufferSurf, *hdrRT;
 	bool aaStepStarted, aoDone;
 	DOF* dof;
 	SSAO* ssao;
 	Post* post;
+	FXAA* fxaa;
+	SMAA* smaa;
 	bool doAO, doDof, doPost;
 #endif // DARKSOULSII
 	
@@ -88,14 +88,16 @@ public:
 		return latest && latest->downsampling;
 	}
 
-	RSManager() : inited(false), downsampling(false), doAA(true), dumpingFrame(false), smaa(NULL), fxaa(NULL), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
+	RSManager() : inited(false), downsampling(false), doAA(true), dumpingFrame(false), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
 				  swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
 				  backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), extraBuffer(NULL), depthStencilSurf(NULL),
 				  dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
 				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL)
 				  #ifdef DARKSOULSII
-				  , defaultState(NULL), zBufferSurf(NULL), aaStepStarted(false), aoDone(false)
+				  , defaultState(NULL), zBufferSurf(NULL), hdrRT(NULL)
+				  , aaStepStarted(false), aoDone(false)
 				  , dof(NULL), ssao(NULL), post(NULL)
+				  , fxaa(NULL), smaa(NULL) 
 				  , doAO(true), doDof(true), doPost(true)
 				  #endif // DARKSOULSII
 	{
@@ -124,7 +126,7 @@ public:
 	void dumpTexture(const char* name, IDirect3DTexture9* tex);
 	
 #ifdef DARKSOULSII
-	void toggleAA() { if(smaa) { doAA = !doAA; console.add(doAA ? "AA enabled" : "AA disabled"); } else { console.add("AA disabled in configuration!"); } }
+	void toggleAA() { if(smaa || fxaa) { doAA = !doAA; console.add(doAA ? "AA enabled" : "AA disabled"); } else { console.add("AA disabled in configuration!"); } }
 	void toggleAO() { if(ssao) { doAO = !doAO; console.add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { console.add("SSAO disabled in configuration!"); } }
 	void toggleDOF() { if(dof) { doDof = !doDof; console.add(doDof ? "DoF enabled" : "DoF disabled"); } else { console.add("DoF disabled in configuration!"); } }
 	void togglePost() { if(post) { doPost = !doPost; console.add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { console.add("Postprocessing disabled in configuration!"); } }
@@ -157,4 +159,5 @@ public:
 
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
 	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
+	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
 };

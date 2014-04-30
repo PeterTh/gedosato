@@ -1,4 +1,4 @@
-// GeDoSaTo Copyright 2013 Peter Thoman (Durante)
+// GeDoSaTo Copyright 2013-2014 Peter Thoman (Durante)
 
 //  This program is free software: you can redistribute it and/or modify
 //  it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 using std::string;
 
 #define DARKSOULSII
-
-#define VERSION "0.3"
 
 #ifdef DARKSOULSII
 #define EDITION "DS2E"

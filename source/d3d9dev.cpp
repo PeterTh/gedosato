@@ -601,7 +601,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	RSManager::setLatest(rsMan);
-	return m_pD3Ddev->SetRenderState(State, Value);
+	SDLOG(6, "SetRenderState: state: %s, value: %u\n", D3DRenderStateTypeToString(State), Value);
+	return RSManager::get().redirectSetRenderState(State, Value);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value) {

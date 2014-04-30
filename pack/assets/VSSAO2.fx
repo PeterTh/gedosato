@@ -1,19 +1,18 @@
 /*
-    -Volumetric SSAO-
+	 -Volumetric SSAO-
 	Implemented by Tomerk for OBGE
 	Adapted and tweaked for Dark Souls by Durante
-	Modified by Asmodean, for accurate occlusion distance, and positional depth offsets, for Dark Souls. Updated & tuned for Dark Souls II.
+	Modified by Asmodean, for accurate occlusion distance, and dynamic positional depth offsets, for Dark Souls
 	Modified further for inclusion in DSfix 2.2 (depth-dependent thickness model) and adapted for Dark Souls 2 by Durante. Will it ever stop?
 */
 
-//#[User Options]
-#define LUMINANCE_CONSIDERATION 1 			//[0 or 1] Culls occlusion based on scene luminance. This can help with haloing/noise.
-#define SamplingType 1						//[1|2|3] The type of sampling to use. 1: highest quality, 2: higher performance version of 1, & 3: lightweight sampling, similar to NV's.
-extern float aoRadiusMultiplier = 0.20;		//[0.05 to 1.00] Linearly multiplies the radius of the AO Sampling. Affects the density of occlusion.
-extern float ThicknessModel = 5.0; 			//[1.0 to 20.0] Units in space the AO assumes objects' thicknesses are. Can increase coverage, but also introduce haloing.
-extern float FOV = 70.0; 					//[10.00 to 100.00] Field of View in Degrees. Visually affects density of occlusion within the FOV.
-extern float aoClamp = 0.35;				//[0.00 to 1.00] Clamps occlusion blacks to a specified minimum. Keeps occluded areas looking like shadows, rather than pure black.
-extern float luminosityThreshold = 0.50; 	//[0.00 to 1.00] This affects the degree of occlusion reduction based on luminance, when LUMINANCE_CONSIDERATION is enabled.
+/***User-controlled variables***/
+#define N_SAMPLES 32 //number of samples, currently do not change.
+
+extern float aoRadiusMultiplier = 0.2; //Linearly multiplies the radius of the AO Sampling
+extern float ThicknessModel = 10; //units in space the AO assumes objects' thicknesses are
+extern float FOV = 85; //Field of View in Degrees
+extern float luminosity_threshold = 0.3;
 
 #ifndef SCALE
 #define SCALE 1.0
@@ -28,286 +27,291 @@ extern float luminosityThreshold = 0.50; 	//[0.00 to 1.00] This affects the degr
 #endif
 
 #ifdef SSAO_STRENGTH_LOW
-extern float aoStrengthMultiplier = 0.60;
+extern float aoClamp = 0.6;
+extern float aoStrengthMultiplier = 0.8;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-extern float aoStrengthMultiplier = 0.75;
+extern float aoClamp = 0.3;
+extern float aoStrengthMultiplier = 1.4;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-extern float aoStrengthMultiplier = 1.00;
+extern float aoClamp = 0.1;
+extern float aoStrengthMultiplier = 1.9;
 #endif
 
-//#End Of User Options
 
-static float2 rcpres = float2(PIXEL_SIZE.x, PIXEL_SIZE.y);
-static float aspect = rcpres.x / rcpres.y;
-static const float nearZ = 1.0;
-static const float farZ = 3600.0;
-static const float2 g_InvFocalLen = { tan(0.5 * radians(FOV)) / rcpres.y * rcpres.x, tan(0.5 * radians(FOV)) };
+#define LUMINANCE_CONSIDERATION //comment this line to not take pixel brightness into account
+
+/***End Of User-controlled Variables***/
+static float2 rcpres = PIXEL_SIZE;
+static float aspect = rcpres.y/rcpres.x;
+static const float nearZ = 1;
+static const float farZ = 3500;
+static const float2 g_InvFocalLen = { tan(0.5f*radians(FOV)) / rcpres.y * rcpres.x, tan(0.5f*radians(FOV)) };
 static const float depthRange = nearZ-farZ;
 
-Texture2D depthTex2D;
-SamplerState depthSampler
+
+texture2D sampleTex2D;
+sampler sampleSampler = sampler_state
 {
-	Texture = <depthTex2D>;
-	Filter = Anisotropic;
-	AddressU = Clamp; AddressV = Clamp;
-	MaxAnisotropy = 16;
+	Texture   = <sampleTex2D>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU  = Clamp;
+	AddressV  = Clamp;
+	SRGBTexture=FALSE;
 };
 
-Texture2D frameTex2D;
-SamplerState frameSampler
+texture2D depthTex2D;
+sampler depthSampler = sampler_state
 {
-	Texture = <frameTex2D>;
-	Filter = Anisotropic;
-	AddressU = Clamp; AddressV = Clamp;
-	MaxAnisotropy = 16;
+	texture = <depthTex2D>;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = POINT;
+	AddressU  = Mirror;
+	AddressV  = Mirror;
+	SRGBTexture=FALSE;
 };
 
-Texture2D prevPassTex2D;
-SamplerState passSampler
+texture2D AOTex2D;
+sampler AOSampler = sampler_state
 {
-	Texture = <prevPassTex2D>;
-	Filter = Anisotropic;
-	AddressU = Clamp; AddressV = Clamp;
-	MaxAnisotropy = 16;
+	texture = <AOTex2D>;
+	MinFilter = POINT;
+	MagFilter = POINT;
+	MipFilter = POINT;
+	AddressU  = Clamp;
+	AddressV  = Clamp;
+	SRGBTexture=FALSE;
+};
+
+texture2D frameTex2D;
+sampler frameSampler = sampler_state
+{
+	texture = <frameTex2D>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU  = Clamp;
+	AddressV  = Clamp;
+	SRGBTexture=TRUE;
+};
+
+texture2D prevPassTex2D;
+sampler passSampler = sampler_state
+{
+	texture = <prevPassTex2D>;
+	MinFilter = LINEAR;
+	MagFilter = LINEAR;
+	MipFilter = LINEAR;
+	AddressU  = Clamp;
+	AddressV  = Clamp;
+	SRGBTexture=FALSE;
 };
 
 struct VSOUT
 {
-	float4 vertPos : POSITION;
+	float4 vertPos : POSITION0;
 	float2 UVCoord : TEXCOORD0;
 };
- 
+
 struct VSIN
 {
 	float4 vertPos : POSITION0;
 	float2 UVCoord : TEXCOORD0;
 };
- 
+
+
 VSOUT FrameVS(VSIN IN)
 {
-	VSOUT OUT = (VSOUT)0.0f;
-	OUT.vertPos = IN.vertPos;
-	OUT.UVCoord = IN.UVCoord;
+	VSOUT OUT;
+	float4 pos=float4(IN.vertPos.x, IN.vertPos.y, IN.vertPos.z, 1.0f);
+	OUT.vertPos=pos;
+	float2 coord=float2(IN.UVCoord.x, IN.UVCoord.y);
+	OUT.UVCoord=coord;
 	return OUT;
 }
-#if (SamplingType == 1)
-#define N_SAMPLES 16
+
 static float2 sample_offset[N_SAMPLES] =
 {
-	float2(1.0,1.0), float2(-1.0,-1.0),
-	float2(-1.0,1.0), float2(1.0,-1.0),
-	float2(1.0,0.0), float2(-1.0,0.0),
-	float2(0.0,1.0), float2(0.0,-1.0),
-	float2(1.41,0.0), float2(-1.41,0.0),
-	float2(0.0,1.41), float2(0.0,-1.41),
-	float2(1.41,1.41), float2(-1.41,-1.41),
-	float2(-1.41,1.41), float2(1.41,-1.41)
+	 float2(1.00f, 1.00f),
+	 float2(-1.00f, -1.00f),
+	 float2(-1.00f, 1.00f),
+	 float2(1.00f, -1.00f),
+
+	 float2(1.00f, 0.00f),
+	 float2(-1.00f, 0.00f),
+	 float2(0.00f, 1.00f),
+	 float2(0.00f, -1.00f),
+
+	 float2(1.00f, 0.00f),
+	 float2(-1.00f, 0.00f),
+	 float2(0.00f, 1.00f),
+	 float2(0.00f, -1.00f),
+
+	 float2(1.00f, 1.00f),
+	 float2(-1.00f, -1.00f),
+	 float2(-1.00f, 1.00f),
+	 float2(1.00f, -1.00f),
+	 
+	 float2(1.00f, 0.00f),
+	 float2(-1.00f, 0.00f),
+	 float2(0.00f, 1.00f),
+	 float2(0.00f, -1.00f),
+
+	 float2(1.00f, 0.00f),
+	 float2(-1.00f, 0.00f),
+	 float2(0.00f, 1.00f),
+	 float2(0.00f, -1.00f),
+
+	 float2(1.00f, 1.00f),
+	 float2(-1.00f, -1.00f),
+	 float2(-1.00f, 1.00f),
+	 float2(1.00f, -1.00f),
+	 
+	 float2(1.00f, 1.00f),
+	 float2(-1.00f, -1.00f),
+	 float2(-1.00f, 1.00f),
+	 float2(1.00f, -1.00f)
 };
 
 static float sample_radius[N_SAMPLES] =
 {
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20
-};
-#elif (SamplingType == 2)
-#define N_SAMPLES 16
-static float2 sample_offset[N_SAMPLES] =
-{
-	 float2(1.00f,1.00f), float2(-1.00f,-1.00f),
-	 float2(-1.00f,1.00f), float2(1.00f,-1.00f),
-	 float2(1.00f,0.00f), float2(-1.00f,0.00f),
-	 float2(0.00f,1.00f), float2(0.00f,-1.00f),
-	 float2(1.00f,0.00f), float2(-1.00f,0.00f),
-	 float2(0.00f,1.00f), float2(0.00f,-1.00f),
-	 float2(1.00f,1.00f), float2(-1.00f,-1.00f),
-	 float2(-1.00f,1.00f), float2(1.00f,-1.00f)
-};
-
-static float sample_radius[N_SAMPLES] =
-{
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20
-};
-#elif (SamplingType >= 3)
-#define N_SAMPLES 26
-static float2 sample_offset[N_SAMPLES] =
-{
-	float2(0.2196607,0.9032637),
-	float2(0.05916681,0.2201506),
-	float2(-0.4152246,0.1320857),
-	float2(-0.3790807,0.1454145),
-	float2(0.3149606,-0.1294581),
-	float2(-0.1108412,0.2162839),
-	float2(0.658012,-0.4395972),
-	float2(0.5377914,0.3112189),
-	float2(-0.2752537,0.07625949),
-	float2(-0.1915639,-0.4973421),
-	float2(-0.2634767,0.5277923),
-	float2(0.8242752,0.02434147),
-	float2(0.06262707,-0.2128643),
-	float2(-0.1795662,-0.3543862),
-	float2(0.06039629,0.24629),
-	float2(-0.7786345,-0.3814852),
-	float2(0.2792919,0.2487278),
-	float2(0.1841383,0.1696993),
-	float2(-0.3479781,0.4725766),
-	float2(-0.1365018,-0.2513416),
-	float2(0.1280388,-0.563242),
-	float2(-0.4800232,-0.1899473),
-	float2(0.6389147,0.1191014),
-	float2(0.1932822,-0.3692099),
-	float2(-0.3465451,-0.1654651),
-	float2(0.2448421,-0.1610962)
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f,
+	0.20f, 0.20f
 };
 
-static float sample_radius[N_SAMPLES] =
-{
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20, 0.20, 0.20,
-	0.20, 0.20
-};
-#endif
-
-float RGBLuminance(float3 color)
-{
-	const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
-	return dot(color.rgb, lumCoeff);
-}
-
-float2 rand(in float2 uv : TEXCOORD0)
-{
-	float noiseX = (frac(sin(dot(uv, float2(12.9898, 78.233) * 2.0)) * 43758.5453));
-	float noiseY = sqrt(1.0 - noiseX * noiseX);
-
+float2 rand(in float2 uv : TEXCOORD0) {
+	float noiseX = (frac(sin(dot(uv, float2(12.9898,78.233)*2.0)) * 43758.5453));
+	float noiseY = sqrt(1-noiseX*noiseX);
 	return float2(noiseX, noiseY);
 }
 
-float readDepth(in float2 coord : TEXCOORD0)
+float2 readDepth(in float2 coord : TEXCOORD0)
 {
 	float4 col = tex2D(depthSampler, coord);
-	float posZ = ((1.0-col.x) + (1.0-col.y) * 255.0 + (1.0-col.z) * (255.0 * 255.0));
-
-	return sqrt(posZ / (5.0*(256.0*256.0)));
+	float posZ = ((1-col.x) + (1-col.y)*255.0 + (1-col.z)*(255.0*255.0));
+	return float2(pow(posZ / (5*256.0*256.0) + 1.0, 8.0)-1.0, col.w);
 }
 
-float3 getPosition(in float2 uv : TEXCOORD0, in float eye_z : SV_Depth)
-{
+float3 getPosition(in float2 uv : TEXCOORD0, in float eye_z : POSITION0) {
    uv = (uv * float2(2.0, -2.0) - float2(1.0, -1.0));
-   float3 pos = float3(uv * g_InvFocalLen * eye_z, eye_z);
-
+   float3 pos = float3(uv * g_InvFocalLen * eye_z, eye_z );
    return pos;
 }
 
 float4 ssao_Main(VSOUT IN) : COLOR0
 {
-	clip(1/SCALE - IN.UVCoord.x);
-	clip(1/SCALE - IN.UVCoord.y);
+	clip(1/SCALE-IN.UVCoord.x);
+	clip(1/SCALE-IN.UVCoord.y);	
 	IN.UVCoord.xy *= SCALE;
-	
-	float2 d2 = readDepth(IN.UVCoord);
-	if(d2.y < 0.03) return (float4)1.0;
-	float depth = d2.x;
 
+	float2 d2 = readDepth(IN.UVCoord);
+	if(d2.y < 0.1) return float4(1.0,1.0,1.0,1.0);
+	float depth = d2.x;
 	float3 pos = getPosition(IN.UVCoord, depth);
 	float3 dx = ddx(pos);
 	float3 dy = ddy(pos);
+	float3 norm = normalize(cross(dx,dy));
+	norm.y *= -1;
 
-	float3 normal = normalize(cross(dx, dy));  normal.y *= -1.0;
+	float sample_depth;
+
+	float ao=tex2D(AOSampler, IN.UVCoord);
+	float s=tex2D(sampleSampler, IN.UVCoord);
 
 	float2 rand_vec = rand(IN.UVCoord);
-	float2 sample_vec_divisor = g_InvFocalLen * depth * depthRange / (aoRadiusMultiplier * 5000.0 * rcpres);
-	float2 sample_center = IN.UVCoord + normal.xy / sample_vec_divisor * float2(1.0, aspect);
-	float sample_center_depth = depth * depthRange + normal.z * aoRadiusMultiplier * 8.0;
+	float2 sample_vec_divisor = g_InvFocalLen*depth*depthRange/(aoRadiusMultiplier*5000*rcpres);
+	float2 sample_center = IN.UVCoord + norm.xy/sample_vec_divisor*float2(1.0f,aspect);
+	float sample_center_depth = depth*depthRange + norm.z*aoRadiusMultiplier*7;
 	
-	float ao = 0.0;
-	float s = 0.0;
-
 	for(int i = 0; i < N_SAMPLES; i++)
-	{	
-		float2 sample_vec = reflect(sample_offset[i], rand_vec); sample_vec /= sample_vec_divisor;
-		float2 sample_coords = sample_center + sample_vec * float2(1.0, aspect);
-
-		float curr_sample_radius = sample_radius[i] * aoRadiusMultiplier * 8.0;
-		float curr_sample_depth = depthRange * readDepth(sample_coords);
-
-		ao += clamp(0.0, curr_sample_radius + sample_center_depth - curr_sample_depth, 2.0 * curr_sample_radius);
-		ao -= clamp(0.0, curr_sample_radius + sample_center_depth - curr_sample_depth - ThicknessModel, 2.0 * curr_sample_radius);
-
-		s += 2.0 * curr_sample_radius;
+	{
+		float2 sample_vec = reflect(sample_offset[i], rand_vec);
+		sample_vec /= sample_vec_divisor;
+		float2 sample_coords = sample_center + sample_vec*float2(1.0f,aspect);
+		
+		float curr_sample_radius = sample_radius[i]*aoRadiusMultiplier*10;
+		float curr_sample_depth = depthRange*readDepth(sample_coords);
+		
+		ao += clamp(0,curr_sample_radius+sample_center_depth-curr_sample_depth,2*curr_sample_radius);
+		ao -= clamp(0,curr_sample_radius+sample_center_depth-curr_sample_depth-ThicknessModel,2*curr_sample_radius);
+		s += 2.0*curr_sample_radius;
 	}
 
 	ao /= s;
 	
-	//Adjust for close and far away
-	if(depth < 0.065)
-	{
-		ao = lerp(ao, 0.0, (0.065 - depth) * 15.0);
-	}
+	// adjust for close and far away
+	if(depth<0.065f) ao = lerp(ao, 0.0f, (0.065f-depth)*13.3);
 
-	ao = (1.0 - ao * aoStrengthMultiplier);
-	ao = clamp(ao, aoClamp, 1.0);
-
-	return float4(ao, ao, ao, 1.0);
+	ao = 1.0f-ao*aoStrengthMultiplier;
+	
+	return float4(ao,ao,ao,1.0f);
 }
 
-float4 HBlur(VSOUT IN) : COLOR0
-{
+float4 HBlur( VSOUT IN ) : COLOR0 {
 	float color = tex2D(passSampler, IN.UVCoord).r;
-	float blurred = color * 0.2270270270;
 
-	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x * 1.3846153846, 0.0)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x * 1.3846153846, 0.0)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x * 3.2307692308, 0.0)).r * 0.0702702703;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x * 3.2307692308, 0.0)).r * 0.0702702703;
+	float blurred = color*0.2270270270;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
 	
 	return blurred;
 }
 
-float4 VBlur(VSOUT IN) : COLOR0
-{
+float4 VBlur( VSOUT IN ) : COLOR0 {
 	float color = tex2D(passSampler, IN.UVCoord).r;
-	float blurred = color * 0.2270270270;
 
-	blurred += tex2D(passSampler, IN.UVCoord + float2(0.0, rcpres.y * 1.3846153846)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(0.0, rcpres.y * 1.3846153846)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord + float2(0.0, rcpres.y * 3.2307692308)).r * 0.0702702703;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(0.0, rcpres.y * 3.2307692308)).r * 0.0702702703;
+	float blurred = color*0.2270270270;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
 	
 	return blurred;
 }
 
-float4 Combine(VSOUT IN) : COLOR0 
-{
+float4 Combine( VSOUT IN ) : COLOR0 {
 	float4 color = tex2D(frameSampler, IN.UVCoord);
 	float ao = tex2D(passSampler, IN.UVCoord/SCALE).r;
+	ao = clamp(ao, aoClamp, 1.0);
 
-	#if (LUMINANCE_CONSIDERATION == 1)
-	float luminance = RGBLuminance(color.rgb);
-	float white = 1.0;
-	float black = 0.0;
+	#ifdef LUMINANCE_CONSIDERATION
+	float luminance = (color.r*0.2125f)+(color.g*0.7154f)+(color.b*0.0721f);
+	float white = 1.0f;
+	float black = 0.0f;
 
-	luminance = clamp(
-	max(black, luminance - luminosityThreshold) +
-	max(black, luminance - luminosityThreshold) +
-	max(black, luminance - luminosityThreshold), 0.0, 1.0);
-	ao = lerp(ao, white, luminance);
+	luminance = clamp(max(black,luminance-luminosity_threshold)+max(black,luminance-luminosity_threshold)+max(black,luminance-luminosity_threshold),0.0,1.0);
+	ao = lerp(ao,white,luminance);
 	#endif
-	
+
 	color.rgb *= ao;
 	
-	return saturate(color);
+	return color;
+	//return float4(ao,ao,ao,color.a);
 }
 
 technique t0
@@ -315,7 +319,7 @@ technique t0
 	pass p0
 	{
 		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 ssao_Main();
+		PixelShader = compile ps_3_0 ssao_Main();	
 	}
 	pass p1
 	{

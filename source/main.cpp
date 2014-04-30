@@ -66,7 +66,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 
 		// startup
 		sdlogtime(-1);
-		SDLOG(-1, "===== start "INTERCEPTOR_NAME" %s = fn: %s\n", VERSION, getExeFileName().c_str());
+		SDLOG(-1, "===== start "INTERCEPTOR_NAME" %s = fn: %s\n", GeDoSaToVersion(), getExeFileName().c_str());
 		SDLOG(-1, "===== installation directory: %s\n", getInstallDirectory().c_str());
 
 		// load settings

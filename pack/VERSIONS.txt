@@ -1,3 +1,9 @@
+30-04-2014 -- DARK SOULS 2 edition - alpha 4
+============================================
+- Fix AO issue on systems with non-4:3 resolution,
+  also improve other effects for this resolution
+- Improve AO shader depth calculation
+
 28-04-2014 -- DARK SOULS 2 edition - alpha 3
 ============================================
 - apply SSAO to early linear HDR framebuffer 

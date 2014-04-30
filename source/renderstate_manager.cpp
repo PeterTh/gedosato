@@ -37,12 +37,15 @@ void RSManager::setLatest(RSManager *man) {
 }
 
 void RSManager::showStatus() {
-	console.add(GeDoSaToVersion());
+	console.add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
 	if(scaler) scaler->showStatus();
 	else console.add("Not downsampling");
 #ifdef DARKSOULSII
-	if(smaa && doAA) console.add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));
-	else console.add("SMAA disabled");
+	if(doAA && (smaa || fxaa)) {
+		if(smaa) console.add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));
+		else console.add(format("FXAA enabled, quality level %d", Settings::get().getAAQuality()));
+	}
+	else console.add("AA disabled");
 	if(post && doPost) console.add("Postprocessing enabled");
 	else console.add("Postprocessing disabled");
 	if(dof && doDof) console.add(format("DoF enabled, type %s, base blur size %f", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
@@ -105,10 +108,18 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	}
 	
 	#ifdef DARKSOULSII
-	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, rw, rh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius());
-	if(Settings::get().getAAQuality() > 0) smaa = new SMAA(d3ddev, rw, rh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
-	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, rw, rh, Settings::get().getSsaoStrength()-1, SSAO::VSSAO2);
-	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, rw, rh);
+	unsigned drw = rw, drh = rh;
+	if(rh>1 && rw>1 && rh*16 > rw*9) { // 16:10 or 4:3
+		drh = rw*9/16;
+		SDLOG(2, "Resource init: adjusting for non-16:9 resolution, screen: %ux%u, render: %ux%u\n", rw,rh, drw,drh);
+	}
+	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, drw, drh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius());
+	if(Settings::get().getAAQuality() > 0) {
+		if(Settings::get().getAAType() == "smaa") smaa = new SMAA(d3ddev, drw, drh, (SMAA::Preset)(Settings::get().getAAQuality()-1));
+		else fxaa = new FXAA(d3ddev, drw, drh, (FXAA::Quality)(Settings::get().getAAQuality()-1));
+	}
+	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, drw, drh, Settings::get().getSsaoStrength()-1, SSAO::VSSAO2);
+	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh);
 	#endif // DARKSOULSII
 
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
@@ -120,7 +131,9 @@ void RSManager::releaseResources() {
 	#ifdef DARKSOULSII
 	SAFERELEASE(defaultState);
 	SAFERELEASE(zBufferSurf);
+	SAFERELEASE(hdrRT);
 	SAFEDELETE(dof);
+	SAFEDELETE(fxaa);
 	SAFEDELETE(smaa);
 	SAFEDELETE(ssao);
 	SAFEDELETE(post);
@@ -131,7 +144,6 @@ void RSManager::releaseResources() {
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
 	SAFERELEASE(prevRenderTarget);
-	SAFEDELETE(fxaa);
 	SAFEDELETE(scaler);
 	if(backBuffers && backBufferTextures) {
 		for(unsigned i=0; i<numBackBuffers; ++i) {
@@ -217,6 +229,7 @@ void RSManager::prePresent(bool doNotFlip) {
 	renderTargetSwitches = 0;
 	#ifdef DARKSOULSII
 	SAFERELEASE(zBufferSurf);
+	SAFERELEASE(hdrRT);
 	aaStepStarted = false;
 	aoDone = false;
 	#endif // DARKSOULSII
@@ -275,6 +288,10 @@ void RSManager::dumpTexture(const char* name, IDirect3DTexture9* tex) {
 	D3DXSaveTextureToFile(fullname, D3DXIFF_TGA, tex, NULL);
 }
 
+void RSManager::dumpSSAO() {
+	ssao->dumpFrame();
+}
+
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 
 	if(dumpingFrame) {
@@ -292,34 +309,20 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 		SAFERELEASE(zBufferSurf);
 		d3ddev->GetRenderTarget(1, &zBufferSurf);
 	}
-	// If previous RT was D3DFMT_A16B16G16R16F, apply AO
-	if(doAO && ssao && !aoDone && RenderTargetIndex == 0 && zBufferSurf != NULL && defaultState != NULL) {
+	// If previous RT was D3DFMT_A16B16G16R16F, store RT and get ready to apply AO
+	else if(doAO && ssao && !aoDone && !hdrRT && RenderTargetIndex == 0 && zBufferSurf != NULL && defaultState != NULL) {
 		IDirect3DSurface9* prevRT = NULL;
 		d3ddev->GetRenderTarget(0, &prevRT);
 		if(prevRT) {
 			D3DSURFACE_DESC desc;
 			prevRT->GetDesc(&desc);
-			if(desc.Format == D3DFMT_A16B16G16R16F && desc.Width == renderWidth && desc.Height == renderHeight && !aoDone) {
-				// now perform AO
-				SDLOG(2, "Starting DS2 AO rendering.\n")
-				storeRenderState();
-				defaultState->Apply();
-				IDirect3DTexture9 *depth = NULL, *frameTex = NULL;
-				depth = getSurfTexture(zBufferSurf); // the depth buffer, stored previously
-				frameTex = getSurfTexture(prevRT);
-				if(depth && frameTex) {
-					SDLOG(2, "- AO ready to go\n")
-					ssao->goHDR(frameTex, depth, prevRT);
-					SDLOG(2, "- AO done\n")
-				} else {
-					SDLOG(0, "ERROR performing AO processing: could not find required surfaces/textures");
-				}
-				restoreRenderState();
-				aoDone = true;
-				SDLOG(2, "DS2 AO rendering complete.\n")
+			if(desc.Format == D3DFMT_A16B16G16R16F && (desc.Width == renderWidth || desc.Height == renderHeight) && !aoDone) {
+				// store RT for later use
+				hdrRT = prevRT;
+			} else {
+				SAFERELEASE(prevRT);
 			}
 		}
-		SAFERELEASE(prevRT);
 	}
 	#endif // DARKSOULSII
 
@@ -678,6 +681,7 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	#ifdef DARKSOULSII
 	if(shaderMan.isDS2AAShader(pShader)) {
 		aaStepStarted = true;
+		SDLOG(8, "DS2: set aaStepStarted")
 	}
 	#endif // DARKSOULSII
 	
@@ -687,7 +691,8 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, 
 										   CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	#ifdef DARKSOULSII
-	if(aaStepStarted && ((smaa && doAA) || (post && doPost) || (dof && doDof))) {
+	// perform postprocessing and AA instead of the original DS2 AA shader pass
+	if(aaStepStarted && (((smaa || fxaa) && doAA) || (post && doPost) || (dof && doDof))) {
 		storeRenderState();
 		// Perform post-processing
 		SDLOG(2, "Starting DS2 post-processing.")
@@ -700,8 +705,9 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 		depth = getSurfTexture(zBufferSurf); // the depth buffer, stored previously
 		d3ddev->GetRenderTarget(0, &rt); // rt 0 is the FXAA target of the game
 		if(frame && depth && rt) {
-			if(smaa && doAA) {
-				smaa->go(frametex, frametex, rt, SMAA::INPUT_COLOR);
+			if(doAA && (smaa || fxaa)) {
+				if(smaa) smaa->go(frametex, frametex, rt, SMAA::INPUT_COLOR);
+				else fxaa->go(frametex, rt);
 				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
 			}
 			if(post && doPost) {
@@ -735,6 +741,27 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 	return  d3ddev->DrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
-void RSManager::dumpSSAO() {
-	ssao->dumpFrame();
+HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
+	#ifdef DARKSOULSII
+	if(State == D3DRS_ALPHABLENDENABLE && Value == TRUE && hdrRT && !aoDone) {
+		// now perform AO
+		SDLOG(2, "Starting DS2 AO rendering.\n");
+		storeRenderState();
+		defaultState->Apply();
+		IDirect3DTexture9 *depth = NULL, *frameTex = NULL;
+		depth = getSurfTexture(zBufferSurf); // the depth buffer, stored previously
+		frameTex = getSurfTexture(hdrRT);
+		if(depth && frameTex) {
+			SDLOG(2, "- AO ready to go\n")
+			ssao->goHDR(frameTex, depth, hdrRT);
+			SDLOG(2, "- AO done\n")
+		} else {
+			SDLOG(0, "ERROR performing AO processing: could not find required surfaces/textures");
+		}
+		restoreRenderState();
+		aoDone = true;
+		SDLOG(2, "DS2 AO rendering complete.\n");
+	}
+	#endif // DARKSOULSII
+	return d3ddev->SetRenderState(State, Value);
 }

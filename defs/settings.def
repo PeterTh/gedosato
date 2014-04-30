@@ -35,6 +35,7 @@ SETTING(int, LogLevel, "logLevel", 0);
 
 // DS2 options
 #ifdef DARKSOULSII
+SETTING(std::string, AAType, "aaType", "fxaa");
 SETTING(unsigned, AAQuality, "aaQuality", 0);
 
 SETTING(unsigned, SsaoStrength, "ssaoStrength", 0);
