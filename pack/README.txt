@@ -22,7 +22,10 @@ How do I use it? (INSTALLATION INSTRUCTIONS)
 3) [optional] Add your game executable names to "whitelist.txt" in the "assets" folder 
    (dark souls 2 is already included!)
 4) Run GeDoSaToTool.exe *as Administrator*
-5) ENABLE IN-GAME ANTI-ALIASING in Dark Souls 2
+5) Click "Activate" (You can also make a shortcut for "GeDoSaToTool.exe -a")
+6) Select the downsampling resolution in-game if you want to use downsampling
+5) ENABLE IN-GAME ANTI-ALIASING in Dark Souls 2 if you want to use any effects
+  (disable in-game AO if yo uuse GeDoSaTo AO, and in-game DoF if you use GeDoSaTo DoF)
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
@@ -33,6 +36,7 @@ Advantages:
 - Downsampling in linear color space
 - Support downsampling to high-frequency (e.g. 120 Hz or 144 Hz) target modes
 - Not limited by display hardware
+- Downsampling in borderless windowed fullscreen mode
 Disadvantages:
 - Compatibility is limited compared to driver-level downsampling 
   (only DirectX9 and DirectX9Ex supported currently)
@@ -44,7 +48,7 @@ What additional features are there?
   (automatically sorted in per-game folders!)
 - generic texture overriding for all textures loaded using D3DX
 - framerate limiting using double/triple/quadruple V-sync
-- [Dark Souls 2] VSAO2, Bokeh DoF, Postprocessing and SMAA
+- [Dark Souls 2] VSSAO2, Bokeh DoF, Postprocessing and SMAA/FXAA
 
 Will it work?
 =============
