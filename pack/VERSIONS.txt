@@ -1,8 +1,15 @@
 30-04-2014 -- DARK SOULS 2 edition - alpha 4
 ============================================
+General:
+- Add option to completely hide the mouse cursor
+- Add option to force borderless fullscreen windowed mode
+Dark Souls 2:
 - Fix AO issue on systems with non-4:3 resolution,
-  also improve other effects for this resolution
+  also improve other effects for such resolutions
 - Improve AO shader depth calculation
+- Upgrade SMAA to the latest version
+- Implement stencil masking for SMAA (performance improvement)
+- Include FXAA option
 
 28-04-2014 -- DARK SOULS 2 edition - alpha 3
 ============================================

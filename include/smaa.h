@@ -143,7 +143,11 @@ class SMAA : public Effect {
         IDirect3DTexture9 *areaTex;
         IDirect3DTexture9 *searchTex;
 
-        D3DXHANDLE thresholdHandle, maxSearchStepsHandle;
+		IDirect3DSurface9 *stencilSurf;
+		
+        D3DXHANDLE thresholdHandle;
+        D3DXHANDLE maxSearchStepsHandle, maxSearchStepsDiagHandle;
+        D3DXHANDLE cornerRoundingHandle;
         D3DXHANDLE areaTexHandle, searchTexHandle;
         D3DXHANDLE colorTexHandle, depthTexHandle;
         D3DXHANDLE edgesTexHandle, blendTexHandle;

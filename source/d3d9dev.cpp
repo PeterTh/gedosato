@@ -690,6 +690,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantI(UINT StartRegister
 BOOL APIENTRY hkIDirect3DDevice9::ShowCursor(BOOL bShow) {
 	RSManager::setLatest(rsMan);
 	SDLOG(0, "ShowCursor %d\n", bShow);
+	if(Settings::get().getHideMouseCursor()) return m_pD3Ddev->ShowCursor(false);
 	return m_pD3Ddev->ShowCursor(bShow);
 }
 

@@ -32,6 +32,9 @@ SETTING(bool, AdjustMessagePt, "adjustMessagePt", false);
 // Internal Options
 SETTING(int, LogLevel, "logLevel", 0);
 
+// Windowing Options
+SETTING(bool, ForceBorderlessFullscreen, "forceBorderlessFullscreen", false);
+SETTING(bool, HideMouseCursor, "hideMouseCursor", false);
 
 // DS2 options
 #ifdef DARKSOULSII

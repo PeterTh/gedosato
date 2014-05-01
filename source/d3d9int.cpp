@@ -89,6 +89,13 @@ UINT APIENTRY hkIDirect3D9::GetAdapterCount() {
 
 HRESULT APIENTRY hkIDirect3D9::GetAdapterDisplayMode(UINT Adapter, D3DDISPLAYMODE *pMode) {
 	SDLOG(0, "GetAdapterDisplayMode ------\n");
+	if(Settings::get().getForceBorderlessFullscreen()) {
+		pMode->Width = Settings::get().getPresentWidth();
+		pMode->Height = Settings::get().getRenderHeight();
+		pMode->RefreshRate = Settings::get().getReportedHz();
+		pMode->Format = D3DFMT_A8R8G8B8;
+		return D3D_OK;
+	}
 	return m_pD3Dint->GetAdapterDisplayMode(Adapter, pMode);
 }
 
@@ -112,7 +119,7 @@ HMONITOR APIENTRY hkIDirect3D9::GetAdapterMonitor(UINT Adapter) {
 }
 
 HRESULT APIENTRY hkIDirect3D9::GetDeviceCaps(UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS9 *pCaps) {
-	SDLOG(0, "GetDeviceCaps ------\n");
+	SDLOG(0, "GetDeviceCaps %u %x %p ------\n", Adapter, DeviceType, pCaps);
 	return m_pD3Dint->GetDeviceCaps(Adapter, DeviceType, pCaps);
 }
 

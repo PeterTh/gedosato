@@ -14,10 +14,20 @@ extern D3DXCreateTextureFromFileInMemoryEx_FNType TrueD3DXCreateTextureFromFileI
 
 void startDetour();
 void endDetour();
+void setDisplayFaking(bool fake);
 
-typedef BOOL (WINAPI * SetWindowPos_FNType)(_In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags);
-extern SetWindowPos_FNType TrueSetWindowPos;
-typedef BOOL (WINAPI * AdjustWindowRect_FNType)(__inout LPRECT lpRect, __in DWORD dwStyle, __in BOOL bMenu);
-extern AdjustWindowRect_FNType TrueAdjustWindowRect;
-typedef BOOL (WINAPI * AdjustWindowRectEx_FNType)(_Inout_ LPRECT lpRect, _In_ DWORD dwStyle, _In_ BOOL bMenu, _In_ DWORD dwExStyle);
-extern AdjustWindowRectEx_FNType TrueAdjustWindowRectEx;
+#define GENERATE_INTERCEPT_DECLARATION(__name, __rettype, __convention, ...) \
+typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
+extern __name##_FNType True##__name;
+
+GENERATE_INTERCEPT_DECLARATION(AdjustWindowRect, BOOL, WINAPI, __inout LPRECT lpRect, __in DWORD dwStyle, __in BOOL bMenu);
+GENERATE_INTERCEPT_DECLARATION(AdjustWindowRectEx, BOOL, WINAPI, _Inout_ LPRECT lpRect, _In_ DWORD dwStyle, _In_ BOOL bMenu, _In_ DWORD dwExStyle);
+GENERATE_INTERCEPT_DECLARATION(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags);
+
+GENERATE_INTERCEPT_DECLARATION(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect);
+GENERATE_INTERCEPT_DECLARATION(GetWindowRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect);
+
+GENERATE_INTERCEPT_DECLARATION(GetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex);
+GENERATE_INTERCEPT_DECLARATION(GetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex);
+GENERATE_INTERCEPT_DECLARATION(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong);
+GENERATE_INTERCEPT_DECLARATION(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <d3d9.h>
 
 class WindowManager {
 	static WindowManager instance;
@@ -10,6 +11,8 @@ class WindowManager {
 	bool borderlessFullscreen;
 	RECT prevWindowRect;
 	long prevStyle, prevExStyle;
+
+	unsigned fakeWidth, fakeHeight;
 
 public:
 	static WindowManager& get() {
@@ -21,7 +24,11 @@ public:
 	void toggleCursorCapture();
 	void toggleCursorVisibility();
 	void toggleBorderlessFullscreen();
+	void forceBorderlessFullscreen();
 	void maintainBorderlessFullscreen();
 	void maintainWindowSize();
 	void resize(unsigned clientW, unsigned clientH);
+
+	void setFakeFullscreen(unsigned w, unsigned h);
+	void interceptGetDisplayMode(D3DDISPLAYMODE* pMode);
 };

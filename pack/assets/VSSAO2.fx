@@ -10,8 +10,8 @@
 #define N_SAMPLES 32 //number of samples, currently do not change.
 
 extern float aoRadiusMultiplier = 0.2; //Linearly multiplies the radius of the AO Sampling
-extern float ThicknessModel = 10; //units in space the AO assumes objects' thicknesses are
-extern float FOV = 85; //Field of View in Degrees
+extern float ThicknessModel = 6; //units in space the AO assumes objects' thicknesses are
+extern float FOV = 75; //Field of View in Degrees
 extern float luminosity_threshold = 0.3;
 
 #ifndef SCALE

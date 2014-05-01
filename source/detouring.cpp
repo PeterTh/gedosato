@@ -87,7 +87,7 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryExW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFil
 // D3D9 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(Direct3DCreate9, IDirect3D9*, APIENTRY, UINT SDKVersion) {
-	SDLOG(0, "=== DetrouredDirect3DCreate9 V:%d\n", SDKVersion);
+	SDLOG(0, "=== DetouredDirect3DCreate9 V:%d\n", SDKVersion);
 	IDirect3D9 *d3dint = NULL;
 	d3dint = TrueDirect3DCreate9(SDKVersion);
 
@@ -146,9 +146,20 @@ GENERATE_INTERCEPT_HEADER(D3DXCompileShader, HRESULT, WINAPI, _In_ LPCSTR pSrcDa
 
 bool g_FakeChangedDisplaySettings = false;
 
+void setDisplayFaking(bool fake) { g_FakeChangedDisplaySettings = fake; }
+
 // TODO: Refactor these 2
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODE *lpDevMode, _In_ DWORD dwFlags) {
 	SDLOG(2, "EnumDisplaySettingsExA %s -- %u\n", lpszDeviceName?lpszDeviceName:"NULL", iModeNum);
+	if(g_FakeChangedDisplaySettings) {
+		lpDevMode->dmBitsPerPel = 32;
+		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
+		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
+		lpDevMode->dmDisplayFlags = 0;
+		lpDevMode->dmDisplayFrequency = Settings::get().getReportedHz();
+		SDLOG(2, "-> Fake\n");
+		return TRUE;
+	}
 	BOOL ret = TrueEnumDisplaySettingsExA(lpszDeviceName, iModeNum, lpDevMode, dwFlags);
 	if(ret) {
 		SDLOG(2, "-> %ux%u %ubpp @ %u Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
@@ -168,7 +179,7 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lps
 	// enter our mode, either if its number is requested
 	if((emptyMode != 0 && iModeNum == emptyMode && ret == NULL)
 	// or if we are downsampling and need to fake it as current
-	 || (RSManager::currentlyDownsampling() && iModeNum == ENUM_CURRENT_SETTINGS) 
+	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
 	 || g_FakeChangedDisplaySettings) {
 		lpDevMode->dmBitsPerPel = 32;
 		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
@@ -206,7 +217,8 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lps
 	// enter our mode, either if its number is requested
 	if((emptyMode != 0 && iModeNum == emptyMode && ret == NULL)
 	// or if we are downsampling and need to fake it as current
-	 /*|| (RSManager::currentlyDownsampling() && iModeNum == ENUM_CURRENT_SETTINGS)*/ ) {
+	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
+	 || g_FakeChangedDisplaySettings) {
 		lpDevMode->dmBitsPerPel = 32;
 		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
 		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
@@ -336,6 +348,11 @@ GENERATE_INTERCEPT_HEADER(SetCursor, HCURSOR, WINAPI, _In_opt_ HCURSOR hCursor) 
 	return TrueSetCursor(hCursor);
 }
 
+GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
+	SDLOG(2, "DetouredShowCursor %s\n", bShow ? "true" : "false");
+	return TrueShowCursor(Settings::get().getHideMouseCursor() ? false : bShow);
+}
+
 // Messages /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(PeekMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax, _In_ UINT wRemoveMsg) {
@@ -446,13 +463,13 @@ GENERATE_INTERCEPT_HEADER(DirectInputCreateW, HRESULT, WINAPI, HINSTANCE hinst, 
 // Window stuff /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(AdjustWindowRect, BOOL, WINAPI, __inout LPRECT lpRect, __in DWORD dwStyle, __in BOOL bMenu) {
-	return true;
+	return TrueAdjustWindowRect(lpRect, dwStyle, bMenu);
 }
 GENERATE_INTERCEPT_HEADER(AdjustWindowRectEx, BOOL, WINAPI, _Inout_ LPRECT lpRect, _In_ DWORD dwStyle, _In_ BOOL bMenu, _In_ DWORD dwExStyle) {
-	return true;
+	return AdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
 }
 GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags) {
-	return true;
+	return TrueSetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

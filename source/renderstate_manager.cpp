@@ -499,6 +499,8 @@ HRESULT RSManager::redirectGetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pMode
 		pMode->Height = Settings::get().getRenderHeight();
 		pMode->RefreshRate = Settings::get().getReportedHz();
 	}
+	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode(pMode);
+	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
 	return res;
 }
 HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* pMode, D3DDISPLAYROTATION* pRotation) {
@@ -511,6 +513,8 @@ HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* p
 		pMode->RefreshRate = Settings::get().getReportedHz();
 		pMode->ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
 	}
+	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode((D3DDISPLAYMODE*)pMode);
+	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
 	return res;
 }
 
@@ -561,6 +565,7 @@ namespace {
 		case 3: copy->PresentationInterval = D3DPRESENT_INTERVAL_THREE; break;
 		case 4: copy->PresentationInterval = D3DPRESENT_INTERVAL_FOUR; break;
 		}
+		if(pPresentationParameters->Windowed) copy->FullScreen_RefreshRateInHz = 0;
 	}
 	void initDisplayMode(D3DDISPLAYMODEEX* d, D3DDISPLAYMODEEX** copy) {
 		if(d) {
@@ -573,18 +578,33 @@ namespace {
 			*copy = NULL;
 		}
 	}
+	bool forceBorderlessFS(D3DPRESENT_PARAMETERS *pPresentationParameters) {
+		if(pPresentationParameters && pPresentationParameters->Windowed == FALSE && Settings::get().getForceBorderlessFullscreen()) {
+			SDLOG(1, "Forcing borderless windowed fullscreen mode.\n");
+			pPresentationParameters->Windowed = TRUE;
+			pPresentationParameters->FullScreen_RefreshRateInHz = 0;
+			return true;
+		}
+		return false;
+	}
 }
 
 HRESULT RSManager::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DDevice9 **ppReturnedDeviceInterface) {
 	logMode("redirectCreateDevice", pPresentationParameters);
 
+	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
+	pPresentationParameters = &params;
+	bool fs = forceBorderlessFS(pPresentationParameters);
+
 	if(isDownsamplingRequest(pPresentationParameters)) {
+		if(fs) setDisplayFaking(true);
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
 		HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &copy, ppReturnedDeviceInterface);
 		if(SUCCEEDED(ret)) {
 			new hkIDirect3DDevice9(ppReturnedDeviceInterface, &copy, d3d9);
 			get().initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
+			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 		} else SDLOG(0, "FAILED creating downsampling device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 		return ret;
 	}
@@ -593,6 +613,7 @@ HRESULT RSManager::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTY
 	if(SUCCEEDED(ret)) {
 		new hkIDirect3DDevice9(ppReturnedDeviceInterface, pPresentationParameters, d3d9);
 		get().initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
+		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
 	} else SDLOG(0, "FAILED creating non-downsampling device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 	return ret;
 }
@@ -601,7 +622,12 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 										  D3DDISPLAYMODEEX* pFullscreenDisplayMode, IDirect3DDevice9Ex** ppReturnedDeviceInterface) {
 	logMode("redirectCreateDeviceEx", pPresentationParameters, pFullscreenDisplayMode);
 	
+	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
+	pPresentationParameters = &params;
+	bool fs = forceBorderlessFS(pPresentationParameters);
+	
 	if(isDownsamplingRequest(pPresentationParameters, pFullscreenDisplayMode)) {
+		if(fs) setDisplayFaking(true);
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
 		D3DDISPLAYMODEEX copyEx, *pCopyEx = &copyEx;
@@ -610,6 +636,7 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 		if(SUCCEEDED(ret)) {
 			new hkIDirect3DDevice9Ex(ppReturnedDeviceInterface, &copy, d3d9ex);
 			get().initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
+			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 		} else SDLOG(0, "FAILED creating downsampling ex device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 		return ret;
 	}
@@ -618,53 +645,68 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 	if(SUCCEEDED(ret)) {
 		new hkIDirect3DDevice9Ex(ppReturnedDeviceInterface, pPresentationParameters, d3d9ex);
 		get().initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
+		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
 	} else SDLOG(0, "FAILED creating non-downsampling ex device -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 	return ret;
 }
 
 HRESULT RSManager::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParameters) {
 	logMode("redirectReset", pPresentationParameters);
+	
+	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
+	pPresentationParameters = &params;
+	bool fs = forceBorderlessFS(pPresentationParameters);
 
 	releaseResources();
 	
 	if(isDownsamplingRequest(pPresentationParameters)) {
+		if(fs) setDisplayFaking(true);
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
 		HRESULT ret = d3ddev->Reset(&copy);
-		if(!SUCCEEDED(ret)) { 
-			SDLOG(0, "FAILED resetting to downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-		} else initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
+		if(SUCCEEDED(ret)) { 
+			initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
+			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
+		} else SDLOG(0, "FAILED resetting to downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 		return ret;
 	}
 
 	HRESULT ret = d3ddev->Reset(pPresentationParameters);
-	if(!SUCCEEDED(ret)) { 
-		SDLOG(0, "FAILED resetting to non-downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-	} else initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
+	if(SUCCEEDED(ret)) { 
+		initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);			
+		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
+	} else SDLOG(0, "FAILED resetting to non-downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 	return ret;
 }
 
 HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode) {
 	logMode("redirectResetEx", pPresentationParameters);
+	
+	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
+	pPresentationParameters = &params;
+	bool fs = forceBorderlessFS(pPresentationParameters);
 
 	releaseResources();
 
 	if(isDownsamplingRequest(pPresentationParameters)) {
+		if(fs) setDisplayFaking(true);
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
 		D3DDISPLAYMODEEX copyEx, *pCopyEx = &copyEx;
 		initDisplayMode(pFullscreenDisplayMode, &pCopyEx);
 		HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(&copy, pCopyEx);
-		if(!SUCCEEDED(ret)) { 
-			SDLOG(0, "FAILED resetting to downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-		} else initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
+		if(SUCCEEDED(ret)) { 
+			initResources(true, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), pPresentationParameters->BackBufferCount, pPresentationParameters->BackBufferFormat, pPresentationParameters->SwapEffect);
+			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
+		} else SDLOG(0, "FAILED resetting to downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 		return ret;
 	}
 
 	HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(pPresentationParameters, pFullscreenDisplayMode);
-	if(!SUCCEEDED(ret)) { 
-		SDLOG(0, "FAILED resetting to non-downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
-	} else initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
+	if(SUCCEEDED(ret)) { 
+		initResources(false, pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, 0, D3DFMT_UNKNOWN, pPresentationParameters->SwapEffect);
+		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
+	} else SDLOG(0, "FAILED resetting to non-downsampling ex -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
 	return ret;
 }
 

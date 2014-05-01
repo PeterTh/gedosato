@@ -58,9 +58,9 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
     stringstream s;
 
     // Setup pixel size macro
-    s << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
+    s << "float4(1.0 / " << width << ", 1.0 / " << height << ", " << width << ", " << height << ")";
     string pixelSizeText = s.str();
-    D3DXMACRO pixelSizeMacro = { "SMAA_PIXEL_SIZE", pixelSizeText.c_str() };
+    D3DXMACRO pixelSizeMacro = { "SMAA_RT_METRICS", pixelSizeText.c_str() };
     defines.push_back(pixelSizeMacro);
 
     // Setup preset macro
@@ -110,13 +110,17 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         releaseBlendResources = true;
     }
 
+	device->CreateDepthStencilSurface(width, height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &stencilSurf, NULL);
+
     // Load the precomputed textures.
     loadAreaTex();
     loadSearchTex();
 
     // Create some handles for techniques and variables.
-    thresholdHandle = effect->GetParameterByName(NULL, "threshold");
+    thresholdHandle = effect->GetParameterByName(NULL, "threshld");
     maxSearchStepsHandle = effect->GetParameterByName(NULL, "maxSearchSteps");
+    maxSearchStepsDiagHandle = effect->GetParameterByName(NULL, "maxSearchStepsDiag");
+    cornerRoundingHandle = effect->GetParameterByName(NULL, "cornerRounding");
     areaTexHandle = effect->GetParameterByName(NULL, "areaTex2D");
     searchTexHandle = effect->GetParameterByName(NULL, "searchTex2D");
     colorTexHandle = effect->GetParameterByName(NULL, "colorTex2D");
@@ -143,6 +147,7 @@ SMAA::~SMAA() {
         SAFERELEASE(blendTex);
         SAFERELEASE(blendSurface);
     }
+	SAFERELEASE(stencilSurf);
 
     SAFERELEASE(areaTex);
     SAFERELEASE(searchTex);
@@ -152,14 +157,23 @@ SMAA::~SMAA() {
 void SMAA::go(IDirect3DTexture9 *edges,
               IDirect3DTexture9 *src, 
               IDirect3DSurface9 *dst,
-              Input input) {
+              Input input) { 
     // Setup the layout for our fullscreen quad.
     device->SetVertexDeclaration(vertexDeclaration);
+
+	// Set our stencil surface
+	IDirect3DSurface9* pZSSurf;
+	device->GetDepthStencilSurface(&pZSSurf);
+	device->SetDepthStencilSurface(stencilSurf);
 
     // And here we go!
     edgesDetectionPass(edges, input); 
     blendingWeightsCalculationPass();
     neighborhoodBlendingPass(src, dst);
+
+	device->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	device->SetDepthStencilSurface(pZSSurf);
+	SAFERELEASE(pZSSurf);
 }
 
 
@@ -188,7 +202,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
 
     // Set the render target and clear both the color and the stencil buffers.
     device->SetRenderTarget(0, edgeSurface);
-    device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
+    device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
     // Setup variables.
     effect->SetFloat(thresholdHandle, threshold);
