@@ -21,6 +21,7 @@
 #include "fxaa.h"
 #include "dof.h"
 #include "post.h"
+#include "bloom.h"
 #include "scaling.h"
 #include "console.h"
 #include "key_actions.h"
@@ -52,6 +53,8 @@ void RSManager::showStatus() {
 	else console.add("DoF disabled");
 	if(ssao && doAO) console.add(format("SSAO enabled, strength %d, scale %d", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale()));
 	else console.add("SSAO disabled");
+	if(bloom && doBloom) console.add(format("Bloom enabled"));
+	else console.add("Bloom disabled");
 #endif // DARKSOULSII
 }
 
@@ -120,6 +123,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	}
 	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, drw, drh, Settings::get().getSsaoStrength()-1, SSAO::VSSAO2);
 	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh);
+	if(Settings::get().getEnableBloom()) bloom = new Bloom(d3ddev, drw, drh, 0.9f, 1.0f, 0.5f);
 	#endif // DARKSOULSII
 
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
@@ -137,6 +141,7 @@ void RSManager::releaseResources() {
 	SAFEDELETE(smaa);
 	SAFEDELETE(ssao);
 	SAFEDELETE(post);
+	SAFEDELETE(bloom);
 	#endif // DARKSOULSII
 	SAFERELEASE(depthStencilSurf);
 	SAFERELEASE(extraBuffer);
@@ -288,9 +293,14 @@ void RSManager::dumpTexture(const char* name, IDirect3DTexture9* tex) {
 	D3DXSaveTextureToFile(fullname, D3DXIFF_TGA, tex, NULL);
 }
 
+#ifdef DARKSOULSII
 void RSManager::dumpSSAO() {
-	ssao->dumpFrame();
+	if(ssao) ssao->dumpFrame();
 }
+void RSManager::dumpBloom() {
+	if(bloom) bloom->dumpFrame();
+}
+#endif // DARKSOULSII
 
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 
@@ -309,8 +319,8 @@ HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 		SAFERELEASE(zBufferSurf);
 		d3ddev->GetRenderTarget(1, &zBufferSurf);
 	}
-	// If previous RT was D3DFMT_A16B16G16R16F, store RT and get ready to apply AO
-	else if(doAO && ssao && !aoDone && !hdrRT && RenderTargetIndex == 0 && zBufferSurf != NULL && defaultState != NULL) {
+	// If previous RT was D3DFMT_A16B16G16R16F, store RT
+	else if(((doAO && ssao) || (doBloom && bloom)) && !aoDone && !hdrRT && RenderTargetIndex == 0 && zBufferSurf != NULL && defaultState != NULL) {
 		IDirect3DSurface9* prevRT = NULL;
 		d3ddev->GetRenderTarget(0, &prevRT);
 		if(prevRT) {
@@ -734,7 +744,7 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 										   CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	#ifdef DARKSOULSII
 	// perform postprocessing and AA instead of the original DS2 AA shader pass
-	if(aaStepStarted && (((smaa || fxaa) && doAA) || (post && doPost) || (dof && doDof))) {
+	if(aaStepStarted && (((smaa || fxaa) && doAA) || (post && doPost) || (dof && doDof) || (bloom && doBloom))) {
 		storeRenderState();
 		// Perform post-processing
 		SDLOG(2, "Starting DS2 post-processing.")
@@ -758,6 +768,10 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 			}
 			if(dof && doDof) {
 				dof->go(frametex, depth, rt);
+				d3ddev->StretchRect(rt, NULL, framesurf, NULL, D3DTEXF_NONE);
+			}
+			if(bloom && doBloom && hdrRT) {
+				bloom->go(getSurfTexture(hdrRT), frametex, rt);
 			}
 			if(defaultState == NULL) d3ddev->CreateStateBlock(D3DSBT_ALL, &defaultState);
 		} else {
@@ -785,7 +799,7 @@ HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 
 HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	#ifdef DARKSOULSII
-	if(State == D3DRS_ALPHABLENDENABLE && Value == TRUE && hdrRT && !aoDone) {
+	if(State == D3DRS_ALPHABLENDENABLE && Value == TRUE && (doAO && ssao) && hdrRT && !aoDone) {
 		// now perform AO
 		SDLOG(2, "Starting DS2 AO rendering.\n");
 		storeRenderState();

@@ -25,7 +25,7 @@ How do I use it? (INSTALLATION INSTRUCTIONS)
 5) Click "Activate" (You can also make a shortcut for "GeDoSaToTool.exe -a")
 6) Select the downsampling resolution in-game if you want to use downsampling
 5) ENABLE IN-GAME ANTI-ALIASING in Dark Souls 2 if you want to use any effects
-  (disable in-game AO if yo uuse GeDoSaTo AO, and in-game DoF if you use GeDoSaTo DoF)
+  (disable in-game AO if you use GeDoSaTo AO, and in-game DoF if you use GeDoSaTo DoF)
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================

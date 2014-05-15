@@ -14,6 +14,7 @@ class FXAA;
 class DOF;
 class SSAO;
 class Post;
+class Bloom;
 class Scaler;
 #pragma endregion
 
@@ -27,7 +28,7 @@ private:
 	bool inited, downsampling;
 	IDirect3DDevice9 *d3ddev;
 
-	bool doAA, dumpingFrame;
+	bool dumpingFrame;
 	Scaler* scaler;
 	Console console;
 	ShaderManager shaderMan;
@@ -78,7 +79,8 @@ private:
 	Post* post;
 	FXAA* fxaa;
 	SMAA* smaa;
-	bool doAO, doDof, doPost;
+	Bloom* bloom;
+	bool doDof, doAO, doPost, doAA, doBloom;
 #endif // DARKSOULSII
 	
 public:
@@ -97,8 +99,8 @@ public:
 				  , defaultState(NULL), zBufferSurf(NULL), hdrRT(NULL)
 				  , aaStepStarted(false), aoDone(false)
 				  , dof(NULL), ssao(NULL), post(NULL)
-				  , fxaa(NULL), smaa(NULL) 
-				  , doAO(true), doDof(true), doPost(true)
+				  , fxaa(NULL), smaa(NULL) , bloom(NULL)
+				  , doAO(true), doDof(true), doPost(true), doBloom(true)
 				  #endif // DARKSOULSII
 	{
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
@@ -129,8 +131,10 @@ public:
 	void toggleAA() { if(smaa || fxaa) { doAA = !doAA; console.add(doAA ? "AA enabled" : "AA disabled"); } else { console.add("AA disabled in configuration!"); } }
 	void toggleAO() { if(ssao) { doAO = !doAO; console.add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { console.add("SSAO disabled in configuration!"); } }
 	void toggleDOF() { if(dof) { doDof = !doDof; console.add(doDof ? "DoF enabled" : "DoF disabled"); } else { console.add("DoF disabled in configuration!"); } }
-	void togglePost() { if(post) { doPost = !doPost; console.add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { console.add("Postprocessing disabled in configuration!"); } }
+	void toggleBloom() { if(bloom) { doBloom = !doBloom; console.add(doBloom ? "Bloom enabled" : "Bloom disabled"); } else { console.add("Bloom disabled in configuration!"); } }
+	void togglePost() { if(post) { doPost = !doPost; console.add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { console.add("Post-processing disabled in configuration!"); } }
 	void dumpSSAO();
+	void dumpBloom();
 #endif // DARKSOULSII
 
 	Scaler* getScaler() { return scaler; }

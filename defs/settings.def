@@ -48,5 +48,7 @@ SETTING(bool, EnableDoF, "enableDoF", false);
 SETTING(float, DOFBaseRadius, "dofBaseRadius", 1.00);
 SETTING(string, DOFType, "dofType", "basic");
 
+SETTING(bool, EnableBloom, "enableBloom", false);
+
 SETTING(bool, EnablePostprocessing, "enablePostprocessing", false);
 #endif // DARKSOULSII

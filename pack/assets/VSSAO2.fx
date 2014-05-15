@@ -12,7 +12,7 @@
 extern float aoRadiusMultiplier = 0.2; //Linearly multiplies the radius of the AO Sampling
 extern float ThicknessModel = 6; //units in space the AO assumes objects' thicknesses are
 extern float FOV = 75; //Field of View in Degrees
-extern float luminosity_threshold = 0.3;
+extern float luminosity_threshold = 0.5;
 
 #ifndef SCALE
 #define SCALE 1.0
@@ -28,17 +28,17 @@ extern float luminosity_threshold = 0.3;
 
 #ifdef SSAO_STRENGTH_LOW
 extern float aoClamp = 0.6;
-extern float aoStrengthMultiplier = 0.8;
+extern float aoStrengthMultiplier = 0.9;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
 extern float aoClamp = 0.3;
-extern float aoStrengthMultiplier = 1.4;
+extern float aoStrengthMultiplier = 1.6;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
 extern float aoClamp = 0.1;
-extern float aoStrengthMultiplier = 1.9;
+extern float aoStrengthMultiplier = 2.1;
 #endif
 
 
@@ -267,31 +267,49 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 
 	ao = 1.0f-ao*aoStrengthMultiplier;
 	
-	return float4(ao,ao,ao,1.0f);
+	return float4(ao,ao,ao,depth);
 }
 
 float4 HBlur( VSOUT IN ) : COLOR0 {
-	float color = tex2D(passSampler, IN.UVCoord).r;
+	float4 sample = tex2D(passSampler, IN.UVCoord);
+	float blurred = sample.r;
+	float depth = sample.a;
+	float divide = 1.0;
 
-	float blurred = color*0.2270270270;
-	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
-	
-	return blurred;
+	float4 left = tex2D(passSampler, IN.UVCoord - float2(rcpres.x, 0));
+	if(abs(left.a - depth) < ThicknessModel) {
+		blurred += 0.5*left.r;
+		divide += 0.5;
+	}
+
+	float4 right = tex2D(passSampler, IN.UVCoord + float2(rcpres.x, 0));
+	if(abs(right.a - depth) < ThicknessModel) {
+		blurred += 0.5*right.r;
+		divide += 0.5;
+	}
+
+	return blurred/divide;
 }
 
 float4 VBlur( VSOUT IN ) : COLOR0 {
-	float color = tex2D(passSampler, IN.UVCoord).r;
+	float4 sample = tex2D(passSampler, IN.UVCoord);
+	float blurred = sample.r;
+	float depth = sample.a;
+	float divide = 1.0;
 
-	float blurred = color*0.2270270270;
-	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
-	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
-	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
-	
-	return blurred;
+	float4 top = tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y));
+	if(abs(top.a - depth) < ThicknessModel) {
+		blurred += 0.5*top.r;
+		divide += 0.5;
+	}
+
+	float4 bottom = tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y));
+	if(abs(bottom.a - depth) < ThicknessModel) {
+		blurred += 0.5*bottom.r;
+		divide += 0.5;
+	}
+
+	return blurred/divide;
 }
 
 float4 Combine( VSOUT IN ) : COLOR0 {

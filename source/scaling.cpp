@@ -1,6 +1,7 @@
-#include "Scaling.h"
+#include "scaling.h"
 
-#include "Console.h"
+#include "console.h"
+#include "utils.h"
 
 #include <string>
 #include <sstream>
@@ -9,10 +10,6 @@
 using namespace std;
 
 #include "Settings.h"
-
-double Log2(double n) {  
-    return log(n) / log(2);  
-}
 
 Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height) 
 	: Effect(device), inputwidth(inputwidth), inputheight(inputheight), width(width), height(height),

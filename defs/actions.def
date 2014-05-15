@@ -23,8 +23,12 @@ ACTION(setBicubicScaling, if(RSManager::get().getScaler()) RSManager::get().getS
 ACTION(toggleAO, RSManager::get().toggleAO())
 ACTION(toggleDOF, RSManager::get().toggleDOF())
 ACTION(togglePost, RSManager::get().togglePost())
+ACTION(toggleBloom, RSManager::get().toggleBloom())
 
 ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_HUDLESS))
+
+ACTION(dumpBloom, RSManager::get().dumpBloom())
+ACTION(dumpSSAO, RSManager::get().dumpSSAO())
 #endif // DARKSOULSII
 
 // Development Actions
@@ -32,6 +36,5 @@ ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::S
 ACTION(showStatus, RSManager::get().showStatus())
 
 ACTION(dumpFrame, RSManager::get().dumpFrame())
-ACTION(dumpSSAO, RSManager::get().dumpSSAO())
 
 ACTION(userTrigger, SDLOG(0, "================================================================= USER TRIGGER ===\n"))

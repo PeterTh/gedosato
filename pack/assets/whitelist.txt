@@ -3,3 +3,4 @@ yso_win
 Tropico4
 consortium
 DarkSoulsII
+ChildofLight

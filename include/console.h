@@ -24,7 +24,7 @@ public:
 
 class Console {
 	static Console* latest;
-	static const unsigned MAX_LINES = 6;
+	static const unsigned MAX_LINES = 8;
 	static const unsigned BMPSIZE = 512;
 
 	vector<ConsoleLine> lines;
