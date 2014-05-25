@@ -3,10 +3,10 @@
 #include "version.h"
 
 const unsigned VER_MAJOR = 0;
-const unsigned VER_MINOR = 4;
-const unsigned VER_BUILD = 509;
+const unsigned VER_MINOR = 5;
+const unsigned VER_BUILD = 527;
 
-const char* VER_STRING = "version 0.4.509 built on 2014/05/14 17:06:42";
+const char* VER_STRING = "version 0.5.527 built on 2014/05/18 16:41:14";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

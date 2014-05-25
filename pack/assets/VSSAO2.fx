@@ -33,12 +33,12 @@ extern float aoStrengthMultiplier = 0.9;
 
 #ifdef SSAO_STRENGTH_MEDIUM
 extern float aoClamp = 0.3;
-extern float aoStrengthMultiplier = 1.6;
+extern float aoStrengthMultiplier = 1.5;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
 extern float aoClamp = 0.1;
-extern float aoStrengthMultiplier = 2.1;
+extern float aoStrengthMultiplier = 2.0;
 #endif
 
 
@@ -272,42 +272,38 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 
 float4 HBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
-	float blurred = sample.r;
+	float blurred = sample.r*2;
 	float depth = sample.a;
-	float divide = 1.0;
+	float divide = 2.0;
 
 	float4 left = tex2D(passSampler, IN.UVCoord - float2(rcpres.x, 0));
-	if(abs(left.a - depth) < ThicknessModel) {
-		blurred += 0.5*left.r;
-		divide += 0.5;
-	}
+	float lpower = saturate(ThicknessModel - abs(left.a - depth));
+	blurred += lpower*left.r;
+	divide += lpower;
 
 	float4 right = tex2D(passSampler, IN.UVCoord + float2(rcpres.x, 0));
-	if(abs(right.a - depth) < ThicknessModel) {
-		blurred += 0.5*right.r;
-		divide += 0.5;
-	}
+	float rpower = saturate(ThicknessModel - abs(right.a - depth));
+	blurred += rpower*left.r;
+	divide += rpower;
 
 	return blurred/divide;
 }
 
 float4 VBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
-	float blurred = sample.r;
+	float blurred = sample.r*2;
 	float depth = sample.a;
-	float divide = 1.0;
+	float divide = 2.0;
 
 	float4 top = tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y));
-	if(abs(top.a - depth) < ThicknessModel) {
-		blurred += 0.5*top.r;
-		divide += 0.5;
-	}
+	float tpower = saturate(ThicknessModel - abs(top.a - depth));
+	blurred += tpower*top.r;
+	divide += tpower;
 
 	float4 bottom = tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y));
-	if(abs(bottom.a - depth) < ThicknessModel) {
-		blurred += 0.5*bottom.r;
-		divide += 0.5;
-	}
+	float bpower = saturate(ThicknessModel - abs(bottom.a - depth));
+	blurred += bpower*bottom.r;
+	divide += bpower;
 
 	return blurred/divide;
 }

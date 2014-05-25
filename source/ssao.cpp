@@ -81,7 +81,7 @@ void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurfa
 	
     mainSsaoPass(depth, buffer1Surf);
 	
-	for(size_t i = 0; i<1; ++i) {
+	for(size_t i = 0; i<2; ++i) {
 		hBlurPass(depth, buffer1Tex, buffer2Surf);
 		vBlurPass(depth, buffer2Tex, buffer1Surf);
 	}
@@ -106,7 +106,7 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 		RSManager::get().dumpTexture("SSAO_MD1_buffer1", buffer1Tex);
 	}
 	
-	for(size_t i = 0; i<1; ++i) {
+	for(size_t i = 0; i<3; ++i) {
 		hBlurPass(depth, buffer1Tex, buffer2Surf);
 		vBlurPass(depth, buffer2Tex, buffer1Surf);
 	}

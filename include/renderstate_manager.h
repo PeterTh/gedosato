@@ -100,7 +100,7 @@ public:
 				  , aaStepStarted(false), aoDone(false)
 				  , dof(NULL), ssao(NULL), post(NULL)
 				  , fxaa(NULL), smaa(NULL) , bloom(NULL)
-				  , doAO(true), doDof(true), doPost(true), doBloom(true)
+				  , doAO(true), doDof(false), doPost(true), doBloom(true)
 				  #endif // DARKSOULSII
 	{
 		#define TEXTURE(_name, _hash) ++numKnownTextures;

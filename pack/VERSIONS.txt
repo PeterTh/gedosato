@@ -1,3 +1,12 @@
+17-05-2014 -- DARK SOULS 2 edition - alpha 5
+============================================
+General:
+- Now distributing release versions
+Dark Souls 2:
+- Added new HDR bloom & eye adaption effect
+- Improve SSAO blur (now sharp at depth boundaries)
+- Add Asmodean's postprocessing as an option
+
 30-04-2014 -- DARK SOULS 2 edition - alpha 4
 ============================================
 General:

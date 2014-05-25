@@ -28,6 +28,7 @@ Post::Post(IDirect3DDevice9 *device, int width, int height)
 
 	// Load effect from file
 	string shaderFn = "post.fx";
+	if(Settings::get().getPostProcessingType() == "asmodean") shaderFn = "post_asmodean.fx";
 	shaderFn = getAssetFileName(shaderFn);
 	SDLOG(0, "%s load\n", shaderFn.c_str());	
 	ID3DXBuffer* errors;

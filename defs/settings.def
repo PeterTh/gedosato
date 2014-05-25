@@ -51,4 +51,5 @@ SETTING(string, DOFType, "dofType", "basic");
 SETTING(bool, EnableBloom, "enableBloom", false);
 
 SETTING(bool, EnablePostprocessing, "enablePostprocessing", false);
+SETTING(string, PostProcessingType, "postProcessingType", "durante");
 #endif // DARKSOULSII

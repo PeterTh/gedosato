@@ -9,19 +9,17 @@
 float4 inputPixelMetrics;
 // 1/[number of steps in the pyramid]
 float invSteps;
-// Total averaged Bloom power in the current frame
-float totalPower;
 
 // Tweakable variables //////////////////////////////////////////////////////////////////
 
 // values above this cutoff are considered to be highlights
 #ifndef CUTOFF
-#define CUTOFF 0.075
+#define CUTOFF 0.08
 #endif
 
 // linearly increases the strength of the bloom effect
 #ifndef STRENGTH
-#define STRENGTH 6.0
+#define STRENGTH 8.0
 #endif
 
 // strength of the "camera lens dirt" effect
@@ -44,10 +42,16 @@ float totalPower;
 #define MAX_BRIGHTNESS float4(0.7,0.7,0.7,1.0)
 #endif
 
+// speed of eye adaption - larger number = quicker adaption
+#ifndef ADAPT_SPEED
+#define ADAPT_SPEED 0.015f
+#endif
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 texture2D sampleTex; // original texture
 texture2D passTex; // previous pass
+texture2D avgTex; // 1x1 averaged bloom strength
 texture2D dirtTex; // (static) dirt mask
 
 sampler sampleSampler = sampler_state {
@@ -64,6 +68,12 @@ sampler passSampler = sampler_state {
 
 sampler dirtSampler = sampler_state {
 	texture   = <dirtTex>;
+	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter   = LINEAR;
+	AddressU  = Clamp;  AddressV  = Clamp;  SRGBTexture = FALSE;
+};
+
+sampler avgSampler = sampler_state {
+	texture   = <avgTex>;
 	MinFilter = LINEAR; MagFilter = LINEAR; MipFilter   = LINEAR;
 	AddressU  = Clamp;  AddressV  = Clamp;  SRGBTexture = FALSE;
 };
@@ -122,7 +132,7 @@ float4 VBlurShader(VSOUT IN) : COLOR0 {
 	blurred += tex2D(passSampler, IN.UVCoord - float2(0, inputPixelMetrics.y*(3.2307692308)) + inputPixelMetrics.xy*0.55) * 0.0702702703;
 	
 	float3 luminanceWeights = float3(0.299,0.587,0.114);
-	float luminance = dot(blurred, luminanceWeights);
+	float luminance = dot(blurred.rgb, luminanceWeights);
 	blurred = lerp(luminance, blurred, SATURATION);
 
 	return blurred;
@@ -132,16 +142,23 @@ float4 integrateUpwardsShader(VSOUT IN) : COLOR0 {
 	return float4(tex2D(passSampler, IN.UVCoord).rgb, 1.0);
 }
 
+float4 eyeAdaptionShader(VSOUT IN) : COLOR0 {
+	float3 current = tex2D(avgSampler, float2(0.5,0.5)).rgb;
+	return float4(current, ADAPT_SPEED);
+}
+
 float4 finalComposeShader(VSOUT IN) : COLOR0 {
 	float4 cBloom = tex2D(passSampler, IN.UVCoord);
 	float4 color = tex2D(sampleSampler, IN.UVCoord);
+	float4 avg = tex2D(avgSampler, float2(0.5,0.5));
+	float totalPower = avg.r+avg.g+avg.b;
 	
 	cBloom = cBloom * invSteps;
 	
 	float4 dirt = tex2D(dirtSampler, IN.UVCoord);
 	cBloom = cBloom + cBloom*dirt*DIRT_STRENGTH;
 	
-	return MIX_FACTOR*color + ((1-MIX_FACTOR)*color+cBloom*STRENGTH)/(1.0+(totalPower*50));
+	return MIX_FACTOR*color + ((1-MIX_FACTOR)*color+cBloom*STRENGTH)/(1.0+(totalPower*100));
 }
 
 technique initialCutoffAndDownsample {
@@ -177,6 +194,19 @@ technique integrateUpwards {
 		BlendOp = ADD;
 		SrcBlend = ONE;
 		DestBlend = ONE;
+		ColorWriteEnable = RED|GREEN|BLUE;
+	}
+}
+
+technique eyeAdaption {
+	pass eyeAdaption {
+		VertexShader = compile vs_3_0 FrameVS();
+		PixelShader = compile ps_3_0 eyeAdaptionShader();
+		ZEnable = false; AlphaTestEnable = false;
+		AlphaBlendEnable = true; 
+		BlendOp = ADD;
+		SrcBlend = SRCALPHA;
+		DestBlend = INVSRCALPHA;
 		ColorWriteEnable = RED|GREEN|BLUE;
 	}
 }

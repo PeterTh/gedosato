@@ -47,7 +47,7 @@ void RSManager::showStatus() {
 		else console.add(format("FXAA enabled, quality level %d", Settings::get().getAAQuality()));
 	}
 	else console.add("AA disabled");
-	if(post && doPost) console.add("Postprocessing enabled");
+	if(post && doPost) console.add(format("Postprocessing enabled, type %s", Settings::get().getPostProcessingType().c_str()));
 	else console.add("Postprocessing disabled");
 	if(dof && doDof) console.add(format("DoF enabled, type %s, base blur size %f", Settings::get().getDOFType().c_str(), Settings::get().getDOFBaseRadius()));
 	else console.add("DoF disabled");
@@ -254,7 +254,12 @@ HRESULT RSManager::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDestRec
 HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
 	SDLOG(1, "- PresentEx flags: %s\n", D3DPresentExFlagsToString(dwFlags).c_str());
 	prePresent((dwFlags & D3DPRESENT_DONOTFLIP) != 0);	
-	return ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
+	
+	storeRenderState();
+	HRESULT hr = ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
+	restoreRenderState();
+	
+	return hr;	
 }
 
 void RSManager::captureRTScreen(const string& stype) {

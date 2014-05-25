@@ -9,14 +9,12 @@ using namespace std;
 #include "renderstate_manager.h"
 #include "utils.h"
 
-#define STEP_SKIP 3
+#define STEP_SKIP 5
 #define STEP_MINSIZE 16
-#define ADJUST_SPEED 0.025f
 
 Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, float strength, float dirtStrength)
-	: Effect(device), width(width), height(height), cutoff(cutoff), power(0.0),
+	: Effect(device), width(width), height(height), cutoff(cutoff),
 	  strength(strength), dirtStrength(dirtStrength), 
-	  //steps(static_cast<unsigned>(floor(max(Log2(width), Log2(height))))), 
 	  steps(0),
 	  dumping(false) {
 	
@@ -66,9 +64,6 @@ Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, floa
 		++i;
 	}
 	steps = i;
-	//minWidth = sWidth; minHeight = sHeight;
-	//SDLOG(2, "Bloom min: %4dx%4d\n", minWidth, minHeight);
-	//device->CreateOffscreenPlainSurface(minWidth, minHeight, D3DFMT_A16B16G16R16F, D3DPOOL_SYSTEMMEM, &readbackSurf, NULL);
 
 	// Get handles
 	#define GETHANDLE(__name) \
@@ -76,10 +71,10 @@ Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, floa
 	if(__name##Handle == NULL) SDLOG(-1, "ERROR loading handle %s in Bloom effect\n", #__name);
 	GETHANDLE(inputPixelMetrics)
 	GETHANDLE(invSteps);
-	GETHANDLE(totalPower);
 	GETHANDLE(sampleTex);
 	GETHANDLE(passTex);
 	GETHANDLE(dirtTex);
+	GETHANDLE(avgTex);
 	#undef GETHANDLE
 	#define GETHANDLE(__name) \
 	__name##Handle = effect->GetTechniqueByName(#__name); \
@@ -87,6 +82,7 @@ Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, floa
 	GETHANDLE(initialCutoffAndDownsample);
 	GETHANDLE(gaussian);
 	GETHANDLE(integrateUpwards);
+	GETHANDLE(eyeAdaption);
 	GETHANDLE(finalCompose);
 	#undef GETHANDLE
 }
@@ -94,7 +90,6 @@ Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, floa
 Bloom::~Bloom() {
 	SAFERELEASE(effect);
 	SAFERELEASE(dirtTexture);
-	SAFERELEASE(readbackSurf);
 	for(unsigned i=0; i<steps; ++i) {
 		for(unsigned j=0; j<2; ++j) {
 			SAFERELEASE(stepBuffers[i].surfaces[j]);
@@ -138,29 +133,11 @@ void Bloom::go(IDirect3DTexture9 *hdrFrame, IDirect3DTexture9 *composeFrame, IDi
 	// Traverse back up
 	for(cur=steps-STEP_SKIP; cur>0; --cur) {
 		// Upsample
-		upPass(stepBuffers[cur].textures[0], stepBuffers[cur-1].surfaces[0]);
+		upPass(stepBuffers[cur].textures[0], stepBuffers[cur-1].surfaces[0], stepSizes[cur].w, stepSizes[cur].h);
 	}
 
-	// Get total bloom brightness
-	//device->GetRenderTargetData(stepBuffers[steps-1].surfaces[0], readbackSurf);
-	//if(dumping) {
-	//	RSManager::get().dumpSurface("Bloom_READBACK", readbackSurf);
-	//}
-	//D3DLOCKED_RECT r;
-	//HRESULT hr = readbackSurf->LockRect(&r, NULL, D3DLOCK_READONLY);
-	//if(SUCCEEDED(hr)) {
-	//	float cur_power = 0.0f;
-	//	for(int y=0; y<minHeight; ++y) {
-	//		D3DXVECTOR4_16F* line = reinterpret_cast<D3DXVECTOR4_16F*>(((BYTE*)r.pBits) + r.Pitch*y);
-	//		for(int x=0; x<minWidth; ++x) {
-	//			cur_power += line[x].x + line[x].y + line[x].z;
-	//		}
-	//	}
-	//	cur_power /= minWidth*minHeight;
-	//	power = power*(1.0f-ADJUST_SPEED) + cur_power*ADJUST_SPEED;
-	//	SDLOG(10, "Bloom power: %12.10f, cur power: %12.10f\n", power, cur_power);
-	//	readbackSurf->UnlockRect();
-	//}
+	//perform eye adaption
+	eyePass(stepBuffers[steps-1].textures[0], stepBuffers[steps-1].surfaces[1]);
 	
 	// apply final combination pass
 	if(dumping) {
@@ -212,7 +189,7 @@ void Bloom::blurPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int
 	effect->End();
 }
 
-void Bloom::upPass(IDirect3DTexture9* src, IDirect3DSurface9* dst) {
+void Bloom::upPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int sh) {
 	device->SetRenderTarget(0, dst);
 	
     // Setup variables.
@@ -228,6 +205,22 @@ void Bloom::upPass(IDirect3DTexture9* src, IDirect3DSurface9* dst) {
 	effect->End();
 }
 
+void Bloom::eyePass(IDirect3DTexture9* src, IDirect3DSurface9* dst) {
+	device->SetRenderTarget(0, dst);
+	
+    // Setup variables.
+    effect->SetTexture(avgTexHandle, src);
+
+    // Do it!
+    effect->SetTechnique(eyeAdaptionHandle);
+	UINT passes;
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
+	quad(width, height);
+	effect->EndPass();
+	effect->End();
+}
+
 void Bloom::finalPass(IDirect3DTexture9* src, IDirect3DTexture9* frame, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
 	
@@ -235,8 +228,8 @@ void Bloom::finalPass(IDirect3DTexture9* src, IDirect3DTexture9* frame, IDirect3
     effect->SetTexture(passTexHandle, src);
     effect->SetTexture(sampleTexHandle, frame);
     effect->SetTexture(dirtTexHandle, dirtTexture);
+    effect->SetTexture(avgTexHandle, stepBuffers[steps-1].textures[1]);
 	effect->SetFloat(invStepsHandle, 1.0f/(steps-STEP_SKIP));
-	effect->SetFloat(totalPowerHandle, power);
 
     // Do it!
     effect->SetTechnique(finalComposeHandle);
