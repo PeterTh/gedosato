@@ -8,7 +8,7 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality) 
+FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality, bool useSRGB) 
 	: Effect(device), width(width), height(height) {
 	
 	// Setup the defines for compiling the effect
@@ -28,6 +28,9 @@ FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality)
 		{ "FXAA_QUALITY__PRESET", "39" }
 	};
 	defines.push_back(qualityMacros[(int)quality]);
+
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
 
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);

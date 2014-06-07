@@ -1,0 +1,11 @@
+# GeDoSaTo Whitelist
+# One application name per line (application name = file name of the .exe without the .exe)
+# Wildcards supported (* = any sequence of characters, ? = any single character)
+
+Might and Magic X Legacy
+yso_win
+Tropico4
+consortium
+DarkSoulsII
+ChildofLight
+config

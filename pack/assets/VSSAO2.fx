@@ -270,6 +270,7 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	return float4(ao,ao,ao,depth);
 }
 
+#ifdef BLUR_SHARP
 float4 HBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
 	float blurred = sample.r*2;
@@ -288,7 +289,6 @@ float4 HBlur( VSOUT IN ) : COLOR0 {
 
 	return blurred/divide;
 }
-
 float4 VBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
 	float blurred = sample.r*2;
@@ -307,6 +307,31 @@ float4 VBlur( VSOUT IN ) : COLOR0 {
 
 	return blurred/divide;
 }
+#else // BLUR_GAUSSIAN
+float4 HBlur(VSOUT IN) : COLOR0 {
+	float color = tex2D(passSampler, IN.UVCoord).r;
+
+	float blurred = color*0.2270270270;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
+
+	return blurred;
+}
+
+float4 VBlur(VSOUT IN) : COLOR0 {
+	float color = tex2D(passSampler, IN.UVCoord).r;
+
+	float blurred = color*0.2270270270;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
+	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
+	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
+
+	return blurred;
+}
+#endif // blur type
 
 float4 Combine( VSOUT IN ) : COLOR0 {
 	float4 color = tex2D(frameSampler, IN.UVCoord);

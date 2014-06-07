@@ -3,6 +3,15 @@
 #include <cstdio>
 #include <sstream>
 
+IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface) {
+	IDirect3DTexture9 *ret = NULL;
+	IUnknown *pContainer = NULL;
+	HRESULT hr = pSurface->GetContainer(IID_IDirect3DTexture9, (void**)&pContainer);
+	if(D3D_OK == hr) ret = (IDirect3DTexture9*)pContainer;
+	SAFERELEASE(pContainer);
+	return ret;
+}
+
 // most of the enum-related functions in here are auto-generated
 
 TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix) {

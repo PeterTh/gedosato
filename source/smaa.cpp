@@ -46,7 +46,7 @@ using namespace std;
 
 #include "Settings.h"
 
-SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const ExternalStorage &storage)
+SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool useSRGB, const ExternalStorage &storage)
         : Effect(device),
           threshold(0.1f),
           maxSearchSteps(8),
@@ -72,6 +72,9 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, const
         { "SMAA_PRESET_CUSTOM", "1" }
     };
     defines.push_back(presetMacros[int(preset)]);
+
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
 
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);

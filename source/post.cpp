@@ -8,7 +8,7 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-Post::Post(IDirect3DDevice9 *device, int width, int height) 
+Post::Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB) 
 	: Effect(device), width(width), height(height) {
 	
 	// Setup the defines for compiling the effect
@@ -20,6 +20,9 @@ Post::Post(IDirect3DDevice9 *device, int width, int height)
 	string pixelSizeText = sp.str();
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
+
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
 	
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);

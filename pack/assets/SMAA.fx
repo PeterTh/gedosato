@@ -31,6 +31,10 @@
 #define SMAA_RT_METRICS float4(1.0 / 1280.0, 1.0 / 720.0, 1280.0, 720.0)
 #endif
 
+#ifndef USE_SRGB
+#define USE_SRGB true
+#endif
+
 /**
  * This can be ignored; its purpose is to support interactive custom parameter
  * tweaking.
@@ -73,7 +77,7 @@ sampler2D colorTex {
     Texture = <colorTex2D>;
     AddressU  = Clamp; AddressV = Clamp;
     MipFilter = Point; MinFilter = Linear; MagFilter = Linear;
-    SRGBTexture = true;
+	SRGBTexture = USE_SRGB;
 };
 
 sampler2D colorGammaTex {
@@ -262,7 +266,7 @@ technique NeighborhoodBlending {
         VertexShader = compile vs_3_0 DX9_SMAANeighborhoodBlendingVS();
         PixelShader = compile ps_3_0 DX9_SMAANeighborhoodBlendingPS();
         ZEnable = false;
-        SRGBWriteEnable = true;
+        SRGBWriteEnable = USE_SRGB;
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
 

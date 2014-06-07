@@ -33,8 +33,17 @@ LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lP
 
 const char* GeDoSaToVersion() {
 	static string verString;
-	if(verString.empty()) verString = format("%s (%s %s)", VER_STRING, EDITION, MODE_STRING);
+	if(verString.empty()) verString = format("%s \"%s\" (%s/%s)", VER_STRING, VER_NAME, EDITION, MODE_STRING);
 	return verString.c_str();
+}
+
+const char* GeDoSaToSettings() {
+	return
+		#define SETTING(_type, _var, _inistring, _defaultval) \
+		_inistring ","
+		#include "Settings.def"
+		#undef SETTING
+	;
 }
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
@@ -129,6 +138,9 @@ string getInstalledFileName(string filename) {
 }
 string getAssetFileName(string filename) {
 	return getInstallDirectory() + "assets\\" + filename;
+}
+string getConfigFileName(string filename) {
+	return getInstallDirectory() + "config\\" + filename;
 }
 
 string getTimeString() {

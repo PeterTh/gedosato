@@ -1,8 +1,12 @@
-GeDoSaTo*
+# GeDoSaTo Blacklist
+# One application name per line (application name = file name of the .exe without the .exe)
+# Wildcards supported (* = any sequence of characters, ? = any single character)
+
 svchost
 SciTE
 devenv
 firefox
+GeDoSaTo*
 dwm
 explorer
 excel

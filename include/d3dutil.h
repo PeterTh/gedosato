@@ -4,6 +4,8 @@
 #include <string>
 using std::string;
 
+IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface);
+
 TCHAR* D3DFormatToString(D3DFORMAT format, bool bWithPrefix = true);
 TCHAR* D3DSamplerStateTypeToString(D3DSAMPLERSTATETYPE state);
 TCHAR* D3DDeclTypeToString(D3DDECLTYPE type);

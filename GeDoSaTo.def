@@ -3,3 +3,4 @@ LIBRARY GeDoSaTo
 EXPORTS
 	GeDoSaToHook
 	GeDoSaToVersion
+	GeDoSaToSettings

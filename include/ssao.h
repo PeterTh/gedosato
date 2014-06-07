@@ -10,8 +10,9 @@
 class SSAO : public Effect {
 public:
 	enum Type { VSSAO, HBAO, SCAO, VSSAO2 };
+	enum Blur { BLUR_GAUSSIAN, BLUR_SHARP };
 
-    SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type);
+    SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur);
     virtual ~SSAO();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
@@ -21,6 +22,7 @@ public:
 
 private:
 	int width, height;
+	size_t blurPasses;
 	bool dumping;
 
 	ID3DXEffect *effect;

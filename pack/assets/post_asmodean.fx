@@ -77,6 +77,10 @@
 
 //[END OF USER OPTIONS]##
 
+#ifndef USE_SRGB
+#define USE_SRGB true
+#endif
+
 /*------------------------------------------------------------------------------
                              [GLOBALS/FUNCTIONS]
 ------------------------------------------------------------------------------*/
@@ -87,7 +91,7 @@ SamplerState s0
 	Texture = <thisframeTex>;
 	Filter = Anisotropic;
 	AddressU = Clamp; AddressV = Clamp;
-	SRGBTexture = true;
+	SRGBTexture = USE_SRGB;
 	MaxAnisotropy = 16;
 };
 
@@ -663,7 +667,7 @@ technique t0
 		ShadeMode = Phong;
 		SpecularEnable = true;
 		LightEnable[0] = true;
-		SRGBWriteEnable = true;
+		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;

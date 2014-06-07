@@ -5,8 +5,10 @@
 #include <vector>
 
 #include "d3d9.h"
+#include "d3dperf.h"
 #include "console.h"
 #include "shader_manager.h"
+#include "game_plugin.h"
 
 #pragma region Forward Declarations
 class SMAA;
@@ -20,20 +22,21 @@ class Scaler;
 
 class RSManager {
 public:
-	typedef enum { SCREENSHOT_NONE, SCREENSHOT_STANDARD, SCREENSHOT_FULL, SCREENSHOT_HUDLESS } screenshotType;
+	typedef enum { SCREENSHOT_NONE, SCREENSHOT_STANDARD, SCREENSHOT_FULL, SCREENSHOT_HUDLESS } ScreenshotType;
 
 private:
 	static RSManager* latest;
 
 	bool inited, downsampling;
 	IDirect3DDevice9 *d3ddev;
+	GamePlugin *plugin;
 
 	bool dumpingFrame;
 	Scaler* scaler;
 	Console console;
 	ShaderManager shaderMan;
 	
-	screenshotType takeScreenshot;
+	ScreenshotType takeScreenshot;
 
 	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect;
 	unsigned numBackBuffers, renderWidth, renderHeight;
@@ -55,34 +58,22 @@ private:
 	const char* getTextureName(IDirect3DBaseTexture9* pTexture);
 	
 	void registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture);
-	IDirect3DTexture9* getSurfTexture(IDirect3DSurface9* pSurface);
 	unsigned numKnownTextures, foundKnownTextures;
 
-	// Render state store/restore
-	void storeRenderState();
-	void restoreRenderState();
+	// Render state store/restore data
 	IDirect3DVertexDeclaration9* prevVDecl;
 	IDirect3DSurface9* prevDepthStencilSurf;
 	IDirect3DSurface9* prevRenderTarget;
 	IDirect3DStateBlock9* prevStateBlock;
 
-	void captureRTScreen(const std::string &stype = "normal");
+	// Performance measurement
+	Timer cpuFrameTimer;
+	SlidingAverage cpuFrameTimes;
+	D3DPerfMonitor* perfMonitor;
+	StaticTextPtr frameTimeText;
 
 	void prePresent(bool doNotFlip);
-	
-#ifdef DARKSOULSII
-	IDirect3DStateBlock9* defaultState;
-	IDirect3DSurface9 *zBufferSurf, *hdrRT;
-	bool aaStepStarted, aoDone;
-	DOF* dof;
-	SSAO* ssao;
-	Post* post;
-	FXAA* fxaa;
-	SMAA* smaa;
-	Bloom* bloom;
-	bool doDof, doAO, doPost, doAA, doBloom;
-#endif // DARKSOULSII
-	
+		
 public:
 	static RSManager& get();
 	static void setLatest(RSManager *man);
@@ -90,18 +81,12 @@ public:
 		return latest && latest->downsampling;
 	}
 
-	RSManager() : inited(false), downsampling(false), doAA(true), dumpingFrame(false), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
+	RSManager() : inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
 				  swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
 				  backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), extraBuffer(NULL), depthStencilSurf(NULL),
 				  dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
-				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL)
-				  #ifdef DARKSOULSII
-				  , defaultState(NULL), zBufferSurf(NULL), hdrRT(NULL)
-				  , aaStepStarted(false), aoDone(false)
-				  , dof(NULL), ssao(NULL), post(NULL)
-				  , fxaa(NULL), smaa(NULL) , bloom(NULL)
-				  , doAO(true), doDof(false), doPost(true), doBloom(true)
-				  #endif // DARKSOULSII
+				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL),
+				  cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
 	{
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
@@ -113,29 +98,38 @@ public:
 	}
 
 	void showStatus();
+
+	unsigned getRenderWidth() { return renderWidth; }
+	unsigned getRenderHeight() { return renderHeight; }
+	ScreenshotType getTakeScreenshot() { return takeScreenshot; }
+	void tookScreenshot() { takeScreenshot = SCREENSHOT_NONE; }
+
+	void storeRenderState();
+	void restoreRenderState();
 	
 	void setD3DDevice(IDirect3DDevice9 *pD3Ddev) { d3ddev = pD3Ddev; }
 
 	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff);
 	void releaseResources();
 
-	void enableTakeScreenshot(screenshotType type);
+	void enableTakeScreenshot(ScreenshotType type);
 	bool takingScreenshot() { return takeScreenshot != SCREENSHOT_NONE; }
 
 	void dumpFrame() { dumpingFrame = true; }
+	void captureRTScreen(const std::string &stype = "normal");
 	
 	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 	void dumpTexture(const char* name, IDirect3DTexture9* tex);
 	
-#ifdef DARKSOULSII
-	void toggleAA() { if(smaa || fxaa) { doAA = !doAA; console.add(doAA ? "AA enabled" : "AA disabled"); } else { console.add("AA disabled in configuration!"); } }
-	void toggleAO() { if(ssao) { doAO = !doAO; console.add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { console.add("SSAO disabled in configuration!"); } }
-	void toggleDOF() { if(dof) { doDof = !doDof; console.add(doDof ? "DoF enabled" : "DoF disabled"); } else { console.add("DoF disabled in configuration!"); } }
-	void toggleBloom() { if(bloom) { doBloom = !doBloom; console.add(doBloom ? "Bloom enabled" : "Bloom disabled"); } else { console.add("Bloom disabled in configuration!"); } }
-	void togglePost() { if(post) { doPost = !doPost; console.add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { console.add("Post-processing disabled in configuration!"); } }
-	void dumpSSAO();
-	void dumpBloom();
-#endif // DARKSOULSII
+	void toggleAA() { plugin->toggleAA(); }
+	void toggleAO() { plugin->toggleAO(); }
+	void toggleDOF() { plugin->toggleDOF(); }
+	void toggleBloom() { plugin->toggleBloom(); }
+	void togglePost() { plugin->togglePost(); }
+	void dumpSSAO() { plugin->dumpSSAO(); }
+	void dumpBloom() { plugin->dumpBloom(); }
+
+	void togglePerfInfo() { frameTimeText->show = !frameTimeText->show; }
 
 	Scaler* getScaler() { return scaler; }
 	ShaderManager& getShaderManager() { return shaderMan; }

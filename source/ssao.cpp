@@ -8,8 +8,9 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type) 
-	: Effect(device), width(width), height(height), dumping(false) {
+SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur) 
+	: Effect(device), width(width), height(height), dumping(false), 
+	  blurPasses(blur==BLUR_SHARP ? 3 : 1) {
 	
 	// Setup the defines for compiling the effect
     vector<D3DXMACRO> defines;
@@ -27,13 +28,20 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	string scaleText = ss.str();
 	D3DXMACRO scaleMacro = { "SCALE", scaleText.c_str() };
 	defines.push_back(scaleMacro);
-	
+
+	// Setup strength macro
 	D3DXMACRO strengthMacros[] = {
 		{ "SSAO_STRENGTH_LOW", "1" },
 		{ "SSAO_STRENGTH_MEDIUM", "1" },
 		{ "SSAO_STRENGTH_HIGH", "1" }
 	};
 	defines.push_back(strengthMacros[strength]);
+
+	// Setup blur macro
+	if(blur == BLUR_SHARP) {
+		D3DXMACRO sharpBlur = { "BLUR_SHARP", "1" };
+		defines.push_back(sharpBlur);
+	}
 
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);
@@ -106,7 +114,7 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 		RSManager::get().dumpTexture("SSAO_MD1_buffer1", buffer1Tex);
 	}
 	
-	for(size_t i = 0; i<3; ++i) {
+	for(size_t i = 0; i<blurPasses; ++i) {
 		hBlurPass(depth, buffer1Tex, buffer2Surf);
 		vBlurPass(depth, buffer2Tex, buffer1Surf);
 	}

@@ -4,6 +4,7 @@
 #include "stb_truetype.h"
 
 #include <sstream>
+#include <algorithm>
 
 Console* Console::latest = NULL;
 	
@@ -35,7 +36,7 @@ void Console::initialize(IDirect3DDevice9* device, int w, int h) {
 	unsigned char* temp_bitmap = new unsigned char[BMPSIZE*BMPSIZE];
 	fread(ttf_buffer, 1, 1<<20, ff);
 	fclose(ff);
-	stbtt_BakeFontBitmap(ttf_buffer, 0, 44.0, temp_bitmap, BMPSIZE, BMPSIZE, 32, 96, cdata); // no guarantee this fits!
+	stbtt_BakeFontBitmap(ttf_buffer, 0, 40.0, temp_bitmap, BMPSIZE, BMPSIZE, 32, 96, cdata); // no guarantee this fits!
 	device->CreateTexture(BMPSIZE, BMPSIZE, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8, D3DPOOL_DEFAULT, &fontTex, NULL);
 	IDirect3DTexture9 *tempTex;
 	device->CreateTexture(BMPSIZE, BMPSIZE, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8, D3DPOOL_SYSTEMMEM, &tempTex, NULL);
@@ -82,21 +83,28 @@ void Console::cleanup() {
 	SAFERELEASE(effect);
 }
 
+
+void Console::drawBGQuad(float x0, float y0, float w, float h) {
+	unsigned passes;
+	FLOAT color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
+	effect->SetFloatArray(rectColorHandle, color, 4);
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
+	quad(x0, y0, w, h);
+	effect->EndPass();
+	effect->End();
+}
+
 void Console::draw() {
 	SDLOG(5, "Drawing console\n");
 	device->SetVertexDeclaration(vertexDeclaration);
-	unsigned passes;
+
 	// draw background quad
 	if(lineHeight > 0.0f) {
-		FLOAT color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
-		effect->SetFloatArray(rectColorHandle, color, 4);
-		effect->Begin(&passes, 0);
-		effect->BeginPass(0);
-		quad(-1.0f, 1.0f, 2.0f, -lineHeight/height);
-		effect->EndPass();
-		effect->End();
+		drawBGQuad(-1.0f, 1.0f, 2.0f, -lineHeight / height);
 	}
 	float y = 0.0f;
+
 	// draw lines
 	if(lines.size()-start > MAX_LINES) start += lines.size()-start-MAX_LINES; 
 	for(size_t i=start; i<lines.size(); ++i) {
@@ -109,23 +117,49 @@ void Console::draw() {
 		else lineHeight = 0.0f;
 	}
 	else lineHeight = y + 15.0f;
+
+	// draw static text
+	for(auto& t : statics) {
+		if(t->show) {
+			auto p = print(t->x, t->y, t->text.c_str(), true);
+			float wborder = 4.0f / width, hborder = 4.0f / height;
+			float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
+			drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder*8, p.second - bgy - hborder*8);
+			print(t->x, t->y, t->text.c_str());
+		}
+	}
 }
 
-void Console::print(float x, float y, const char *text) {	
+Console::Position Console::print(float x, float y, const char *text, bool measure) {
 	unsigned passes;
-	effect->SetTexture(textTex2DHandle, fontTex);
-	effect->Begin(&passes, 0);
-	effect->BeginPass(1);
+	float xstart = x;
+	Position ret = std::make_pair(-100.0f, 100.0f);
+	if(!measure) {
+		effect->SetTexture(textTex2DHandle, fontTex);
+		effect->Begin(&passes, 0);
+		effect->BeginPass(1);
+	}
 	while(*text) {
 		if(*text >= 32 && *text < 128) {
 			stbtt_aligned_quad q;
-			stbtt_GetBakedQuad(cdata, BMPSIZE, BMPSIZE, *text-32, &x, &y, &q, 1); // 1=opengl, 0=old d3d
-			quad(q);
+			stbtt_GetBakedQuad(cdata, BMPSIZE, BMPSIZE, *text - 32, &x, &y, &q, 1); // 1=opengl, 0=old d3d
+			if(!measure) {
+				quad(q);
+			}
+			ret.first = max(ret.first, q.x0/width - 1.0f);
+			ret.second = min(ret.second, -q.y0/height + 1.0f);
+		}
+		if(*text == '\n') {
+			y += 38.0f;
+			x = xstart;
 		}
 		++text;
 	}
-	effect->EndPass();
-	effect->End();
+	if(!measure) {
+		effect->EndPass();
+		effect->End();
+	}
+	return ret;
 }
 
 void Console::quad(float x, float y, float w, float h) {
@@ -146,4 +180,9 @@ void Console::quad(const stbtt_aligned_quad& q) {
 		{ -1.0f + q.x1/width, 1.0f - q.y1/height, 0.0f, q.s1, q.t1 }
 	};
 	device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &quad[0], sizeof(quad[0]));
+}
+
+bool Console::needsDrawing() {
+	return device && lineHeight > 0.0f 
+		|| std::any_of(statics.begin(), statics.end(), [](const StaticTextPtr& p) { return p->show; });
 }

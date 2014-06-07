@@ -16,6 +16,7 @@ class KeyActions {
 	#undef ACTION
 	
 	void performAction(const char* name);
+	void load(const string &fn);
 
 public:
 	static KeyActions& get() {

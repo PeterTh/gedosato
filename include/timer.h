@@ -13,7 +13,7 @@ public:
 	Timer() : running(false) {
 		if(multiplicator<0) {
 			LARGE_INTEGER frequency;
-			if(QueryPerformanceFrequency(&frequency) == 0) SDLOG(0, "ERROR: Could not get HPC frequency (not supported?)\n");
+			if(QueryPerformanceFrequency(&frequency) == 0) SDLOG(-1, "ERROR: Could not get HPC frequency (not supported?)\n");
 			multiplicator = 1000000.0/(double)frequency.QuadPart; // microseconds
 		}
 		start();
@@ -48,7 +48,7 @@ class SlidingAverage {
 	bool filled;
 public:
 	SlidingAverage(unsigned interval) : interval(interval), current(0), filled(false) {
-		vals = new double[interval];
+		vals = new double[interval]();
 	}
 	~SlidingAverage() {
 		delete vals;
@@ -69,6 +69,12 @@ public:
 		for(unsigned i=0; i<interval; ++i) { sum += vals[i]; }
 		sum /= interval;
 		return sum;
+	}
+
+	double maximum() {
+		double maxval = 0;
+		for(unsigned i = 0; i < interval; ++i) { maxval = max(maxval, vals[i]); }
+		return maxval;
 	}
 
 	bool justFilled() {

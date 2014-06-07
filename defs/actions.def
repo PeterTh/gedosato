@@ -19,7 +19,6 @@ ACTION(toggleAA, RSManager::get().toggleAA())
 ACTION(setBilinearScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BILINEAR))
 ACTION(setBicubicScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BICUBIC))
 
-#ifdef DARKSOULSII
 ACTION(toggleAO, RSManager::get().toggleAO())
 ACTION(toggleDOF, RSManager::get().toggleDOF())
 ACTION(togglePost, RSManager::get().togglePost())
@@ -29,9 +28,10 @@ ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::S
 
 ACTION(dumpBloom, RSManager::get().dumpBloom())
 ACTION(dumpSSAO, RSManager::get().dumpSSAO())
-#endif // DARKSOULSII
 
 // Development Actions
+
+ACTION(togglePerfInfo, RSManager::get().togglePerfInfo())
 
 ACTION(showStatus, RSManager::get().showStatus())
 

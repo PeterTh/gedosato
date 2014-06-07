@@ -2,15 +2,17 @@
 
 #include <fstream>
 #include <string>
+#include <boost/filesystem.hpp>
 
 #include "main.h"
 #include "window_manager.h"
 
 Settings Settings::instance;
 
-void Settings::load() {
+void Settings::load(const string &fn) {
+	if(!boost::filesystem::exists(fn)) return;
 	std::ifstream sfile;
-	sfile.open(getInstalledFileName(SETTINGS_FILE_NAME), std::ios::in);
+	sfile.open(fn, std::ios::in);
 	char buffer[128];
 	while(!sfile.eof()) {
 		sfile.getline(buffer, 128);
@@ -26,11 +28,19 @@ void Settings::load() {
 		#undef SETTING
 	}
 	sfile.close();
-		
+
 	if(getPresentWidth() == 0) PresentWidth = getRenderWidth();
 	if(getPresentHeight() == 0) PresentHeight = getRenderHeight();
-	
+
 	baseLogLevel = LogLevel;
+}
+
+void Settings::load() {
+	SDLOG(1, "Loading general settings.\n");
+	load(getConfigFileName(SETTINGS_FILE_NAME));
+	SDLOG(1, "Loading game-specific settings.\n");
+	load(getConfigFileName(getExeFileName() + "\\" + SETTINGS_FILE_NAME));
+	SDLOG(1, "All settings loaded.\n");
 }
 
 void Settings::report() {
@@ -44,11 +54,6 @@ void Settings::report() {
 
 void Settings::init() {
 	if(!inited) {
-		//if(getDisableCursor()) WindowManager::get().toggleCursorVisibility();
-		//if(getCaptureCursor()) WindowManager::get().toggleCursorCapture();
-		//if(getForceWindowed()) WindowManager::get().resize(getPresentWidth(), getPresentHeight());
-		//if(getBorderlessFullscreen()) WindowManager::get().toggleBorderlessFullscreen();
-
 		inited = true;
 	}
 }

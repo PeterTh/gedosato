@@ -1,5 +1,5 @@
-GeDoSaTo DARK SOULS 2 edition by Durante -- README
-==================================================
+GeDoSaTo by Durante -- README
+=============================
 
 **Please read this whole document before running anything!**
 
@@ -8,24 +8,23 @@ What is it?
 The incredibly imaginatively named GeDoSaTo is a generalized downsampling tool for PC games.
 Its goal is to obviate the need for (often limited and hardware dependent) driver modifications
 to use downsampling in games.
+GeDoSaTo also supports game-specific plugins, for example a Dark Souls 2 plugin.
 
-What is the DARK SOULS 2 edition?
-=================================
-This version of GeDoSaTo is extended specifically for Dark Souls 2, and adds several visual
-effects to the game.
-Note that you need to ENABLE IN-GAME ANTI ALIASING in order to use these effects.
-
-How do I use it? (INSTALLATION INSTRUCTIONS)
-===========================================
+How do I use it? (INSTALLATION & USAGE INSTRUCTIONS)
+====================================================
 1) Extract the contents of the zip to some permanent directory
-2) Adjust the settings in GeDoSaTo.ini and GeDoSaToKeys.ini as desired
+2) Adjust the settings in config/GeDoSaTo.ini and config/GeDoSaToKeys.ini as desired
+   - you can also store game-specific setting overrides, 
+     see "config/Might and Magic X Legacy" as an example
 3) [optional] Add your game executable names to "whitelist.txt" in the "assets" folder 
-   (dark souls 2 is already included!)
+   (Dark Souls 2 and a few others are already included!)
 4) Run GeDoSaToTool.exe *as Administrator*
-5) Click "Activate" (You can also make a shortcut for "GeDoSaToTool.exe -a")
-6) Select the downsampling resolution in-game if you want to use downsampling
-5) ENABLE IN-GAME ANTI-ALIASING in Dark Souls 2 if you want to use any effects
-  (disable in-game AO if you use GeDoSaTo AO, and in-game DoF if you use GeDoSaTo DoF)
+5) Select the downsampling resolution in-game if you want to use downsampling
+
+What is the Dark Souls 2 plugin?
+================================
+The Dark Souls 2 plugin adds several (optional) graphical effects to the game.
+Note that you need to ENABLE IN-GAME ANTI ALIASING in order to use these effects.
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
@@ -44,11 +43,14 @@ Disadvantages:
 
 What additional features are there?
 ===================================
-- take screenshots of either the pre-downsampled full buffer or the actual image displayed on screen
+- Take screenshots of either the pre-downsampled full buffer or the actual image displayed on screen
   (automatically sorted in per-game folders!)
-- generic texture overriding for all textures loaded using D3DX
-- framerate limiting using double/triple/quadruple V-sync
-- [Dark Souls 2] VSSAO2, Bokeh DoF, Postprocessing and SMAA/FXAA
+- Generic texture overriding for all textures loaded using D3DX
+- Framerate limiting using double/triple/quadruple V-sync
+- Forcing borderless fullscreen mode and mouse cursor hiding
+- Frame timing information (both GPU and CPU)
+- FXAA, SMAA and postprocessing injection
+- [Dark Souls 2] VSSAO2, Bokeh DoF, HDR Bloom and HuD-less screenshots
 
 Will it work?
 =============
@@ -79,7 +81,8 @@ GeDoSaTo will be on github soon, if it isn't already.
 How can I uninstall it?
 ============================
 Simply remove the files.
-If you want to be ultra clean, also remove the registry key "HKEY_LOCAL_MACHINE\SOFTWARE\Durante\GeDoSaTo".
+If you want to be ultra clean, also remove the registry key 
+"HKEY_LOCAL_MACHINE\SOFTWARE\Durante\GeDoSaTo".
 
 Contact information
 ===================

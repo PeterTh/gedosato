@@ -20,13 +20,7 @@
 #include <string>
 using std::string;
 
-#define DARKSOULSII
-
-#ifdef DARKSOULSII
-#define EDITION "DS2E"
-#else // DARKSOULSII
-#define EDITION "GEN"
-#endif // DARKSOULSII
+#define EDITION "GENERIC"
 
 #define INTERCEPTOR_NAME "GeDoSaTo"
 
@@ -63,6 +57,7 @@ const bool getUseBlacklist();
 const string& getExeFileName();
 string getInstalledFileName(string filename);
 string getAssetFileName(string filename);
+string getConfigFileName(string filename);
 string getTimeString();
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);

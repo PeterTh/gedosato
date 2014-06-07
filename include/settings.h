@@ -29,6 +29,8 @@ class Settings {
 	#include "settings.def"
 	#undef SETTING
 
+	void load(const string& fn);
+
 public:
 	static Settings& get() {
 		return instance;

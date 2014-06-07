@@ -1,3 +1,28 @@
+
+Generic Plugin:
+- Store screenshots after AA/postprocessing, not before 
+
+01-06-2014 -- beta 1 - "Stranger Than Fiction"
+============================================
+General:
+- Large-scale internal rewrite introducing game-specific plugin system
+- Moved all Dark Souls 2 specific code to a Dark Souls 2 plugin
+- Added generic plugin which supports AA and postprocessing in games
+  without a game-specific plugin
+- Added performance monitoring system (per-frame CPU and GPU timing)
+- Added per-game settings support
+- Various bugfixes
+Dark Souls 2:
+- Added option for different types of SSAO blur 
+GeDoSaToTool:
+- Now start up activated by default
+- Added Text viewer/editor component for readme viewing and editing setting files
+  (has various text highlighting and autocompletion features)
+- Fixed black/whitelist handling in some circumstances
+- Fixed tray icon persistence in case of errors
+- Improved error reporting
+
+
 17-05-2014 -- DARK SOULS 2 edition - alpha 5
 ============================================
 General:

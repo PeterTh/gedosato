@@ -6,3 +6,4 @@ extern const unsigned VER_BUILD;
 
 extern const char* VER_STRING;
 extern const char* MODE_STRING;
+extern const char* VER_NAME;

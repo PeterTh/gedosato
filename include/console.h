@@ -9,6 +9,7 @@
 using std::string;
 #include <vector>
 using std::vector;
+#include <memory>
 
 class ConsoleLine {
 	Timer t;
@@ -22,12 +23,26 @@ public:
 	float draw(float y);
 };
 
+struct StaticText {
+	string text;
+	float x, y;
+	bool show;
+
+	StaticText(string text, float x, float y)
+		: text(text), x(x), y(y), show(false) {
+	}
+};
+
+typedef std::shared_ptr<StaticText> StaticTextPtr;
+
 class Console {
+	typedef std::pair<float, float> Position;
 	static Console* latest;
 	static const unsigned MAX_LINES = 8;
 	static const unsigned BMPSIZE = 512;
 
 	vector<ConsoleLine> lines;
+	vector<StaticTextPtr> statics;
 	int start, width, height;
 	float lineHeight;
 
@@ -42,6 +57,8 @@ class Console {
 	
 	void quad(float x, float y, float w, float h);
 	void quad(const stbtt_aligned_quad& q);
+
+	void drawBGQuad(float x0, float y0, float x1, float y1);
 
 public:
 	Console() : start(0), device(NULL), vertexDeclaration(NULL), fontTex(NULL), effect(NULL) {
@@ -65,10 +82,14 @@ public:
 		lineHeight = 1.0f;
 	}
 
-	bool needsDrawing() { return device && lineHeight > 0.0f; } 
+	void add(StaticTextPtr text) {
+		statics.push_back(text);
+	}
+
+	bool needsDrawing(); 
 	void draw();
 
-	void print(float x, float y, const char *text);
+	Position print(float x, float y, const char *text, bool measure = false);
 
 	void initialize(IDirect3DDevice9* device, int w, int h);
 	void cleanup();

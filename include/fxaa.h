@@ -11,7 +11,7 @@ class FXAA : public Effect {
 public:
 	enum Quality { QualityLow, QualityMedium, QualityHigh, QualityUltra };
 
-    FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality);
+	FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality, bool useSRGB = true);
     virtual ~FXAA();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst);

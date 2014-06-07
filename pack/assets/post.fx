@@ -33,6 +33,10 @@ texture2D thisframeTex;
 
 static float2 rcpres = PIXEL_SIZE;
 
+#ifndef USE_SRGB
+#define USE_SRGB true
+#endif
+
 sampler s0 = sampler_state
 {
 	texture = <thisframeTex>;
@@ -40,7 +44,7 @@ sampler s0 = sampler_state
 	AddressV = CLAMP;
 	MINFILTER = LINEAR;
 	MAGFILTER = LINEAR;
-	SRGBTexture = 1;
+	SRGBTexture = USE_SRGB;
 };
 
 struct VSOUT
@@ -202,7 +206,7 @@ technique t0
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 postProcessing();
 		ZEnable = false;        
-		SRGBWriteEnable = true;
+		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;

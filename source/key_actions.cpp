@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 using namespace std;
+#include <boost/filesystem.hpp>
 
 #include "main.h"
 #include "window_manager.h"
@@ -14,9 +15,10 @@ using namespace std;
 
 KeyActions KeyActions::instance;
 
-void KeyActions::load() {
+void KeyActions::load(const string &fn) {
+	if(!boost::filesystem::exists(fn)) return;
 	std::ifstream sfile;
-	sfile.open(getInstalledFileName(KEY_FILE_NAME), std::ios::in);
+	sfile.open(fn, std::ios::in);
 	char buffer[256];
 	while(!sfile.eof()) {
 		sfile.getline(buffer, 256);
@@ -37,6 +39,14 @@ void KeyActions::load() {
 		#undef KEY
 	}
 	sfile.close();
+}
+
+void KeyActions::load() {
+	SDLOG(1, "Loading general keybindings.\n");
+	load(getConfigFileName(KEY_FILE_NAME));
+	SDLOG(1, "Loading game-specific keybindings.\n");
+	load(getConfigFileName(getExeFileName() + "\\" + KEY_FILE_NAME));
+	SDLOG(1, "All keybindings loaded.\n");
 }
 
 void KeyActions::report() {

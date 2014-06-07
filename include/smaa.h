@@ -66,7 +66,7 @@ class SMAA : public Effect {
          * By default, two render targets will be created for storing
          * intermediate calculations.
          */
-        SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset,
+        SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool useSRGB = true,
              const ExternalStorage &storage=ExternalStorage());
         virtual ~SMAA();
 

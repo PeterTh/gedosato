@@ -9,7 +9,7 @@
 
 class Post : public Effect {
 public:
-    Post(IDirect3DDevice9 *device, int width, int height);
+	Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB = true);
     virtual ~Post();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst);
