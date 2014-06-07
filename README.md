@@ -8,7 +8,7 @@ This file is intended for developers who want to improve GeDoSaTo or use it as a
 
 All the source code is released under the conditions of the GPLv3, except for
 - SuperFastHash
-- SMAA
+- SMAA and FXAA
 which have their own licensing terms included.
 
 Requirements & Dependencies
@@ -18,13 +18,17 @@ Requirements & Dependencies
 - The DirectX SDK
 - Boost (http://www.boost.org/)
 - MinHook (this fork: https://github.com/RaMMicHaeL/minhook)
+- Ruby (just for the script which updates the build numbers/dates -- you can do without that if you want to)
 
 Contributing
 ============
 
-The best way to contribute is to send a Github pull request.
+*The best way to contribute is to send a Github pull request.*
+
 If you want to add a major new feature (e.g. DX11 support), I'd appreciate it if you were to contact me before,
 so that we can discuss the design a bit.
+
+If you want to contribute a game-specific plugin, look at Dark Souls 2 or the generic plugins as examples.
 
 File Overview
 =============
