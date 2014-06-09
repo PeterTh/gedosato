@@ -25,7 +25,7 @@ public:
 
 	virtual ~GenericPlugin();
 
-	virtual void initialize(unsigned rw, unsigned rh);
+	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat);
 	virtual void reportStatus();
 
 	virtual void preDownsample(IDirect3DSurface9* backBuffer);

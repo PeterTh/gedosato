@@ -4,6 +4,7 @@
 #include "d3d9.h"
 
 class RSManager;
+struct hkIDirect3DSwapChain9;
 
 interface hkIDirect3DDevice9 : public IDirect3DDevice9
 {
@@ -12,6 +13,9 @@ interface hkIDirect3DDevice9 : public IDirect3DDevice9
 	IDirect3D9 *m_pD3Dint;
 	
 	RSManager *rsMan;
+
+	// swap chain
+	hkIDirect3DSwapChain9 *hookedSwapChain0;
 
 public:
 	hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9);

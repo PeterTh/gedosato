@@ -19,7 +19,7 @@ public:
 	virtual ~GamePlugin() { }
 	string getName() { return name; }
 	virtual void reportStatus() { }
-	virtual void initialize(unsigned rw, unsigned rh) { }
+	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) { }
 	virtual void prePresent() { }
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) { }
 

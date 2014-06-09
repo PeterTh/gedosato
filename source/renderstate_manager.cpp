@@ -70,7 +70,6 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	}
 	d3ddev->CreateDepthStencilSurface(rw, rh, fmt, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
 	SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(fmt));
-	//d3ddev->CreateDepthStencilSurface(rw, rh, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
 
 	if(downsampling) {
 		// generate backbuffers
@@ -96,7 +95,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	}
 
 	plugin = GamePlugin::getPlugin(d3ddev, *this);
-	plugin->initialize(rw, rh);
+	plugin->initialize(rw, rh, bbFormat);
 	
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
 	inited = true;
@@ -172,6 +171,22 @@ void RSManager::prePresent(bool doNotFlip) {
 		}
 		restoreRenderState();
 	}
+	else {
+		storeRenderState();
+		d3ddev->BeginScene();
+		IDirect3DSurface9* bb = NULL;
+		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb);
+		if(dumpingFrame) {
+			dumpSurface("framedump_preplugin", bb);
+		}
+		plugin->preDownsample(bb);
+		if(dumpingFrame) {
+			dumpSurface("framedump_postplugin", bb);
+		}
+		SAFERELEASE(bb);
+		d3ddev->EndScene();
+		restoreRenderState();
+	}
 
 	if(takeScreenshot == SCREENSHOT_FULL || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
 		storeRenderState();
@@ -225,7 +240,9 @@ HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestR
 	storeRenderState();
 	HRESULT hr = ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
 	restoreRenderState();
-	
+
+	cpuFrameTimer.start();
+	perfMonitor->start();	
 	return hr;	
 }
 

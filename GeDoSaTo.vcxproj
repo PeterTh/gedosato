@@ -267,6 +267,7 @@
     <ClCompile Include="source\d3d9dev_ex.cpp" />
     <ClCompile Include="source\d3d9dev_init.cpp" />
     <ClCompile Include="source\d3d9int_ex.cpp" />
+    <ClCompile Include="source\d3d9swap.cpp" />
     <ClCompile Include="source\d3dperf.cpp" />
     <ClCompile Include="source\d3dutil.cpp" />
     <ClCompile Include="source\detouring.cpp" />
@@ -341,6 +342,7 @@
     <ClInclude Include="include\d3d9.h" />
     <ClInclude Include="include\d3d9dev_ex.h" />
     <ClInclude Include="include\d3d9int_ex.h" />
+    <ClInclude Include="include\d3d9swap.h" />
     <ClInclude Include="include\d3dperf.h" />
     <ClInclude Include="include\d3dutil.h" />
     <ClInclude Include="include\detouring.h" />

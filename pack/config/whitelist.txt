@@ -9,3 +9,10 @@ consortium
 DarkSoulsII
 ChildofLight
 config
+DragonAge2Launcher
+DragonAge2Config
+DragonAge2
+Configurator
+witcher2
+DAOriginsConfig
+daorigins

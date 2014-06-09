@@ -13,6 +13,9 @@ interface hkIDirect3DDevice9Ex : public IDirect3DDevice9Ex
 
 	RSManager *rsMan;
 
+	// swap chain
+	hkIDirect3DSwapChain9 *hookedSwapChain0;
+
 public:
 	hkIDirect3DDevice9Ex(IDirect3DDevice9Ex **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9Ex *pIDirect3D9Ex);
 	

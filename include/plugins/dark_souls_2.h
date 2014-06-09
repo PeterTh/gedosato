@@ -33,7 +33,7 @@ public:
 
 	virtual ~DS2Plugin();
 
-	virtual void initialize(unsigned rw, unsigned rh);
+	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat);
 	virtual void reportStatus();
 
 	virtual void prePresent();

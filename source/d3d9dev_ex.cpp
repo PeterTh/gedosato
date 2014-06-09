@@ -1,5 +1,7 @@
 #include "d3d9dev_ex.h"
 
+#include "d3d9swap.h"
+
 // This is pretty terrible, but less terrible than lots of duplicate code
 #define hkIDirect3D9 hkIDirect3D9Ex
 #define hkIDirect3DDevice9 hkIDirect3DDevice9Ex

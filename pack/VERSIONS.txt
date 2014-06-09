@@ -1,9 +1,15 @@
 
+??-06-2014 -- beta 2 - "Seishoujo Sacrifice"
+============================================
+General:
+- Added IDirect3DSwapChain9 interception 
+  (fixes compatibility with some games, e.g. Dragon Age Origins)
 Generic Plugin:
-- Store screenshots after AA/postprocessing, not before 
+- Store screenshots after AA/postprocessing, not before
+- Only use float BB if required (should improve AA/post performance on most games)
 
 01-06-2014 -- beta 1 - "Stranger Than Fiction"
-============================================
+==============================================
 General:
 - Large-scale internal rewrite introducing game-specific plugin system
 - Moved all Dark Souls 2 specific code to a Dark Souls 2 plugin
