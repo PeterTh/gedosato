@@ -188,7 +188,7 @@ void RSManager::prePresent(bool doNotFlip) {
 		restoreRenderState();
 	}
 
-	if(takeScreenshot == SCREENSHOT_FULL || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
+	if(takeScreenshot == SCREENSHOT_FULL || takeScreenshot == SCREENSHOT_HUDLESS || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
 		storeRenderState();
 		takeScreenshot = SCREENSHOT_NONE;
 		if(downsampling) d3ddev->SetRenderTarget(0, backBuffers[0]);
