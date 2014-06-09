@@ -66,6 +66,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	if(D3D_OK == d3ddev->GetDepthStencilSurface(&realDepthStencil) && realDepthStencil) {
 		D3DSURFACE_DESC depthStencilDesc;
 		realDepthStencil->GetDesc(&depthStencilDesc);
+		fmt = depthStencilDesc.Format;
 		SAFERELEASE(realDepthStencil);
 	}
 	d3ddev->CreateDepthStencilSurface(rw, rh, fmt, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
