@@ -109,7 +109,7 @@ public:
 	
 	void setD3DDevice(IDirect3DDevice9 *pD3Ddev) { d3ddev = pD3Ddev; }
 
-	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff);
+	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat);
 	void releaseResources();
 
 	void enableTakeScreenshot(ScreenshotType type);

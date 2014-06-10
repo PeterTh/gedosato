@@ -4,6 +4,10 @@
 General:
 - Added IDirect3DSwapChain9 interception 
   (fixes compatibility with some games, e.g. Dragon Age Origins)
+- Screenshot fallback to full-size if hudless not available
+- Fixed Z/stencil buffer format detection (fixes e.g. GTA4)
+- Improved handling of automatically generated stencil buffers
+  (don't duplicate, we don't need an original-res depth buffer when downsampling)
 Generic Plugin:
 - Store screenshots after AA/postprocessing, not before
 - Only use float BB if required (should improve AA/post performance on most games)
