@@ -8,6 +8,7 @@ General:
 - Fixed Z/stencil buffer format detection (fixes e.g. GTA4)
 - Improved handling of automatically generated stencil buffers
   (don't duplicate, we don't need an original-res depth buffer when downsampling)
+- Potentially fixed compatibility with Windows Vista
 Generic Plugin:
 - Store screenshots after AA/postprocessing, not before
 - Only use float BB if required (should improve AA/post performance on most games)
