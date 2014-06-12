@@ -127,10 +127,6 @@ void RSManager::prePresent(bool doNotFlip) {
 		dumpingFrame = false;
 	}
 
-	////////////////////////////////////////// IO
-	KeyActions::get().processIO();
-	////////////////////////////////////////// IO
-
 	if(dumpingFrame) {
 		Settings::get().elevateLogLevel(50);
 		SDLOG(0, "============================================\nStarting frame dump.\n");
@@ -213,6 +209,10 @@ void RSManager::prePresent(bool doNotFlip) {
 	// reset per-frame vars
 	renderTargetSwitches = 0;
 	plugin->prePresent();
+
+	////////////////////////////////////////// IO
+	KeyActions::get().processIO();
+	////////////////////////////////////////// IO
 	SDLOG(2, "Pre-present complete\n");
 }
 
@@ -542,7 +542,7 @@ namespace {
 			downsampling ? Settings::get().getRenderHeight() : pPresentationParameters->BackBufferHeight,
 			downsampling ? pPresentationParameters->BackBufferCount : 0,
 			downsampling ? pPresentationParameters->BackBufferFormat : D3DFMT_UNKNOWN,
-			pPresentationParameters->SwapEffect, pPresentationParameters->EnableAutoDepthStencil, pPresentationParameters->AutoDepthStencilFormat);
+			pPresentationParameters->SwapEffect, pPresentationParameters->EnableAutoDepthStencil?true:false, pPresentationParameters->AutoDepthStencilFormat);
 	}
 }
 

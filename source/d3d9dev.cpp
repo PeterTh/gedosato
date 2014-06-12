@@ -11,7 +11,6 @@
 #include "renderstate_manager.h"
 #include "window_manager.h"
 #include "Settings.h"
-#include "key_actions.h"
 
 #ifndef hkIDirect3D9 
 #include "d3d9swap.h" // only include if we're not in d3ddevex
