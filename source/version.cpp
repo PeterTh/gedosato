@@ -6,9 +6,9 @@ const char* VER_NAME = "Seishoujo Sacrifice";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 7;
-const unsigned VER_BUILD = 657;
+const unsigned VER_BUILD = 679;
 
-const char* VER_STRING = "version 0.7.657 built on 2014/06/12 18:36:01";
+const char* VER_STRING = "version 0.7.679 built on 2014/06/12 22:01:55";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

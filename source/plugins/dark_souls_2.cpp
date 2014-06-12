@@ -72,10 +72,8 @@ HRESULT DS2Plugin::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 				// store RT for later use
 				hdrRT = prevRT;
 			}
-			else {
-				SAFERELEASE(prevRT);
-			}
 		}
+		SAFERELEASE(prevRT);
 	}
 	return GamePlugin::redirectSetRenderTarget(RenderTargetIndex, pRenderTarget);
 }

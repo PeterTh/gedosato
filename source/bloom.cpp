@@ -92,8 +92,8 @@ Bloom::~Bloom() {
 	SAFERELEASE(dirtTexture);
 	for(unsigned i=0; i<steps; ++i) {
 		for(unsigned j=0; j<2; ++j) {
-			SAFERELEASE(stepBuffers[i].surfaces[j]);
 			SAFERELEASE(stepBuffers[i].textures[j]);
+			SAFERELEASE(stepBuffers[i].surfaces[j]);
 		}
 	}
 }

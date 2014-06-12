@@ -35,7 +35,10 @@ using std::string;
 #else
 #define SDLOG(_level, _str, ...) {}
 #endif
-#define SAFERELEASE(_p) { if(_p) { (_p)->Release(); (_p) = NULL; } }
+#define SAFERELEASE(_p) { if(_p) { \
+	auto __retval = (_p)->Release(); \
+	SDLOG(10, "Saferelease: %p (%u), loc: %s : %d\n", _p, __retval, __FILE__, __LINE__); \
+	(_p) = NULL; } }
 #define SAFEDELETE(_p) { if(_p) { delete (_p); (_p) = NULL; } }
 #define SAFEDELETEARR(_p) { if(_p) { delete [] (_p); (_p) = NULL; } }
 

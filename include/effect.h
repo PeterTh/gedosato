@@ -4,6 +4,7 @@
 #include <d3dx9.h>
 
 #include "main.h"
+#include "settings.h"
 
 // Base class for effects
 class Effect {

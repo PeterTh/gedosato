@@ -84,6 +84,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 		// generate additional buffer to emulate flip if required
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour()) {
 			d3ddev->CreateRenderTarget(rw, rh, backbufferFormat, D3DMULTISAMPLE_NONE, 0, false, &extraBuffer, NULL);
+			SDLOG(2, "Extra backbuffer: %p\n", extraBuffer);
 		}
 
 		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
@@ -97,6 +98,12 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 }
 
 void RSManager::releaseResources() {
+	SDLOG(0, "RenderstateManager release: going into neutral state\n");
+	for(int i = 0; i < 16; ++i) d3ddev->SetTexture(i, NULL);
+	IDirect3DSurface9 *bb = NULL;
+	d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb);
+	d3ddev->SetRenderTarget(0, bb);
+	SAFERELEASE(bb);
 	SDLOG(0, "RenderstateManager releasing resources\n");
 	SAFEDELETE(plugin);
 	SAFEDELETE(scaler);
@@ -108,9 +115,9 @@ void RSManager::releaseResources() {
 	SAFERELEASE(prevDepthStencilSurf);
 	SAFERELEASE(prevRenderTarget);
 	if(backBuffers && backBufferTextures) {
-		for(unsigned i=0; i<numBackBuffers; ++i) {
-			SAFERELEASE(backBuffers[i]);
+		for(unsigned i = 0; i < numBackBuffers; ++i) {
 			SAFERELEASE(backBufferTextures[i]);
+			SAFERELEASE(backBuffers[i]);
 		}
 	}
 	SAFEDELETEARR(backBuffers);
@@ -508,7 +515,7 @@ namespace {
 		copy->BackBufferCount = 1;
 		copy->EnableAutoDepthStencil = FALSE; // we take care of depth/stencil generation
 		switch(Settings::get().getPresentInterval()) {
-		case 0: copy->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+		case 0: copy->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; break;
 		case 1: copy->PresentationInterval = D3DPRESENT_INTERVAL_ONE; break;
 		case 2: copy->PresentationInterval = D3DPRESENT_INTERVAL_TWO; break;
 		case 3: copy->PresentationInterval = D3DPRESENT_INTERVAL_THREE; break;
@@ -620,11 +627,15 @@ HRESULT RSManager::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParameters
 		if(fs) setDisplayFaking(true);
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
+		downsampling = false;
 		HRESULT ret = d3ddev->Reset(&copy);
 		if(SUCCEEDED(ret)) {
 			initResourcesWrapper(true, pPresentationParameters);
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
-		} else SDLOG(0, "FAILED resetting to downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret)); 
+		}
+		else {
+			SDLOG(0, "FAILED resetting to downsampling -- error: %s\n description: %s\n", DXGetErrorString(ret), DXGetErrorDescription(ret));
+		}
 		return ret;
 	}
 
@@ -651,6 +662,7 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 		initPresentationParams(pPresentationParameters, &copy);
 		D3DDISPLAYMODEEX copyEx, *pCopyEx = &copyEx;
 		initDisplayMode(pFullscreenDisplayMode, &pCopyEx);
+		downsampling = false;
 		HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(&copy, pCopyEx);
 		if(SUCCEEDED(ret)) {
 			initResourcesWrapper(true, pPresentationParameters);

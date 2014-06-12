@@ -77,10 +77,10 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 
 SSAO::~SSAO() {
 	SAFERELEASE(effect);
-	SAFERELEASE(buffer1Surf);
 	SAFERELEASE(buffer1Tex);
-	SAFERELEASE(buffer2Surf);
+	SAFERELEASE(buffer1Surf);
 	SAFERELEASE(buffer2Tex);
+	SAFERELEASE(buffer2Surf);
 	SAFERELEASE(hdrBufferSurf);
 }
 

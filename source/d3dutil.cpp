@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <sstream>
 
+#include "settings.h"
+
 IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface) {
 	IDirect3DTexture9 *ret = NULL;
 	IUnknown *pContainer = NULL;

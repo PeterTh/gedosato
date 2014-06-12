@@ -389,11 +389,16 @@ namespace {
 	std::map<HWND, WNDPROC> prevWndProcs;
 	LRESULT CALLBACK InterceptWindowProc(_In_  HWND hwnd, _In_  UINT uMsg, _In_  WPARAM wParam, _In_  LPARAM lParam) {
 		SDLOG(2, "InterceptWindowProc hwnd: %p\n", hwnd);
-		if(RSManager::currentlyDownsampling() && uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) {
-			POINTS p = MAKEPOINTS(lParam);
-			p.x = p.x * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
-			p.y = p.y * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
-			return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, MAKELPARAM(p.x,p.y));
+		if(RSManager::currentlyDownsampling()) {
+			if(uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST) {
+				POINTS p = MAKEPOINTS(lParam);
+				p.x = p.x * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
+				p.y = p.y * Settings::get().getRenderWidth() / Settings::get().getPresentWidth();
+				return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, MAKELPARAM(p.x, p.y));
+			}
+			//if(uMsg >= WM_DISPLAYCHANGE) {
+			//	return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, MAKELPARAM(Settings::get().getRenderWidth(), Settings::get().getRenderHeight()));
+			//}
 		}
 		SDLOG(2, " -> calling original: %d\n", prevWndProcs[hwnd]);
 		return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, lParam);

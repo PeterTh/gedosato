@@ -53,8 +53,8 @@ FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality, boo
 
 FXAA::~FXAA() {
 	SAFERELEASE(effect);
-	SAFERELEASE(buffer1Surf);
 	SAFERELEASE(buffer1Tex);
+	SAFERELEASE(buffer1Surf);
 }
 
 void FXAA::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {

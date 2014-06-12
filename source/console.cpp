@@ -79,8 +79,8 @@ void Console::cleanup() {
 	SDLOG(2, "Console cleanup\n")
 	device = NULL;
 	SAFERELEASE(vertexDeclaration);
-	SAFERELEASE(fontTex);
 	SAFERELEASE(effect);
+	SAFERELEASE(fontTex);
 }
 
 
