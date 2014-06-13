@@ -37,7 +37,9 @@ SETTING(bool, ForceBorderlessFullscreen, "forceBorderlessFullscreen", false)
 SETTING(bool, HideMouseCursor, "hideMouseCursor", false)
 
 // Graphics effects options
-SETTING(std::string, AAType, "aaType", "fxaa")
+SETTING(string, InjectPSHash, "injectPSHash", "")
+
+SETTING(string, AAType, "aaType", "fxaa")
 SETTING(unsigned, AAQuality, "aaQuality", 0)
 
 SETTING(unsigned, SsaoStrength, "ssaoStrength", 0)

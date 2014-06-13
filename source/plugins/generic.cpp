@@ -2,6 +2,7 @@
 #include "plugins/generic.h"
 
 #include "d3dutil.h"
+#include "renderstate_manager.h"
 
 GenericPlugin::~GenericPlugin() {
 	SAFERELEASE(tmpSurf);
@@ -33,8 +34,8 @@ void GenericPlugin::reportStatus() {
 	else Console::get().add("Postprocessing disabled");
 }
 
-void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
-	SDLOG(8, "Generic plugin preDownsample start\n");
+void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
+	SDLOG(8, "Generic plugin processing start\n");
 	if(doAA || doPost) {
 		d3ddev->StretchRect(backBuffer, NULL, tmpSurf, NULL, D3DTEXF_NONE);
 		bool didAA = false;
@@ -52,5 +53,31 @@ void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
 			post->go(tmpTex, backBuffer);
 		}
 	}
-	SDLOG(8, "Generic plugin preDownsample end\n");
+	SDLOG(8, "Generic plugin processing end\n");
+}
+
+void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
+	if(!postDone) process(backBuffer);
+}
+
+void GenericPlugin::prePresent() {
+	postDone = false;
+}
+
+HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
+	if(!postDone && manager.getShaderManager().getName(pShader) == Settings::get().getInjectPSHash()) {
+		SDLOG(8, "Generic plugin: found shader, performing postprocessing\n");
+		IDirect3DSurface9* bb = NULL;
+		d3ddev->GetRenderTarget(0, &bb);
+		if(bb) {
+			process(bb);
+			if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
+				manager.captureRTScreen("hudless");
+				manager.tookScreenshot();
+			}
+			postDone = true;
+		}
+		SAFERELEASE(bb);
+	}
+	return GamePlugin::redirectSetPixelShader(pShader);
 }
