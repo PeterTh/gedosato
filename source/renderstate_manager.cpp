@@ -134,11 +134,6 @@ void RSManager::prePresent(bool doNotFlip) {
 		dumpingFrame = false;
 	}
 
-	if(dumpingFrame) {
-		Settings::get().elevateLogLevel(50);
-		SDLOG(0, "============================================\nStarting frame dump.\n");
-	}
-
 	// downsample offscreen backbuffer to screen
 	if(downsampling) {
 		storeRenderState();
@@ -217,9 +212,15 @@ void RSManager::prePresent(bool doNotFlip) {
 	renderTargetSwitches = 0;
 	plugin->prePresent();
 
-	////////////////////////////////////////// IO
+	//////////////////////////////////////////// IO
 	KeyActions::get().processIO();
-	////////////////////////////////////////// IO
+	//////////////////////////////////////////// IO
+
+	if(dumpingFrame) {
+		Settings::get().elevateLogLevel(50);
+		SDLOG(0, "============================================\nStarting frame dump.\n");
+	}
+
 	SDLOG(2, "Pre-present complete\n");
 }
 

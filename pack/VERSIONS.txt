@@ -2,6 +2,7 @@
 ??-06-2014 -- beta 2 - "Seishoujo Sacrifice"
 ============================================
 General:
+- Fixed Alt-tab crash when downsampling in fullscreen mode
 - Added IDirect3DSwapChain9 interception 
   (fixes compatibility with some games, e.g. Dragon Age Origins)
 - Screenshot fallback to full-size if hudless not available
@@ -32,7 +33,6 @@ GeDoSaToTool:
 - Fixed black/whitelist handling in some circumstances
 - Fixed tray icon persistence in case of errors
 - Improved error reporting
-
 
 17-05-2014 -- DARK SOULS 2 edition - alpha 5
 ============================================
