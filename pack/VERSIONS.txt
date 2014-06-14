@@ -1,20 +1,28 @@
+??-06-2014 -- beta 3 - "Rapidity is a justice"
+==============================================
+General:
+- Added ability to have per-game postprocessing shaders
 
-??-06-2014 -- beta 2 - "Seishoujo Sacrifice"
+
+13-06-2014 -- beta 2 - "Seishoujo Sacrifice"
 ============================================
 General:
-- Fixed Alt-tab crash when downsampling in fullscreen mode
+- Fixed Alt-tab crash when downsampling in fullscreen mode (!)
 - Added IDirect3DSwapChain9 interception 
   (fixes compatibility with some games, e.g. Dragon Age Origins)
 - Screenshot fallback to full-size if hudless not available
 - Fixed Z/stencil buffer format detection (fixes e.g. GTA4)
-- Improved handling of automatically generated stencil buffers
+- Improved handling of automatically generated z/stencil buffers
   (don't duplicate, we don't need an original-res depth buffer when downsampling)
 - Potentially fixed compatibility with Windows Vista
 Generic Plugin:
 - Store screenshots after AA/postprocessing, not before
 - Only use float BB if required (should improve AA/post performance on most games)
 - Added ability to specify a "marker" pixel shader in the configuration, 
-  in order to apply AA/postprocessing before HUD rendering and capture hudless screenshots 
+  in order to apply AA/postprocessing before HUD rendering and capture hudless screenshots
+GeDoSaToTool:
+- Added ability to edit game profiles using the built-in editor 
+  (still need to be created externally)
 
 01-06-2014 -- beta 1 - "Stranger Than Fiction"
 ==============================================

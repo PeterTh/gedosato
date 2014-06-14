@@ -5,6 +5,8 @@
 #include <vector>
 using namespace std;
 
+#include <boost/filesystem.hpp>
+
 #include "settings.h"
 #include "renderstate_manager.h"
 
@@ -32,13 +34,15 @@ Post::Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB)
 	// Load effect from file
 	string shaderFn = "post.fx";
 	if(Settings::get().getPostProcessingType() == "asmodean") shaderFn = "post_asmodean.fx";
-	shaderFn = getAssetFileName(shaderFn);
+	string customfn = getConfigFileName(getExeFileName() + "\\" + shaderFn);
+	if(boost::filesystem::exists(customfn)) shaderFn = customfn;
+	else shaderFn = getAssetFileName(shaderFn);
 	SDLOG(0, "%s load\n", shaderFn.c_str());	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
-	// get handles
+	// Get handles
 	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
 }
 
