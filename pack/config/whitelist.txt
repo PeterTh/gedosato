@@ -17,3 +17,4 @@ witcher2
 DAOriginsConfig
 daorigins
 Blackguards
+EoCApp

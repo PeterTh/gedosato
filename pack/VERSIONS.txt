@@ -2,6 +2,8 @@
 ==============================================
 General:
 - Added ability to have per-game postprocessing shaders
+GeDoSaToTool:
+- Implemented alternative dll injection strategy
 
 
 13-06-2014 -- beta 2 - "Seishoujo Sacrifice"

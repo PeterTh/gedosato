@@ -521,7 +521,7 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 }
 
 // perform hooking using MinHook
-void startDetour() {		
+void startDetour() {
 	MH_Initialize();
 
 	#define HOOK(__name, __dllname) \
@@ -536,7 +536,10 @@ void endDetour() {
 	#define HOOK(__name, __dllname) \
 	if(completed##__name##Detour) { \
 		ret = MH_RemoveHook(__name##Pointer); \
-		if(ret == MH_OK) { SDLOG(1, "Removed hook for " #__name "\n"); } \
+		if(ret == MH_OK) { \
+			SDLOG(1, "Removed hook for " #__name "\n"); \
+			completed##__name##Detour = false; \
+		} \
 		else { SDLOG(0, "ERROR removing hook for" #__name "\n"); } \
 	} else { \
 		SDLOG(1, "Not removing hook for " #__name", not set\n"); \
