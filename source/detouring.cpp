@@ -471,7 +471,7 @@ GENERATE_INTERCEPT_HEADER(AdjustWindowRect, BOOL, WINAPI, __inout LPRECT lpRect,
 	return TrueAdjustWindowRect(lpRect, dwStyle, bMenu);
 }
 GENERATE_INTERCEPT_HEADER(AdjustWindowRectEx, BOOL, WINAPI, _Inout_ LPRECT lpRect, _In_ DWORD dwStyle, _In_ BOOL bMenu, _In_ DWORD dwExStyle) {
-	return AdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
+	return TrueAdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
 }
 GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags) {
 	return TrueSetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);

@@ -357,6 +357,8 @@
     <ClInclude Include="include\plugins\generic.h" />
     <ClInclude Include="include\post.h" />
     <ClInclude Include="include\registry.h" />
+    <ClInclude Include="include\rendertarget.h" />
+    <ClInclude Include="include\rendertarget_manager.h" />
     <ClInclude Include="include\scaling.h" />
     <ClInclude Include="include\hash.h" />
     <ClInclude Include="include\key_actions.h" />

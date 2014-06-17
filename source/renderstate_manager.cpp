@@ -83,7 +83,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 		d3ddev->SetRenderTarget(0, backBuffers[0]);
 		// generate additional buffer to emulate flip if required
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour()) {
-			d3ddev->CreateRenderTarget(rw, rh, backbufferFormat, D3DMULTISAMPLE_NONE, 0, false, &extraBuffer, NULL);
+			extraBuffer = rtMan->createSurface(rw, rh, backbufferFormat);
 			SDLOG(2, "Extra backbuffer: %p\n", extraBuffer);
 		}
 
@@ -109,7 +109,7 @@ void RSManager::releaseResources() {
 	SAFEDELETE(scaler);
 	SAFEDELETE(perfMonitor);
 	SAFERELEASE(depthStencilSurf);
-	SAFERELEASE(extraBuffer);
+	extraBuffer.reset(NULL);
 	SAFERELEASE(prevStateBlock);
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
@@ -153,11 +153,11 @@ void RSManager::prePresent(bool doNotFlip) {
 		}
 		
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
-			d3ddev->StretchRect(backBuffers[0], NULL, extraBuffer, NULL, D3DTEXF_NONE);
+			d3ddev->StretchRect(backBuffers[0], NULL, extraBuffer->getSurf(), NULL, D3DTEXF_NONE);
 			for(unsigned bb=0; bb<numBackBuffers; ++bb) {
 				d3ddev->StretchRect(backBuffers[bb+1], NULL, backBuffers[bb], NULL, D3DTEXF_NONE);
 			}
-			d3ddev->StretchRect(extraBuffer, NULL, backBuffers[numBackBuffers-1], NULL, D3DTEXF_NONE);
+			d3ddev->StretchRect(extraBuffer->getSurf(), NULL, backBuffers[numBackBuffers-1], NULL, D3DTEXF_NONE);
 			SDLOG(2, "Advanced flip queue\n");
 		} else {
 			SDLOG(2, "Not \"flipping\" backbuffers\n");

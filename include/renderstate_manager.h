@@ -8,6 +8,7 @@
 #include "d3dperf.h"
 #include "console.h"
 #include "shader_manager.h"
+#include "rendertarget_manager.h"
 #include "game_plugin.h"
 
 #pragma region Forward Declarations
@@ -35,6 +36,7 @@ private:
 	Scaler* scaler;
 	Console console;
 	ShaderManager shaderMan;
+	std::unique_ptr<RenderTargetManager> rtMan;
 	
 	ScreenshotType takeScreenshot;
 
@@ -43,7 +45,7 @@ private:
 	D3DFORMAT backbufferFormat;
 	IDirect3DTexture9** backBufferTextures;
 	IDirect3DSurface9** backBuffers;
-	IDirect3DSurface9* extraBuffer;
+	RenderTargetPtr extraBuffer;
 	IDirect3DSurface9* depthStencilSurf;
 	
 	unsigned dumpCaptureIndex, renderTargetSwitches;
@@ -81,12 +83,13 @@ public:
 		return latest && latest->downsampling;
 	}
 
-	RSManager() : inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), takeScreenshot(SCREENSHOT_NONE),
-				  swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
-				  backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), extraBuffer(NULL), depthStencilSurf(NULL),
-				  dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
-				  prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL),
-				  cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
+	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev),
+		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)), 
+		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
+		backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), depthStencilSurf(NULL),
+		dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
+		prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL),
+		cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
 	{
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
@@ -107,8 +110,6 @@ public:
 	void storeRenderState();
 	void restoreRenderState();
 	
-	void setD3DDevice(IDirect3DDevice9 *pD3Ddev) { d3ddev = pD3Ddev; }
-
 	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat);
 	void releaseResources();
 
