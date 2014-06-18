@@ -282,6 +282,7 @@
     <ClCompile Include="source\plugins\generic.cpp" />
     <ClCompile Include="source\post.cpp" />
     <ClCompile Include="source\registry.cpp" />
+    <ClCompile Include="source\rendertarget_manager.cpp" />
     <ClCompile Include="source\scaling.cpp" />
     <ClCompile Include="source\key_actions.cpp" />
     <ClCompile Include="source\main.cpp">

@@ -5,7 +5,8 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 
-#include "Effect.h"
+#include "effect.h"
+#include "rendertarget.h"
 
 class FXAA : public Effect {
 public:
@@ -21,8 +22,7 @@ private:
 
 	ID3DXEffect *effect;
 	
-	IDirect3DTexture9* buffer1Tex;
-	IDirect3DSurface9* buffer1Surf;
+	RenderTargetPtr buffer;
 
 	D3DXHANDLE frameTexHandle;
 	

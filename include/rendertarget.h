@@ -9,17 +9,26 @@
 class RenderTarget {
 public:
 	typedef enum { SURFACE_USE = 0, TEXTURE_USE = 1 } Usage;
-	typedef enum { ARGB_8, RGB_8, ARGB_16, RGB_16, ARGB_FP16, RGB_FP16 } Format;
+	typedef enum { FMT_NONE, FMT_ARGB_8, FMT_RGB_8, FMT_ARGB_16, FMT_RGB_16, FMT_ARGB_FP16, FMT_RGB_FP16 } Format;
 
 	static D3DFORMAT d3dformatFromFormat(Format fmt) {
 		switch(fmt) {
-		case ARGB_8: return D3DFMT_A8R8G8B8;
-		case RGB_8: return D3DFMT_R8G8B8;
-		case ARGB_16: return D3DFMT_A16B16G16R16;
-		case RGB_16: return D3DFMT_A16B16G16R16;
-		case ARGB_FP16: return D3DFMT_A16B16G16R16F;
-		case RGB_FP16: return D3DFMT_A16B16G16R16F;
+		case FMT_ARGB_8: return D3DFMT_A8R8G8B8;
+		case FMT_RGB_8: return D3DFMT_R8G8B8;
+		case FMT_ARGB_16: return D3DFMT_A16B16G16R16;
+		case FMT_RGB_16: return D3DFMT_A16B16G16R16;
+		case FMT_ARGB_FP16: return D3DFMT_A16B16G16R16F;
+		case FMT_RGB_FP16: return D3DFMT_A16B16G16R16F;
 		}
+		SDLOG(-1, "ERROR: RenderTarget - unknown format\n");
+		return D3DFMT_UNKNOWN;
+	}
+	static D3DFORMAT d3dformatWithAlpha(D3DFORMAT fmt) {
+		switch(fmt) {
+		case D3DFMT_X8R8G8B8: return D3DFMT_A8R8G8B8;
+		case D3DFMT_X8B8G8R8: return D3DFMT_A8B8G8R8;
+		}
+		return fmt;
 	}
 
 	~RenderTarget() {

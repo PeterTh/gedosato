@@ -31,6 +31,11 @@ void RSManager::setLatest(RSManager *man) {
 	Console::setLatest(&man->console);
 }
 
+RenderTargetManager& RSManager::getRTMan() {
+	return *latest->rtMan;
+}
+
+
 void RSManager::showStatus() {
 	console.add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
 	if(scaler) scaler->showStatus();

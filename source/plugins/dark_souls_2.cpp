@@ -22,6 +22,7 @@ void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 		drh = rw * 9 / 16;
 		SDLOG(2, "Resource init: adjusting for non-16:9 resolution, screen: %ux%u, render: %ux%u\n", rw, rh, drw, drh);
 	}
+	RSManager::getRTMan().setOverrideFormat(RenderTarget::FMT_ARGB_FP16);
 	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, drw, drh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius());
 	if(Settings::get().getAAQuality() > 0) {
 		if(Settings::get().getAAType() == "smaa") smaa = new SMAA(d3ddev, drw, drh, (SMAA::Preset)(Settings::get().getAAQuality() - 1));

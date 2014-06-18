@@ -77,6 +77,7 @@ private:
 		
 public:
 	static RSManager& get();
+	static RenderTargetManager& getRTMan();
 	static void setLatest(RSManager *man);
 	static bool currentlyDownsampling() {
 		return latest && latest->downsampling;
@@ -104,6 +105,7 @@ public:
 	unsigned getRenderWidth() { return renderWidth; }
 	unsigned getRenderHeight() { return renderHeight; }
 	ScreenshotType getTakeScreenshot() { return takeScreenshot; }
+	D3DFORMAT getBackBufferFormat() { return backbufferFormat; }
 	void tookScreenshot() { takeScreenshot = SCREENSHOT_NONE; }
 
 	void storeRenderState();

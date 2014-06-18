@@ -2,8 +2,11 @@
 ==============================================
 General:
 - Added ability to have per-game postprocessing shaders
+- Refactored rendertarget management (to easier turn API agnostic later)
 GeDoSaToTool:
 - Implemented alternative dll injection strategy
+- Prevented multiple instances of GeDoSaToTool being started
+- Added startup checks for path validity and admin rights
 
 
 13-06-2014 -- beta 2 - "Seishoujo Sacrifice"

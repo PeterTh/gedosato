@@ -44,8 +44,7 @@ FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality, boo
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
 	// Create buffer
-	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A16B16G16R16F, D3DPOOL_DEFAULT, &buffer1Tex, NULL);
-    buffer1Tex->GetSurfaceLevel(0, &buffer1Surf);
+	buffer = RSManager::getRTMan().createTexture(width, height);
 
 	// get handles
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
@@ -53,15 +52,13 @@ FXAA::FXAA(IDirect3DDevice9 *device, int width, int height, Quality quality, boo
 
 FXAA::~FXAA() {
 	SAFERELEASE(effect);
-	SAFERELEASE(buffer1Tex);
-	SAFERELEASE(buffer1Surf);
 }
 
 void FXAA::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
 	device->SetVertexDeclaration(vertexDeclaration);
 	
-    lumaPass(frame, buffer1Surf);
-	fxaaPass(buffer1Tex, dst);
+    lumaPass(frame, buffer->getSurf());
+	fxaaPass(buffer->getTex(), dst);
 }
 
 void FXAA::lumaPass(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
