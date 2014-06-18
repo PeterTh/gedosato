@@ -71,16 +71,13 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	if(downsampling) {
 		// generate backbuffers
 		SDLOG(2, "Generating backbuffers:\n")
-		backBuffers = new IDirect3DSurface9*[numBackBuffers];
-		backBufferTextures = new IDirect3DTexture9*[numBackBuffers];
 		for(unsigned i=0; i<numBackBuffers; ++i) {
-			d3ddev->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, backbufferFormat, D3DPOOL_DEFAULT, &backBufferTextures[i], NULL);
-			backBufferTextures[i]->GetSurfaceLevel(0, &backBuffers[i]);
-			SDLOG(2, "Backbuffer %u: %p  tex: %p\n", i, backBuffers[i], backBufferTextures[i]);
+			backBuffers.push_back(rtMan->createTexture(rw, rh, backbufferFormat));
+			SDLOG(2, "Backbuffer %u: %p\n", i, backBuffers[i]);
 		}
 
 		// set back buffer 0 as initial rendertarget
-		d3ddev->SetRenderTarget(0, backBuffers[0]);
+		d3ddev->SetRenderTarget(0, backBuffers[0]->getSurf());
 		// generate additional buffer to emulate flip if required
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour()) {
 			extraBuffer = rtMan->createSurface(rw, rh, backbufferFormat);
@@ -114,21 +111,14 @@ void RSManager::releaseResources() {
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
 	SAFERELEASE(prevRenderTarget);
-	if(backBuffers && backBufferTextures) {
-		for(unsigned i = 0; i < numBackBuffers; ++i) {
-			SAFERELEASE(backBufferTextures[i]);
-			SAFERELEASE(backBuffers[i]);
-		}
-	}
-	SAFEDELETEARR(backBuffers);
-	SAFEDELETEARR(backBufferTextures);
+	backBuffers.clear();
 	console.cleanup();
 	SDLOG(0, "RenderstateManager resource release completed\n");
 }
 
 void RSManager::prePresent(bool doNotFlip) {
 	if(dumpingFrame) {
-		dumpSurface("framedump_prePresent", backBuffers[0]);
+		dumpSurface("framedump_prePresent", backBuffers[0]->getSurf());
 		SDLOG(0, "============================================\nFinished dumping frame.\n");
 		Settings::get().restoreLogLevel();
 		dumpingFrame = false;
@@ -138,12 +128,12 @@ void RSManager::prePresent(bool doNotFlip) {
 	if(downsampling) {
 		storeRenderState();
 		d3ddev->BeginScene();
-		plugin->preDownsample(backBuffers[0]);
+		plugin->preDownsample(backBuffers[0]->getSurf());
 		SDLOG(2, "Scaling fake backbuffer (%p)\n", backBuffers[0]);
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
 		SDLOG(2, "- to backbuffer %p\n", realBackBuffer);
-		scaler->go(backBufferTextures[0], realBackBuffer);
+		scaler->go(backBuffers[0]->getTex(), realBackBuffer);
 		realBackBuffer->Release();
 		SDLOG(2, "- scaling complete!\n");
 		d3ddev->EndScene();
@@ -153,11 +143,11 @@ void RSManager::prePresent(bool doNotFlip) {
 		}
 		
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
-			d3ddev->StretchRect(backBuffers[0], NULL, extraBuffer->getSurf(), NULL, D3DTEXF_NONE);
+			d3ddev->StretchRect(backBuffers[0]->getSurf(), NULL, extraBuffer->getSurf(), NULL, D3DTEXF_NONE);
 			for(unsigned bb=0; bb<numBackBuffers; ++bb) {
-				d3ddev->StretchRect(backBuffers[bb+1], NULL, backBuffers[bb], NULL, D3DTEXF_NONE);
+				d3ddev->StretchRect(backBuffers[bb+1]->getSurf(), NULL, backBuffers[bb]->getSurf(), NULL, D3DTEXF_NONE);
 			}
-			d3ddev->StretchRect(extraBuffer->getSurf(), NULL, backBuffers[numBackBuffers-1], NULL, D3DTEXF_NONE);
+			d3ddev->StretchRect(extraBuffer->getSurf(), NULL, backBuffers[numBackBuffers-1]->getSurf(), NULL, D3DTEXF_NONE);
 			SDLOG(2, "Advanced flip queue\n");
 		} else {
 			SDLOG(2, "Not \"flipping\" backbuffers\n");
@@ -184,7 +174,7 @@ void RSManager::prePresent(bool doNotFlip) {
 	if(takeScreenshot == SCREENSHOT_FULL || takeScreenshot == SCREENSHOT_HUDLESS || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
 		storeRenderState();
 		takeScreenshot = SCREENSHOT_NONE;
-		if(downsampling) d3ddev->SetRenderTarget(0, backBuffers[0]);
+		if(downsampling) d3ddev->SetRenderTarget(0, backBuffers[0]->getSurf());
 		captureRTScreen("full resolution");
 		restoreRenderState();
 	}
@@ -438,7 +428,7 @@ HRESULT RSManager::redirectD3DXCreateTextureFromFileInMemoryEx(LPDIRECT3DDEVICE9
 HRESULT RSManager::redirectGetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9** ppBackBuffer) {
 	if(downsampling) {
 		SDLOG(4, "redirectGetBackBuffer\n");
-		*ppBackBuffer = backBuffers[iBackBuffer];
+		*ppBackBuffer = backBuffers[iBackBuffer]->getSurf();
 		(*ppBackBuffer)->AddRef();
 		return D3D_OK;
 	}

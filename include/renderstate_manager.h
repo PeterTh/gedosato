@@ -43,8 +43,7 @@ private:
 	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect;
 	unsigned numBackBuffers, renderWidth, renderHeight;
 	D3DFORMAT backbufferFormat;
-	IDirect3DTexture9** backBufferTextures;
-	IDirect3DSurface9** backBuffers;
+	vector<RenderTargetPtr> backBuffers;
 	RenderTargetPtr extraBuffer;
 	IDirect3DSurface9* depthStencilSurf;
 	
@@ -86,7 +85,7 @@ public:
 	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev),
 		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)), 
 		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
-		backbufferFormat(D3DFMT_X8R8G8B8), backBufferTextures(NULL), backBuffers(NULL), depthStencilSurf(NULL),
+		backbufferFormat(D3DFMT_X8R8G8B8), depthStencilSurf(NULL),
 		dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
 		prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL),
 		cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
