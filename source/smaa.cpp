@@ -36,17 +36,18 @@
  * policies, either expressed or implied, of the copyright holders.
  */
 
+#include "smaa.h"
 
 #include <vector>
 #include <sstream>
-#include "SMAA.h"
-#include "search_tex.h"
-#include "area_tex.h"
 using namespace std;
 
-#include "Settings.h"
+#include "search_tex.h"
+#include "area_tex.h"
+#include "settings.h"
+#include "renderstate_manager.h"
 
-SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool useSRGB, const ExternalStorage &storage)
+SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool useSRGB)
         : Effect(device),
           threshold(0.1f),
           maxSearchSteps(8),
@@ -91,27 +92,9 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool 
 	hr = D3DXCreateEffectFromFile(device, getAssetFileName("SMAA.fx").c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 
-    // If storage for the edges is not specified we will create it.
-    if (storage.edgeTex != NULL && storage.edgeSurface != NULL) {
-        edgeTex = storage.edgeTex;
-        edgeSurface = storage.edgeSurface;
-        releaseEdgeResources = false;
-    } else {
-        device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &edgeTex, NULL);
-        edgeTex->GetSurfaceLevel(0, &edgeSurface);
-        releaseEdgeResources = true;
-    }
-
-    // Same for blending weights.
-    if (storage.blendTex != NULL && storage.blendSurface != NULL) {
-        blendTex = storage.blendTex;
-        blendSurface = storage.blendSurface;
-        releaseBlendResources = false;
-    } else {
-        device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &blendTex, NULL);
-        blendTex->GetSurfaceLevel(0, &blendSurface);
-        releaseBlendResources = true;
-    }
+    // Create buffers
+	edgeBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	blendBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
 
 	device->CreateDepthStencilSurface(width, height, D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &stencilSurf, NULL);
 
@@ -141,15 +124,6 @@ SMAA::SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool 
 SMAA::~SMAA() {
     SAFERELEASE(effect);
 
-    if(releaseEdgeResources) { // We will be releasing these things *only* if we created them.
-        SAFERELEASE(edgeTex);
-        SAFERELEASE(edgeSurface);
-    }
-
-    if(releaseBlendResources) { // Same applies over here.
-        SAFERELEASE(blendTex);
-        SAFERELEASE(blendSurface);
-    }
 	SAFERELEASE(stencilSurf);
 
     SAFERELEASE(areaTex);
@@ -204,7 +178,7 @@ void SMAA::edgesDetectionPass(IDirect3DTexture9 *edges, Input input) {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 1st pass");
 
     // Set the render target and clear both the color and the stencil buffers.
-    device->SetRenderTarget(0, edgeSurface);
+    device->SetRenderTarget(0, edgeBuffer->getSurf());
     device->Clear(0, nullptr, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
     // Setup variables.
@@ -245,11 +219,11 @@ void SMAA::blendingWeightsCalculationPass() {
     //D3DPERF_BeginEvent(D3DCOLOR_XRGB(0, 0, 0), L"SMAA: 2nd pass");
 
     // Set the render target and clear it.
-    device->SetRenderTarget(0, blendSurface);
+    device->SetRenderTarget(0, blendBuffer->getSurf());
     device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(0, 0, 0, 0), 1.0f, 0);
 
     // Setup the variables and the technique (yet again).
-    effect->SetTexture(edgesTexHandle, edgeTex);
+    effect->SetTexture(edgesTexHandle, edgeBuffer->getTex());
     effect->SetTexture(areaTexHandle, areaTex);
     effect->SetTexture(searchTexHandle, searchTex);
     effect->SetTechnique(blendWeightCalculationHandle);
@@ -272,7 +246,7 @@ void SMAA::neighborhoodBlendingPass(IDirect3DTexture9 *src, IDirect3DSurface9 *d
     // Blah blah blah
     device->SetRenderTarget(0, dst);
     effect->SetTexture(colorTexHandle, src);
-    effect->SetTexture(blendTexHandle, blendTex);
+    effect->SetTexture(blendTexHandle, blendBuffer->getTex());
     effect->SetTechnique(neighborhoodBlendingHandle);
 
     // Yeah! We will finally have the antialiased image :D

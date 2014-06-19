@@ -45,8 +45,9 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 
-#include "Effect.h"
+#include "effect.h"
 #include "main.h"
+#include "rendertarget.h"
 
 class SMAA : public Effect {
     public:
@@ -66,8 +67,7 @@ class SMAA : public Effect {
          * By default, two render targets will be created for storing
          * intermediate calculations.
          */
-        SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool useSRGB = true,
-             const ExternalStorage &storage=ExternalStorage());
+        SMAA(IDirect3DDevice9 *device, int width, int height, Preset preset, bool useSRGB = true);
         virtual ~SMAA();
 
         /**
@@ -104,25 +104,7 @@ class SMAA : public Effect {
          */
         float getThreshold() const { return threshold; }
         void setThreshold(float threshold) { this->threshold = threshold; }
-
-        /**
-         * This class allows to pass spare storage buffers to the SMAA class.
-         */
-        class ExternalStorage {
-            public:
-                ExternalStorage(IDirect3DTexture9 *edgeTex=NULL,
-                                IDirect3DSurface9 *edgeSurface=NULL,
-                                IDirect3DTexture9 *blendTex=NULL,
-                                IDirect3DSurface9 *blendSurface=NULL)
-                    : edgeTex(edgeTex),
-                      edgeSurface(edgeSurface), 
-                      blendTex(blendTex),
-                      blendSurface(blendSurface) {}
-
-            IDirect3DTexture9 *edgeTex, *blendTex;
-            IDirect3DSurface9 *edgeSurface, *blendSurface;
-        };
-
+		
     private:
         void loadAreaTex();
         void loadSearchTex();
@@ -132,13 +114,8 @@ class SMAA : public Effect {
 
         ID3DXEffect *effect;
 
-        IDirect3DTexture9 *edgeTex;
-        IDirect3DSurface9 *edgeSurface;
-        bool releaseEdgeResources;
-
-        IDirect3DTexture9 *blendTex;
-        IDirect3DSurface9 *blendSurface;
-        bool releaseBlendResources;
+		RenderTargetPtr edgeBuffer;
+		RenderTargetPtr blendBuffer;
 
         IDirect3DTexture9 *areaTex;
         IDirect3DTexture9 *searchTex;
