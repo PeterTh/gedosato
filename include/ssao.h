@@ -5,7 +5,8 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 
-#include "Effect.h"
+#include "effect.h"
+#include "rendertarget.h"
 
 class SSAO : public Effect {
 public:
@@ -27,11 +28,7 @@ private:
 
 	ID3DXEffect *effect;
 	
-	IDirect3DTexture9* buffer1Tex;
-	IDirect3DSurface9* buffer1Surf;
-	IDirect3DTexture9* buffer2Tex;
-	IDirect3DSurface9* buffer2Surf;
-	IDirect3DSurface9* hdrBufferSurf;
+	RenderTargetPtr buffer1, buffer2, hdrBuffer;
 
 	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle;
 	

@@ -5,7 +5,8 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 
-#include "Effect.h"
+#include "effect.h"
+#include "rendertarget.h"
 
 class DOF : public Effect {
 public:
@@ -21,10 +22,8 @@ private:
 
 	ID3DXEffect *effect;
 	
-	IDirect3DTexture9* buffer1Tex;
-	IDirect3DSurface9* buffer1Surf;
-	IDirect3DTexture9* buffer2Tex;
-	IDirect3DSurface9* buffer2Surf;
+	RenderTargetPtr buffer1;
+	RenderTargetPtr buffer2;
 
 	D3DXHANDLE thisframeTexHandle, depthTexHandle, lastpassTexHandle;
 	

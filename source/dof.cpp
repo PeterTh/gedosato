@@ -43,10 +43,8 @@ DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseR
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
 	// Create buffers
-	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer1Tex, NULL);
-    buffer1Tex->GetSurfaceLevel(0, &buffer1Surf);
-	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer2Tex, NULL);
-    buffer2Tex->GetSurfaceLevel(0, &buffer2Surf);
+	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
 
 	// get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex");
@@ -56,19 +54,15 @@ DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseR
 
 DOF::~DOF() {
 	SAFERELEASE(effect);
-	SAFERELEASE(buffer1Surf);
-	SAFERELEASE(buffer1Tex);
-	SAFERELEASE(buffer2Surf);
-	SAFERELEASE(buffer2Tex);
 }
 
 void DOF::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
 	device->SetVertexDeclaration(vertexDeclaration);
 	
-    cocPass(frame, depth, buffer1Surf);
-	dofPass(buffer1Tex, buffer2Surf);
-	hBlurPass(buffer2Tex, buffer1Surf);
-	vBlurPass(buffer1Tex, dst);
+    cocPass(frame, depth, buffer1->getSurf());
+	dofPass(buffer1->getTex(), buffer2->getSurf());
+	hBlurPass(buffer2->getTex(), buffer1->getSurf());
+	vBlurPass(buffer1->getTex(), dst);
 }
 
 void DOF::cocPass(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {

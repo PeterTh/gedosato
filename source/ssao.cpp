@@ -63,11 +63,9 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
 	// Create buffers
-	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer1Tex, NULL);
-    buffer1Tex->GetSurfaceLevel(0, &buffer1Surf);
-	device->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &buffer2Tex, NULL);
-    buffer2Tex->GetSurfaceLevel(0, &buffer2Surf);
-	device->CreateRenderTarget(width, height, D3DFMT_A16B16G16R16F, D3DMULTISAMPLE_NONE, 0, false, &hdrBufferSurf, NULL);
+	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	hdrBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_FP16);
 
 	// get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
@@ -77,24 +75,19 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 
 SSAO::~SSAO() {
 	SAFERELEASE(effect);
-	SAFERELEASE(buffer1Tex);
-	SAFERELEASE(buffer1Surf);
-	SAFERELEASE(buffer2Tex);
-	SAFERELEASE(buffer2Surf);
-	SAFERELEASE(hdrBufferSurf);
 }
 
 void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
 	device->SetVertexDeclaration(vertexDeclaration);
 	
-    mainSsaoPass(depth, buffer1Surf);
+    mainSsaoPass(depth, buffer1->getSurf());
 	
-	for(size_t i = 0; i<2; ++i) {
-		hBlurPass(depth, buffer1Tex, buffer2Surf);
-		vBlurPass(depth, buffer2Tex, buffer1Surf);
+	for(size_t i = 0; i<blurPasses; ++i) {
+		hBlurPass(depth, buffer1->getTex(), buffer2->getSurf());
+		vBlurPass(depth, buffer2->getTex(), buffer1->getSurf());
 	}
 
-	combinePass(frame, buffer1Tex, dst);
+	combinePass(frame, buffer1->getTex(), dst);
 	
 	dumping = false;
 }
@@ -108,28 +101,28 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 		RSManager::get().dumpSurface("SSAO_PRE_dest", dst);
 	}
 	
-    mainSsaoPass(depth, buffer1Surf);
+	mainSsaoPass(depth, buffer1->getSurf());
 
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_MD1_buffer1", buffer1Tex);
+		RSManager::get().dumpTexture("SSAO_MD1_buffer1", buffer1->getTex());
 	}
 	
 	for(size_t i = 0; i<blurPasses; ++i) {
-		hBlurPass(depth, buffer1Tex, buffer2Surf);
-		vBlurPass(depth, buffer2Tex, buffer1Surf);
+		hBlurPass(depth, buffer1->getTex(), buffer2->getSurf());
+		vBlurPass(depth, buffer2->getTex(), buffer1->getSurf());
 	}
 	
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_MD2_buffer1", buffer1Tex);
+		RSManager::get().dumpTexture("SSAO_MD2_buffer1", buffer1->getTex());
 	}
 
-	combinePass(frame, buffer1Tex, hdrBufferSurf);
+	combinePass(frame, buffer1->getTex(), hdrBuffer->getSurf());
 	
 	if(dumping) {
-		RSManager::get().dumpSurface("SSAO_END_buffer2", hdrBufferSurf);
+		RSManager::get().dumpSurface("SSAO_END_buffer2", hdrBuffer->getSurf());
 	}
 
-	device->StretchRect(hdrBufferSurf, NULL, dst, NULL, D3DTEXF_NONE);
+	device->StretchRect(hdrBuffer->getSurf(), NULL, dst, NULL, D3DTEXF_NONE);
 
 	dumping = false;
 }
