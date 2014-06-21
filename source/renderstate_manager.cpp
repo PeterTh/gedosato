@@ -21,6 +21,7 @@
 #include "key_actions.h"
 
 RSManager* RSManager::latest = NULL;
+bool RSManager::forceDSoff = false;
 
 RSManager& RSManager::get() {
 	if(latest == NULL) SDLOG(0, "Getting NULL RSManager!!\n")
@@ -33,6 +34,11 @@ void RSManager::setLatest(RSManager *man) {
 
 RenderTargetManager& RSManager::getRTMan() {
 	return *latest->rtMan;
+}
+
+bool RSManager::currentlyDownsampling() {
+	if(forceDSoff) return false;
+	return Settings::get().getForceAlwaysDownsamplingRes() || (latest && latest->downsampling);
 }
 
 
@@ -560,7 +566,9 @@ HRESULT RSManager::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTY
 		if(fs) setDisplayFaking(true);
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
+		forceDSoff = true;
 		HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &copy, ppReturnedDeviceInterface);
+		forceDSoff = false;
 		if(SUCCEEDED(ret)) {
 			new hkIDirect3DDevice9(ppReturnedDeviceInterface, &copy, d3d9);
 			initResourcesWrapper(true, pPresentationParameters);
@@ -569,7 +577,9 @@ HRESULT RSManager::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTY
 		return ret;
 	}
 
+	forceDSoff = true;
 	HRESULT ret = d3d9->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
+	forceDSoff = false;
 	if(SUCCEEDED(ret)) {
 		new hkIDirect3DDevice9(ppReturnedDeviceInterface, pPresentationParameters, d3d9);
 		initResourcesWrapper(false, pPresentationParameters);
@@ -592,7 +602,9 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 		initPresentationParams(pPresentationParameters, &copy);
 		D3DDISPLAYMODEEX copyEx, *pCopyEx = &copyEx;
 		initDisplayMode(pFullscreenDisplayMode, &pCopyEx);
+		forceDSoff = true;
 		HRESULT ret = d3d9ex->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, &copy, pCopyEx, ppReturnedDeviceInterface);
+		forceDSoff = false;
 		if(SUCCEEDED(ret)) {
 			new hkIDirect3DDevice9Ex(ppReturnedDeviceInterface, &copy, d3d9ex);
 			initResourcesWrapper(true, pPresentationParameters);
@@ -601,7 +613,9 @@ HRESULT RSManager::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter, D3
 		return ret;
 	}
 
+	forceDSoff = true;
 	HRESULT ret = d3d9ex->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
+	forceDSoff = false;
 	if(SUCCEEDED(ret)) {
 		new hkIDirect3DDevice9Ex(ppReturnedDeviceInterface, pPresentationParameters, d3d9ex);
 		initResourcesWrapper(false, pPresentationParameters);
@@ -624,7 +638,9 @@ HRESULT RSManager::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParameters
 		D3DPRESENT_PARAMETERS copy;
 		initPresentationParams(pPresentationParameters, &copy);
 		downsampling = false;
+		forceDSoff = true;
 		HRESULT ret = d3ddev->Reset(&copy);
+		forceDSoff = false;
 		if(SUCCEEDED(ret)) {
 			initResourcesWrapper(true, pPresentationParameters);
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
@@ -635,7 +651,9 @@ HRESULT RSManager::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParameters
 		return ret;
 	}
 
+	forceDSoff = true;
 	HRESULT ret = d3ddev->Reset(pPresentationParameters);
+	forceDSoff = false;
 	if(SUCCEEDED(ret)) {
 		initResourcesWrapper(false, pPresentationParameters);
 		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);
@@ -659,7 +677,9 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 		D3DDISPLAYMODEEX copyEx, *pCopyEx = &copyEx;
 		initDisplayMode(pFullscreenDisplayMode, &pCopyEx);
 		downsampling = false;
+		forceDSoff = true;
 		HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(&copy, pCopyEx);
+		forceDSoff = false;
 		if(SUCCEEDED(ret)) {
 			initResourcesWrapper(true, pPresentationParameters);
 			if(fs) WindowManager::get().setFakeFullscreen(Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
@@ -667,7 +687,9 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 		return ret;
 	}
 
+	forceDSoff = true;
 	HRESULT ret = ((IDirect3DDevice9Ex*)d3ddev)->ResetEx(pPresentationParameters, pFullscreenDisplayMode);
+	forceDSoff = false;
 	if(SUCCEEDED(ret)) {
 		initResourcesWrapper(false, pPresentationParameters);
 		if(fs) WindowManager::get().setFakeFullscreen(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight);

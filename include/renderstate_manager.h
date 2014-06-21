@@ -27,6 +27,7 @@ public:
 
 private:
 	static RSManager* latest;
+	static bool forceDSoff;
 
 	bool inited, downsampling;
 	IDirect3DDevice9 *d3ddev;
@@ -79,12 +80,10 @@ public:
 	static RSManager& get();
 	static RenderTargetManager& getRTMan();
 	static void setLatest(RSManager *man);
-	static bool currentlyDownsampling() {
-		return latest && latest->downsampling;
-	}
+	static bool currentlyDownsampling();
 
 	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev),
-		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)), 
+		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)),
 		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
 		backbufferFormat(D3DFMT_X8R8G8B8), depthStencilSurf(NULL),
 		dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),

@@ -3,8 +3,12 @@
 General:
 - Added ability to have per-game postprocessing shaders
 - Refactored rendertarget management (to easier turn API agnostic later)
+- Hooked a few more Windows API functions
+- Added the "forceAlwaysDownsamplingRes" option (can be used to make 
+  reluctant games - like Divinity:OS - show downsampling resolutions)
 GeDoSaToTool:
-- Implemented alternative dll injection strategy
+- Implemented alternative dll injection strategy (for games which build the 
+  D3D device before doing anything which would be caught by the default)
 - Prevented multiple instances of GeDoSaToTool being started
 - Added startup checks for path validity and admin rights
 

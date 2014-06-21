@@ -14,6 +14,8 @@ SETTING(int, PresentInterval, "presentInterval", -1)
 SETTING(unsigned, OverrideWidth, "overrideWidth", 1280)
 SETTING(unsigned, OverrideHeight, "overrideHeight", 720)
 
+SETTING(bool, ForceAlwaysDownsamplingRes, "forceAlwaysDownsamplingRes", false)
+
 SETTING(string, ScalingType, "scalingType", "linear")
 
 SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", true)
