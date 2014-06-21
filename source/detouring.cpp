@@ -297,7 +297,7 @@ GENERATE_INTERCEPT_HEADER(GetWindowRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPR
 GENERATE_INTERCEPT_HEADER(GetSystemMetrics, int, WINAPI, _In_ int nIndex) {
 	SDLOG(1, "DetouredGetSystemMetrics %d - %s\n", nIndex, SystemMetricToString(nIndex));
 	int ret = TrueGetSystemMetrics(nIndex);
-	if(RSManager::currentlyDownsampling()) {
+	//if(RSManager::currentlyDownsampling()) {
 		switch(nIndex) {
 		case SM_CXSCREEN:
 			ret = Settings::get().getRenderWidth();
@@ -312,8 +312,25 @@ GENERATE_INTERCEPT_HEADER(GetSystemMetrics, int, WINAPI, _In_ int nIndex) {
 			ret = Settings::get().getRenderHeight();
 			break;
 		} 
-	}
+	//}
 	SDLOG(1, " -> %d\n", ret);
+	return ret;
+}
+
+GENERATE_INTERCEPT_HEADER(GetDeviceCaps, int, WINAPI, _In_opt_ HDC hdc, _In_ int index) {
+	SDLOG(1, "DetouredGetDeviceCaps %p %s\n", hdc, GetDeviceCapsParamToString(index));
+	int ret = TrueGetDeviceCaps(hdc, index);
+	return ret;
+}
+
+GENERATE_INTERCEPT_HEADER(GetMonitorInfoA, BOOL, WINAPI, _In_ HMONITOR hMonitor, _Inout_ LPMONITORINFO lpmi) {
+	SDLOG(1, "DetouredGetMonitorInfoA %p\n", hMonitor);
+	BOOL ret = TrueGetMonitorInfoA(hMonitor, lpmi);
+	return ret;	
+}
+GENERATE_INTERCEPT_HEADER(GetMonitorInfoW, BOOL, WINAPI, _In_ HMONITOR hMonitor, _Inout_ LPMONITORINFO lpmi) {
+	SDLOG(1, "DetouredGetMonitorInfoW %p\n", hMonitor);
+	BOOL ret = TrueGetMonitorInfoW(hMonitor, lpmi);
 	return ret;
 }
 

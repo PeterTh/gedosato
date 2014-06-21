@@ -111,6 +111,52 @@ const char* WindowLongOffsetToString(int nIndex) {
 	return "Unknown Offset!";
 }
 
+const char* GetDeviceCapsParamToString(int index) {
+	switch(index) {
+	case DRIVERVERSION: return "DRIVERVERSION";
+	case TECHNOLOGY: return "TECHNOLOGY";
+	case HORZSIZE: return "HORZSIZE";
+	case VERTSIZE: return "VERTSIZE";
+	case HORZRES: return "HORZRES";
+	case VERTRES: return "VERTRES";
+	case BITSPIXEL: return "BITSPIXEL";
+	case PLANES: return "PLANES";
+	case NUMBRUSHES: return "NUMBRUSHES";
+	case NUMPENS: return "NUMPENS";
+	case NUMMARKERS: return "NUMMARKERS";
+	case NUMFONTS: return "NUMFONTS";
+	case NUMCOLORS: return "NUMCOLORS";
+	case PDEVICESIZE: return "PDEVICESIZE";
+	case CURVECAPS: return "CURVECAPS";
+	case LINECAPS: return "LINECAPS";
+	case POLYGONALCAPS: return "POLYGONALCAPS";
+	case TEXTCAPS: return "TEXTCAPS";
+	case CLIPCAPS: return "CLIPCAPS";
+	case RASTERCAPS: return "RASTERCAPS";
+	case ASPECTX: return "ASPECTX";
+	case ASPECTY: return "ASPECTY";
+	case ASPECTXY: return "ASPECTXY";
+	case LOGPIXELSX: return "LOGPIXELSX";
+	case LOGPIXELSY: return "LOGPIXELSY";
+	case SIZEPALETTE: return "SIZEPALETTE";
+	case NUMRESERVED: return "NUMRESERVED";
+	case COLORRES: return "COLORRES";
+	case PHYSICALWIDTH: return "PHYSICALWIDTH";
+	case PHYSICALHEIGHT: return "PHYSICALHEIGHT";
+	case PHYSICALOFFSETX: return "PHYSICALOFFSETX";
+	case PHYSICALOFFSETY: return "PHYSICALOFFSETY";
+	case SCALINGFACTORX: return "SCALINGFACTORX";
+	case SCALINGFACTORY: return "SCALINGFACTORY";
+	case VREFRESH: return "VREFRESH";
+	case DESKTOPVERTRES: return "DESKTOPVERTRES";
+	case DESKTOPHORZRES: return "DESKTOPHORZRES";
+	case BLTALIGNMENT: return "BLTALIGNMENT";
+	case SHADEBLENDCAPS: return "SHADEBLENDCAPS";
+	case COLORMGMTCAPS: return "COLORMGMTCAPS";
+	}
+	return "Unknown Device Cap!";
+}
+
 string RectToString(const RECT* rect) {
 	if(!rect) return string("NULL_RECT");
 	return format("RECT[%4ld/%4ld/%4ld/%4ld]", rect->left, rect->top, rect->right, rect->bottom);

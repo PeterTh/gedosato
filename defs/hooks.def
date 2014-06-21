@@ -16,6 +16,9 @@ HOOK(ChangeDisplaySettingsExA, "User32.dll")
 HOOK(ChangeDisplaySettingsExW, "User32.dll")
 
 HOOK(GetSystemMetrics, "User32.dll")
+HOOK(GetDeviceCaps, "Gdi32.dll")
+HOOK(GetMonitorInfoA, "User32.dll")
+HOOK(GetMonitorInfoW, "User32.dll")
 
 HOOK(GetClientRect, "User32.dll")
 HOOK(GetWindowRect, "User32.dll")

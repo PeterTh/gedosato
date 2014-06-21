@@ -47,5 +47,6 @@ HRESULT APIENTRY hkIDirect3D9Ex::CreateDeviceEx(UINT Adapter, D3DDEVTYPE DeviceT
 }
 
 HRESULT APIENTRY hkIDirect3D9Ex::GetAdapterLUID(UINT Adapter, LUID* pLUID) {
+	SDLOG(2, "GetAdapterLUID ------\n");
 	return m_pD3Dint->GetAdapterLUID(Adapter, pLUID);
 }

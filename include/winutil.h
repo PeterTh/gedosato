@@ -6,6 +6,7 @@ using std::string;
 
 const char* SystemMetricToString(int metric);
 const char* WindowLongOffsetToString(int nIndex);
+const char* GetDeviceCapsParamToString(int index);
 
 string RectToString(const RECT* rect);
 
