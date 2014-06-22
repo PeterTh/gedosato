@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "settings.h"
+#include "string_utils.h"
 
 IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface) {
 	IDirect3DTexture9 *ret = NULL;

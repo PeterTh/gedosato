@@ -9,6 +9,7 @@ using std::string;
 #include "main.h"
 #include "settings.h"
 #include "hash.h"
+#include "string_utils.h"
 
 
 class ShaderManager {

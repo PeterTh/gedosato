@@ -273,10 +273,9 @@ void RSManager::captureRTScreen(const string& stype) {
 }
 
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
-	char fullname[128];
-	sprintf_s(fullname, 128, "dump%03d_%s_%p.tga", dumpCaptureIndex++, name, surface);
-	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname);
-	D3DXSaveSurfaceToFile(fullname, D3DXIFF_TGA, surface, NULL, NULL);
+	auto fullname = format("dump%03d_%s_%p.tga", dumpCaptureIndex++, name, surface);
+	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname.c_str());
+	D3DXSaveSurfaceToFile(fullname.c_str(), D3DXIFF_TGA, surface, NULL, NULL);
 }
 
 void RSManager::dumpTexture(const char* name, IDirect3DTexture9* tex) {

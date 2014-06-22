@@ -1,6 +1,7 @@
 #include "winutil.h"
 
 #include "main.h"
+#include "string_utils.h"
 
 // most of the enum-related functions in here are auto-generated
 

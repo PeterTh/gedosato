@@ -9,7 +9,8 @@
 #include <boost/algorithm/string/predicate.hpp>
 using namespace std;
 
-#include "Settings.h"
+#include "settings.h"
+#include "string_utils.h"
 
 Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height) 
 	: Effect(device), inputwidth(inputwidth), inputheight(inputheight), width(width), height(height),

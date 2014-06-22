@@ -21,6 +21,7 @@
 #include "detouring.h"
 #include "registry.h"
 #include "blacklist.h"
+#include "string_utils.h"
 //#include "lua_integration.h"
 
 FILE* g_oFile = NULL;
@@ -201,14 +202,4 @@ void messageErrorAndExit(string error) {
 	exit(-1);
 }
 
-#include <stdarg.h>
 
-string format(const char* formatString, ...) {
-	const unsigned BUFFER_SIZE = 2048*8;
-	char buffer[BUFFER_SIZE];
-	va_list arglist;
-	va_start(arglist, formatString);
-	vsnprintf_s(buffer, BUFFER_SIZE, formatString, arglist);
-	va_end(arglist);
-	return string(buffer);
-}

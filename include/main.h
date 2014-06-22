@@ -53,8 +53,6 @@ void __cdecl sdlog(const char * fmt, ...);
 void messageErrorAndExit(string error);
 void errorExit(LPTSTR lpszFunction);
 
-string format(const char* formatString, ...);
-
 const string& getInstallDirectory();
 const bool getUseBlacklist();
 const string& getExeFileName();
