@@ -5,7 +5,10 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 
-#include "Effect.h"
+#include <vector>
+
+#include "effect.h"
+#include "rendertarget.h"
 
 class Bloom : public Effect {
 public:
@@ -21,19 +24,13 @@ private:
 	float cutoff, strength, dirtStrength;
 	unsigned steps;
 	bool dumping;
-	struct Size { int w; int h; };
 
 	ID3DXEffect *effect;
 	IDirect3DTexture9 *dirtTexture;
-	
-	struct StepBuffer {
-		IDirect3DTexture9* textures[2];
-		IDirect3DSurface9* surfaces[2];
-	};
 
-	// we can afford this
-	StepBuffer stepBuffers[20];
-	Size stepSizes[20];
+	struct Size { int w; int h; };
+	std::vector<Size> stepSizes;
+	std::vector<RenderTargetPtr> stepBuffers[2];
 
 	D3DXHANDLE inputPixelMetricsHandle, invStepsHandle;
 	D3DXHANDLE sampleTexHandle, passTexHandle, dirtTexHandle, avgTexHandle;
@@ -43,5 +40,5 @@ private:
 	void blurPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int sh, bool horizontal);
 	void upPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int sh);
 	void eyePass(IDirect3DTexture9* src, IDirect3DSurface9* dst);
-	void finalPass(IDirect3DTexture9* src, IDirect3DTexture9* frame, IDirect3DSurface9* dst);
+	void finalPass(IDirect3DTexture9* src, IDirect3DTexture9* eye, IDirect3DTexture9* frame, IDirect3DSurface9* dst);
 };
