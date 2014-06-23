@@ -148,10 +148,6 @@ void RSManager::prePresent(bool doNotFlip) {
 		realBackBuffer->Release();
 		SDLOG(2, "- scaling complete!\n");
 		d3ddev->EndScene();
-		if(takeScreenshot == SCREENSHOT_STANDARD) {
-			takeScreenshot = SCREENSHOT_NONE;
-			captureRTScreen();
-		}
 		
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
 			d3ddev->StretchRect(backBuffers[0]->getSurf(), NULL, extraBuffer->getSurf(), NULL, D3DTEXF_NONE);
@@ -182,9 +178,10 @@ void RSManager::prePresent(bool doNotFlip) {
 		restoreRenderState();
 	}
 
+	// Full-size screenshots
 	if(takeScreenshot == SCREENSHOT_FULL || takeScreenshot == SCREENSHOT_HUDLESS || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
+		tookScreenshot();
 		storeRenderState();
-		takeScreenshot = SCREENSHOT_NONE;
 		if(downsampling) d3ddev->SetRenderTarget(0, backBuffers[0]->getSurf());
 		captureRTScreen("full resolution");
 		restoreRenderState();
@@ -206,6 +203,18 @@ void RSManager::prePresent(bool doNotFlip) {
 		console.draw();
 		realBackBuffer->Release();
 		d3ddev->EndScene();
+		restoreRenderState();
+	}
+
+	// Normal screenshots
+	if(takeScreenshot == SCREENSHOT_STANDARD) {
+		tookScreenshot();
+		storeRenderState();
+		IDirect3DSurface9* realBackBuffer = NULL;
+		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
+		if(realBackBuffer) d3ddev->SetRenderTarget(0, realBackBuffer);
+		captureRTScreen();
+		SAFERELEASE(realBackBuffer);
 		restoreRenderState();
 	}
 	
