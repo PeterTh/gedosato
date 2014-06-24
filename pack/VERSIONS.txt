@@ -6,6 +6,7 @@ General:
 - Hooked a few more Windows API functions
 - Added the "forceAlwaysDownsamplingRes" option (can be used to make 
   reluctant games - like Divinity:OS - show downsampling resolutions)
+- Changed default screenshots to also capture overlays
 GeDoSaToTool:
 - Implemented alternative dll injection strategy (for games which build the 
   D3D device before doing anything which would be caught by the default)

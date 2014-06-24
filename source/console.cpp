@@ -1,7 +1,8 @@
-#include "Console.h"
+#include "console.h"
 
 #define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"
+#include "external/stb_truetype.h"
+#undef STB_TRUETYPE_IMPLEMENTATION
 
 #include <sstream>
 #include <algorithm>

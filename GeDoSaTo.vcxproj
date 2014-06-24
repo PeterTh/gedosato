@@ -278,6 +278,7 @@
     <ClCompile Include="source\fxaa.cpp" />
     <ClCompile Include="source\game_plugin.cpp" />
     <ClCompile Include="source\hash.cpp" />
+    <ClCompile Include="source\imaging.cpp" />
     <ClCompile Include="source\plugins\dark_souls_2.cpp" />
     <ClCompile Include="source\plugins\generic.cpp" />
     <ClCompile Include="source\post.cpp" />
@@ -353,6 +354,7 @@
     <ClInclude Include="include\effect.h" />
     <ClInclude Include="include\fxaa.h" />
     <ClInclude Include="include\game_plugin.h" />
+    <ClInclude Include="include\imaging.h" />
     <ClInclude Include="include\lua_integration.h" />
     <ClInclude Include="include\plugins\dark_souls_2.h" />
     <ClInclude Include="include\plugins\generic.h" />

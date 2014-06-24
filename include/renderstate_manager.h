@@ -9,6 +9,7 @@
 #include "console.h"
 #include "shader_manager.h"
 #include "rendertarget_manager.h"
+#include "imaging.h"
 #include "game_plugin.h"
 
 #pragma region Forward Declarations
@@ -38,6 +39,7 @@ private:
 	Console console;
 	ShaderManager shaderMan;
 	std::unique_ptr<RenderTargetManager> rtMan;
+	std::unique_ptr<ImageWriter> imgWriter;
 	
 	ScreenshotType takeScreenshot;
 

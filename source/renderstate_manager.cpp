@@ -63,6 +63,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 		
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
+	imgWriter = std::unique_ptr<ImageWriter>(new ImageWriter(d3ddev, rw, rh));
 
 	// perf measurement
 	console.add(frameTimeText);
@@ -118,6 +119,7 @@ void RSManager::releaseResources() {
 	SAFEDELETE(perfMonitor);
 	SAFERELEASE(depthStencilSurf);
 	extraBuffer.reset(NULL);
+	imgWriter.reset(NULL);
 	SAFERELEASE(prevStateBlock);
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
@@ -266,7 +268,7 @@ void RSManager::captureRTScreen(const string& stype) {
 	time(&ltime);
 	struct tm *timeinfo;
 	timeinfo = localtime(&ltime);
-	strftime(timebuf, 128, "screenshot_%Y-%m-%d_%H-%M-%S.bmp", timeinfo);
+	strftime(timebuf, 128, "screenshot_%Y-%m-%d_%H-%M-%S.png", timeinfo);
 	sprintf(dirbuff, "%sscreens\\%s", getInstallDirectory().c_str(), getExeFileName().c_str());
 	CreateDirectory(dirbuff, NULL);
 	sprintf(buffer, "%s\\%s", dirbuff, timebuf);
@@ -275,7 +277,8 @@ void RSManager::captureRTScreen(const string& stype) {
 	IDirect3DSurface9 *render = NULL;
 	d3ddev->GetRenderTarget(0, &render);
 	if(render) {
-		D3DXSaveSurfaceToFile(buffer, D3DXIFF_BMP, render, NULL, NULL);
+		imgWriter->writeSurface(buffer, render);
+		//D3DXSaveSurfaceToFile(buffer, D3DXIFF_BMP, render, NULL, NULL);
 		Console::get().add(format("Captured %s screenshot to %s", stype.c_str(), buffer));
 	}
 	SAFERELEASE(render);

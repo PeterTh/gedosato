@@ -1,10 +1,9 @@
 #pragma once
 
 #include "main.h"
+#include "timer.h"
+#include "external/stb_truetype.h"
 
-#include "Timer.h"
-
-#include "stb_truetype.h"
 #include <string>
 using std::string;
 #include <vector>
