@@ -494,6 +494,59 @@ GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ H
 	return TrueSetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
+// DXGI /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GENERATE_INTERCEPT_HEADER(CreateDXGIFactory, HRESULT, WINAPI, _In_ REFIID riid, _Out_ void **ppFactory) {
+	SDLOG(0, "DetouredCreateDXGIFactory\n");
+	return TrueCreateDXGIFactory(riid, ppFactory);
+}
+GENERATE_INTERCEPT_HEADER(CreateDXGIFactory1, HRESULT, WINAPI, _In_ REFIID riid, _Out_ void **ppFactory) {
+	SDLOG(0, "DetouredCreateDXGIFactory1\n");
+	return TrueCreateDXGIFactory1(riid, ppFactory);
+}
+GENERATE_INTERCEPT_HEADER(CreateDXGIFactory2, HRESULT, WINAPI, _In_ UINT flags, _In_ const IID &riid, _Out_ void **ppFactory) {
+	SDLOG(0, "DetouredCreateDXGIFactory2\n");
+	return TrueCreateDXGIFactory2(flags, riid, ppFactory);
+}
+
+// D3D11 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma warning( push )
+#pragma warning( disable : 4005 )
+#include <D3D11.h>
+#pragma warning( pop ) 
+
+GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
+		_In_opt_ IDXGIAdapter* pAdapter,
+		D3D_DRIVER_TYPE DriverType,
+		HMODULE Software,
+		UINT Flags,
+		_In_reads_opt_(FeatureLevels) CONST D3D_FEATURE_LEVEL* pFeatureLevels,
+		UINT FeatureLevels,
+		UINT SDKVersion,
+		_Out_opt_ ID3D11Device** ppDevice,
+		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
+		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
+	SDLOG(0, "DetouredD3D11CreateDevice\n");
+	return TrueD3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+}
+
+GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
+		_In_opt_ IDXGIAdapter* pAdapter,
+		D3D_DRIVER_TYPE DriverType,
+		HMODULE Software,
+		UINT Flags,
+		_In_reads_opt_(FeatureLevels) CONST D3D_FEATURE_LEVEL* pFeatureLevels,
+		UINT FeatureLevels,
+		UINT SDKVersion,
+		_In_opt_ CONST DXGI_SWAP_CHAIN_DESC* pSwapChainDesc,
+		_Out_opt_ IDXGISwapChain** ppSwapChain,
+		_Out_opt_ ID3D11Device** ppDevice,
+		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
+		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
+	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain\n");
+	return TrueD3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -18,7 +18,7 @@ public:
 	}
 	~ImageWriter() {
 		SAFERELEASE(tempSurf);
-		// "futures" gets destroyed, since they futures are created by async they will wait
+		// "futures" gets destroyed, since all the futures are created by async they will wait
 	}
 
 	void writeSurface(const string& fn, IDirect3DSurface9* surf);

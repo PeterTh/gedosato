@@ -46,4 +46,11 @@ HOOK(DirectInputCreateEx, "dinput.dll");
 HOOK(DirectInputCreateA, "dinput.dll");
 HOOK(DirectInputCreateW, "dinput.dll");
 
+HOOK(CreateDXGIFactory, "DXGI.dll");
+HOOK(CreateDXGIFactory1, "DXGI.dll");
+HOOK(CreateDXGIFactory2, "DXGI.dll");
+
+HOOK(D3D11CreateDevice, "D3D11.dll");
+HOOK(D3D11CreateDeviceAndSwapChain, "D3D11.dll");
+
 #undef HOOK
