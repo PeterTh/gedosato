@@ -4,8 +4,10 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <dxerr.h>
+#include <vector>
 
-#include "Effect.h"
+#include "effect.h"
+#include "rendertarget.h"
 
 class Scaler : public Effect {
 public:
@@ -30,8 +32,7 @@ private:
 	D3DXHANDLE inputSizeHandle;
 	
 	unsigned levels;
-	IDirect3DTexture9** levelBufferTextures;
-	IDirect3DSurface9** levelBuffers;
+	std::vector<RenderTargetPtr> levelBuffers;
 	FLOAT *levelInputSizes;
 
 	string status;
