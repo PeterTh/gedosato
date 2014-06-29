@@ -13,25 +13,19 @@ GeDoSaTo also supports game-specific plugins, for example a Dark Souls 2 plugin.
 How do I use it? (INSTALLATION & USAGE INSTRUCTIONS)
 ====================================================
 1) Extract the contents of the zip to some permanent directory
-2) Adjust the settings in config/GeDoSaTo.ini and config/GeDoSaToKeys.ini as desired
-   - you can also store game-specific setting overrides, 
-     see "config/Might and Magic X Legacy" as an example
-3) [optional] Add your game executable names to "whitelist.txt" in the "assets" folder 
+2) Run GeDoSaToTool.exe *as Administrator* (you can use this to perform the following steps)
+3) Adjust the settings in config/GeDoSaTo.ini and config/GeDoSaToKeys.ini as desired
+   - you can also store game-specific setting overrides, see "config/Blackguards" as an example
+4) [optional] Add your game executable names to "whitelist.txt" in the "assets" folder 
    (Dark Souls 2 and a few others are already included!)
-4) Run GeDoSaToTool.exe *as Administrator*
 5) Select the downsampling resolution in-game if you want to use downsampling
-
-What is the Dark Souls 2 plugin?
-================================
-The Dark Souls 2 plugin adds several (optional) graphical effects to the game.
-Note that you need to ENABLE IN-GAME ANTI ALIASING in order to use these effects.
 
 What are the advantages and disadvantages compared to driver-level downsampling?
 ================================================================================
 Advantages:
 - Essentially no resolution limits (beyond those of the GPU)
 - Downsampling from more than 4x the resolution is useful (multi-stage downsampling)
-- Selection of downsampling methods (not just linear sampling)
+- Selection of downsampling methods, including bicubic and lanczos (not just linear sampling)
 - Downsampling in linear color space
 - Support downsampling to high-frequency (e.g. 120 Hz or 144 Hz) target modes
 - Not limited by display hardware
@@ -51,6 +45,11 @@ What additional features are there?
 - Frame timing information (both GPU and CPU)
 - FXAA, SMAA and postprocessing injection
 - [Dark Souls 2] VSSAO2, Bokeh DoF, HDR Bloom and HuD-less screenshots
+
+What is the Dark Souls 2 plugin?
+================================
+The Dark Souls 2 plugin adds several (optional) graphical effects to the game.
+Note that you need to ENABLE IN-GAME ANTI ALIASING in order to use these effects.
 
 Will it work?
 =============
@@ -76,7 +75,7 @@ You can also simply Paypal to peter@metaclassofnil.com
 
 How can I contribute?
 =====================
-GeDoSaTo will be on github soon, if it isn't already.
+GeDoSaTo is on github: https://github.com/PeterTh/gedosato
 
 How can I uninstall it?
 ============================

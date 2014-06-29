@@ -1,4 +1,4 @@
-29-06-2014 -- beta 3 - "Rapidity is a justice"
+29-06-2014 -- beta 8 - "Rapidity is a justice"
 ==============================================
 General:
 - Added ability to have per-game postprocessing shaders
@@ -17,7 +17,7 @@ GeDoSaToTool:
 - Added startup checks for path validity and admin rights
 - Added basic editors for postprocessing shaders
 
-13-06-2014 -- beta 2 - "Seishoujo Sacrifice"
+13-06-2014 -- beta 7 - "Seishoujo Sacrifice"
 ============================================
 General:
 - Fixed Alt-tab crash when downsampling in fullscreen mode (!)
@@ -37,7 +37,7 @@ GeDoSaToTool:
 - Added ability to edit game profiles using the built-in editor 
   (still need to be created externally)
 
-01-06-2014 -- beta 1 - "Stranger Than Fiction"
+01-06-2014 -- beta 6 - "Stranger Than Fiction"
 ==============================================
 General:
 - Large-scale internal rewrite introducing game-specific plugin system
