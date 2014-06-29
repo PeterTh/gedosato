@@ -21,6 +21,8 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 		sType = BICUBIC;
 	} else if(boost::iequals(Settings::get().getScalingType(), string("lanczos"))) {
 		sType = LANCZOS;
+	} else if(boost::iequals(Settings::get().getScalingType(), string("nearest"))) {
+		sType = NEAREST;
 	} else {
 		sType = BILINEAR;
 	}
@@ -81,8 +83,15 @@ Scaler::~Scaler() {
 }
 
 void Scaler::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
+	if(sType == NEAREST) {
+		IDirect3DSurface9* is = NULL;
+		input->GetSurfaceLevel(0, &is);
+		device->StretchRect(is, NULL, dst, NULL, D3DTEXF_NONE);
+		SAFERELEASE(is);
+		return;
+	}
+
 	device->SetVertexDeclaration(vertexDeclaration);
-	
 	IDirect3DSurface9 *finalDst = dst;
 
 	for(unsigned i=0; i<=levels; i++) {
@@ -125,6 +134,7 @@ const char* Scaler::getScalingName() {
 	case BILINEAR: return "bilinear";
 	case BICUBIC: return "bicubic";
 	case LANCZOS: return "lanczos";
+	case NEAREST: return "nearest";
 	}
 	return "unknown";
 }
