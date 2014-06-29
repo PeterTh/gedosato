@@ -29,11 +29,12 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 
 	// Setup the defines for compiling the effect
     vector<D3DXMACRO> defines;
-    D3DXMACRO null = { NULL, NULL };
-    defines.push_back(null);
 
 	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
 	defines.push_back(srgbMacro);
+
+	D3DXMACRO null = { NULL, NULL };
+	defines.push_back(null);
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE;
 
