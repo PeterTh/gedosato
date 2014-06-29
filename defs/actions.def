@@ -18,6 +18,7 @@ ACTION(takeFullScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCRE
 ACTION(toggleAA, RSManager::get().toggleAA())
 ACTION(setBilinearScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BILINEAR))
 ACTION(setBicubicScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BICUBIC))
+ACTION(setLanczosScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::LANCZOS))
 
 ACTION(toggleAO, RSManager::get().toggleAO())
 ACTION(toggleDOF, RSManager::get().toggleDOF())

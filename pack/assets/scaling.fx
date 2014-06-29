@@ -96,6 +96,59 @@ float4 scaleCubic(VSOUT IN) : COLOR0
 	return bicubicInterpolation(IN.UVCoord, frameSampler, inputSize);
 }
 
+// Lanczos - adapted from libretro
+#define FIX(c) max(abs(c), 1e-5);
+const float PI = 3.1415926535897932384626433832795;
+
+float4 weight4(float x)
+{
+	float4 sample = FIX(PI * float4(1.0 + x, x, 1.0 - x, 2.0 - x));
+
+	// Lanczos2. Note: we normalize below, so no point in multiplying by radius (2.0)
+	float4 ret = /*2.0 **/ sin(sample) * sin(sample / 2.0) / (sample * sample);
+
+	// Normalize
+	return ret / dot(ret, float4(1.0, 1.0, 1.0, 1.0));
+}
+
+float3 pixel(float xpos, float ypos)
+{
+	return tex2D(frameSampler, float2(xpos, ypos)).rgb;
+}
+
+float3 line_run(float ypos, float4 xpos, float4 linetaps)
+{
+	return mul(linetaps, float4x3(
+		pixel(xpos.x, ypos),
+		pixel(xpos.y, ypos),
+		pixel(xpos.z, ypos),
+		pixel(xpos.w, ypos)));
+}
+
+float4 scaleLanczos(VSOUT IN) : COLOR0
+{
+	float2 stepxy = 1.0 / inputSize;
+	float2 pos = IN.UVCoord + stepxy * 0.5;
+	float2 f = frac(pos / stepxy);
+
+	float2 xystart = (-1.5 - f) * stepxy + pos;
+	float4 xpos = float4(
+		xystart.x,
+		xystart.x + stepxy.x,
+		xystart.x + stepxy.x * 2.0,
+		xystart.x + stepxy.x * 3.0);
+
+	float4 linetaps = weight4(f.x);
+	float4 columntaps = weight4(f.y);
+	
+	// final sum and weight normalization
+	return float4(mul(columntaps, float4x3(
+		line_run(xystart.y, xpos, linetaps),
+		line_run(xystart.y + stepxy.y, xpos, linetaps),
+		line_run(xystart.y + stepxy.y * 2.0, xpos, linetaps),
+		line_run(xystart.y + stepxy.y * 3.0, xpos, linetaps))), 1.0);
+}
+
 technique t0
 {
 	pass P0
@@ -117,5 +170,15 @@ technique t0
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
+	}
+	pass P2
+	{
+		VertexShader = compile vs_3_0 FrameVS();
+		PixelShader = compile ps_3_0 scaleLanczos();
+		ZEnable = false;
+		SRGBWriteEnable = USE_SRGB;
+		AlphaBlendEnable = false;
+		AlphaTestEnable = false;
+		ColorWriteEnable = RED | GREEN | BLUE | ALPHA;
 	}
 }

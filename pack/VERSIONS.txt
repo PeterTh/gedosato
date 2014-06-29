@@ -1,19 +1,21 @@
-??-06-2014 -- beta 3 - "Rapidity is a justice"
+29-06-2014 -- beta 3 - "Rapidity is a justice"
 ==============================================
 General:
 - Added ability to have per-game postprocessing shaders
-- Refactored rendertarget management (to easier turn API agnostic later)
 - Added the "forceAlwaysDownsamplingRes" option (can be used to make 
   reluctant games - like Divinity:OS - show downsampling resolutions)
-- Changed default screenshots to also capture overlays
+- Added Lanczos downsampling filter option
+- Changed default screenshots to also capture GeDoSaTo overlays
 - Made screenshot-taking asynchronous (basically 0 performance hit for the first SS)
+- Restored neutral render state before downsampling [Boulotaur2024]
+- Refactored rendertarget management (to easier turn API agnostic later)
 - Hooked a few more Windows API functions, and DXGI/D3D11
 GeDoSaToTool:
 - Implemented alternative dll injection strategy (for games which build the 
   D3D device before doing anything which would be caught by the default)
 - Prevented multiple instances of GeDoSaToTool being started
 - Added startup checks for path validity and admin rights
-
+- Added basic editors for postprocessing shaders
 
 13-06-2014 -- beta 2 - "Seishoujo Sacrifice"
 ============================================

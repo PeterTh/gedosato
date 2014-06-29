@@ -18,7 +18,9 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 	SDLOG(0, "Scaler construct\n");
 	// Determine initial scaling type from settings
 	if(boost::iequals(Settings::get().getScalingType(), string("bicubic"))) {
-		sType = BICUBIC; 
+		sType = BICUBIC;
+	} else if(boost::iequals(Settings::get().getScalingType(), string("lanczos"))) {
+		sType = LANCZOS;
 	} else {
 		sType = BILINEAR;
 	}
@@ -87,12 +89,12 @@ void Scaler::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 		if(i==levels) dst = finalDst;
 		else dst = levelBuffers[i]->getSurf();
 		UINT passes;
-		if(sType == BICUBIC) { 
+		if(sType == BICUBIC || sType == LANCZOS) { 
 			device->SetRenderTarget(0, dst);
 			effect->SetTexture(frameTexHandle, input);
 			effect->SetFloatArray(inputSizeHandle, levelInputSizes+i*2, 2);
 			effect->Begin(&passes, 0);
-			effect->BeginPass(1);
+			effect->BeginPass(sType);
 			quad(width, height);
 			effect->EndPass();
 			effect->End();
@@ -122,6 +124,7 @@ const char* Scaler::getScalingName() {
 	switch(sType) {
 	case BILINEAR: return "bilinear";
 	case BICUBIC: return "bicubic";
+	case LANCZOS: return "lanczos";
 	}
 	return "unknown";
 }

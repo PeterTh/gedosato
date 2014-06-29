@@ -11,7 +11,7 @@
 
 class Scaler : public Effect {
 public:
-	typedef enum { BILINEAR, BICUBIC } scalingType;
+	typedef enum { BILINEAR, BICUBIC, LANCZOS } scalingType;
 	
 	Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height, bool useSRGB = false);
     virtual ~Scaler();
