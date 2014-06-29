@@ -1,7 +1,7 @@
 // Separate file to facilitate code reuse of
 // d3ddev.cpp in d3ddev_ex.cpp
 
-#include "d3d9dev.h"
+#include "d3d9/d3d9dev.h"
 
 #include "renderstate_manager.h"
 

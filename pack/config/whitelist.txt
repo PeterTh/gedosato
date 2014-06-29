@@ -18,3 +18,4 @@ DAOriginsConfig
 daorigins
 Blackguards
 EoCApp
+kick_win

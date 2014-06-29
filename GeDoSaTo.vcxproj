@@ -266,10 +266,10 @@
     <ClCompile Include="source\blacklist.cpp" />
     <ClCompile Include="source\bloom.cpp" />
     <ClCompile Include="source\console.cpp" />
-    <ClCompile Include="source\d3d9dev_ex.cpp" />
-    <ClCompile Include="source\d3d9dev_init.cpp" />
-    <ClCompile Include="source\d3d9int_ex.cpp" />
-    <ClCompile Include="source\d3d9swap.cpp" />
+    <ClCompile Include="source\d3d9\d3d9dev_ex.cpp" />
+    <ClCompile Include="source\d3d9\d3d9dev_init.cpp" />
+    <ClCompile Include="source\d3d9\d3d9int_ex.cpp" />
+    <ClCompile Include="source\d3d9\d3d9swap.cpp" />
     <ClCompile Include="source\d3dperf.cpp" />
     <ClCompile Include="source\d3dutil.cpp" />
     <ClCompile Include="source\detouring.cpp" />
@@ -300,7 +300,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="source\d3d9dev.cpp">
+    <ClCompile Include="source\d3d9\d3d9dev.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
@@ -314,7 +314,7 @@
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="source\d3d9int.cpp">
+    <ClCompile Include="source\d3d9\d3d9int.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL</PreprocessorDefinitions>
@@ -343,10 +343,10 @@
     <ClInclude Include="include\blacklist.h" />
     <ClInclude Include="include\bloom.h" />
     <ClInclude Include="include\Console.h" />
-    <ClInclude Include="include\d3d9.h" />
-    <ClInclude Include="include\d3d9dev_ex.h" />
-    <ClInclude Include="include\d3d9int_ex.h" />
-    <ClInclude Include="include\d3d9swap.h" />
+    <ClInclude Include="include\d3d9\d3d9.h" />
+    <ClInclude Include="include\d3d9\d3d9dev_ex.h" />
+    <ClInclude Include="include\d3d9\d3d9int_ex.h" />
+    <ClInclude Include="include\d3d9\d3d9swap.h" />
     <ClInclude Include="include\d3dperf.h" />
     <ClInclude Include="include\d3dutil.h" />
     <ClInclude Include="include\detouring.h" />
@@ -372,8 +372,8 @@
     <ClInclude Include="defs\textures.def" />
     <ClInclude Include="include\renderstate_manager.h" />
     <ClInclude Include="include\main.h" />
-    <ClInclude Include="include\d3d9dev.h" />
-    <ClInclude Include="include\d3d9int.h" />
+    <ClInclude Include="include\d3d9\d3d9dev.h" />
+    <ClInclude Include="include\d3d9\d3d9int.h" />
     <ClInclude Include="include\settings.h" />
     <ClInclude Include="include\ssao.h" />
     <ClInclude Include="include\timer.h" />

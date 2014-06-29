@@ -1,4 +1,4 @@
-#include "d3d9int_ex.h"
+#include "d3d9/d3d9int_ex.h"
 
 // This is pretty terrible, but less terrible than lots of duplicate code
 #define hkIDirect3D9 hkIDirect3D9Ex

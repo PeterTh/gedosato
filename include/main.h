@@ -45,7 +45,7 @@ using std::string;
 #define EPSILON (std::numeric_limits<float>::epsilon()*10)
 #define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON * (std::max)(1.0f, (std::max)(std::abs(__a), std::abs(__b))))
 
-#include "d3d9.h"
+#include "d3d9/d3d9.h"
 
 bool fileExists(const char *filename);
 void __cdecl sdlogtime(int level);

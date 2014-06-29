@@ -10,7 +10,7 @@
 
 #include "d3dutil.h"
 #include "winutil.h"
-#include "d3d9dev_ex.h"
+#include "d3d9/d3d9dev_ex.h"
 #include "settings.h"
 #include "hash.h"
 #include "detouring.h"
@@ -71,6 +71,9 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	
 	// create state block for state save/restore
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
+	// create and capture default state block
+	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
+	initStateBlock->Capture();
 
 	// if required, determine depth/stencil surf type and create
 	if(downsampling && autoDepthStencil) {
@@ -121,6 +124,7 @@ void RSManager::releaseResources() {
 	extraBuffer.reset(NULL);
 	imgWriter.reset(NULL);
 	SAFERELEASE(prevStateBlock);
+	SAFERELEASE(initStateBlock);
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
 	SAFERELEASE(prevRenderTarget);
@@ -141,7 +145,12 @@ void RSManager::prePresent(bool doNotFlip) {
 	if(downsampling) {
 		storeRenderState();
 		d3ddev->BeginScene();
+		// restore neutral state
+		initStateBlock->Apply();
+		// apply plugin actions if specified
 		plugin->preDownsample(backBuffers[0]->getSurf());
+
+		// actual scaling
 		SDLOG(2, "Scaling fake backbuffer (%p)\n", backBuffers[0]);
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
@@ -149,8 +158,8 @@ void RSManager::prePresent(bool doNotFlip) {
 		scaler->go(backBuffers[0]->getTex(), realBackBuffer);
 		realBackBuffer->Release();
 		SDLOG(2, "- scaling complete!\n");
-		d3ddev->EndScene();
 		
+		// emulate flip queue behaviour exactly if required
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
 			d3ddev->StretchRect(backBuffers[0]->getSurf(), NULL, extraBuffer->getSurf(), NULL, D3DTEXF_NONE);
 			for(unsigned bb=0; bb<numBackBuffers; ++bb) {
@@ -161,6 +170,7 @@ void RSManager::prePresent(bool doNotFlip) {
 		} else {
 			SDLOG(2, "Not \"flipping\" backbuffers\n");
 		}
+		d3ddev->EndScene();
 		restoreRenderState();
 	}
 	else {

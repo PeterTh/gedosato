@@ -2,6 +2,10 @@ texture2D frameTex2D;
 
 float2 inputSize;
 
+#ifndef USE_SRGB
+#define USE_SRGB true
+#endif
+
 sampler frameSampler = sampler_state
 {
 	texture = <frameTex2D>;
@@ -9,7 +13,7 @@ sampler frameSampler = sampler_state
 	AddressV = CLAMP;
 	MINFILTER = LINEAR;
 	MAGFILTER = LINEAR;
-	SRGBTexture = 1;
+	SRGBTexture = USE_SRGB;
 };
 
 struct VSOUT
@@ -99,7 +103,7 @@ technique t0
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 scaleLinear();
 		ZEnable = false;        
-		SRGBWriteEnable = true;
+		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
@@ -109,7 +113,7 @@ technique t0
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 scaleCubic();
 		ZEnable = false;        
-		SRGBWriteEnable = true;
+		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
 		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;

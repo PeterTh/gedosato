@@ -13,7 +13,7 @@
 #include "Settings.h"
 
 #ifndef hkIDirect3D9 
-#include "d3d9swap.h" // only include if we're not in d3ddevex
+#include "d3d9/d3d9swap.h" // only include if we're not in d3ddevex
 #endif
 
 using namespace std;

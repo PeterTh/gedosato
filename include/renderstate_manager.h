@@ -69,6 +69,7 @@ private:
 	IDirect3DSurface9* prevDepthStencilSurf;
 	IDirect3DSurface9* prevRenderTarget;
 	IDirect3DStateBlock9* prevStateBlock;
+	IDirect3DStateBlock9* initStateBlock;
 
 	// Performance measurement
 	Timer cpuFrameTimer;
@@ -89,7 +90,7 @@ public:
 		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
 		backbufferFormat(D3DFMT_X8R8G8B8), depthStencilSurf(NULL),
 		dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
-		prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL),
+		prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL), initStateBlock(NULL),
 		cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
 	{
 		#define TEXTURE(_name, _hash) ++numKnownTextures;

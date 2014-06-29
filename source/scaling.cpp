@@ -12,7 +12,7 @@ using namespace std;
 #include "settings.h"
 #include "string_utils.h"
 
-Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height) 
+Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height, bool useSRGB)
 	: Effect(device), inputwidth(inputwidth), inputheight(inputheight), width(width), height(height),
 	  levels(0), levelBufferTextures(NULL), levelBuffers(NULL), levelInputSizes(NULL) {
 	SDLOG(0, "Scaler construct\n");
@@ -27,6 +27,9 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
     vector<D3DXMACRO> defines;
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);
+
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE;
 

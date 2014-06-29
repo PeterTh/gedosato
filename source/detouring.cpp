@@ -12,14 +12,14 @@
 #include <MinHook.h>
 
 #include "string_utils.h"
+#include "d3dutil.h"
+#include "winutil.h"
 
 #include "settings.h"
 #include "renderstate_manager.h"
 
-#include "d3d9.h"
-#include "d3d9int_ex.h"
-#include "d3dutil.h"
-#include "winutil.h"
+#include "d3d9/d3d9.h"
+#include "d3d9/d3d9int_ex.h"
 
 #define GENERATE_INTERCEPT_HEADER(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \

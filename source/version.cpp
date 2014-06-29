@@ -6,9 +6,9 @@ const char* VER_NAME = "Rapidity is a justice";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 8;
-const unsigned VER_BUILD = 805;
+const unsigned VER_BUILD = 813;
 
-const char* VER_STRING = "version 0.8.805 built on 2014/06/26 22:38:12";
+const char* VER_STRING = "version 0.8.813 built on 2014/06/29 15:05:46";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

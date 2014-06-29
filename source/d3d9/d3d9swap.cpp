@@ -1,9 +1,9 @@
 // wrapper for IDirect3DSwapChain9 in d3d9.h
 // generated using wrapper_gen.rb
 
-#include "d3d9swap.h"
+#include "d3d9/d3d9swap.h"
+#include "d3d9/d3d9dev.h"
 
-#include "d3d9dev.h"
 #include "settings.h"
 #include "renderstate_manager.h"
 
