@@ -137,7 +137,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>cp $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"</Command>
+      <Command>copy $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>ruby version.rb</Command>
@@ -218,7 +218,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <PostBuildEvent>
-      <Command>cp $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"</Command>
+      <Command>copy $(TargetPath) "C:\Users\Peter\Documents\GitHub\gedosato\pack"</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>ruby version.rb</Command>
