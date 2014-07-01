@@ -19,3 +19,4 @@ daorigins
 Blackguards
 EoCApp
 kick_win
+AlanWake

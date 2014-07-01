@@ -36,7 +36,7 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 	D3DXMACRO null = { NULL, NULL };
 	defines.push_back(null);
 
-	DWORD flags = D3DXFX_NOT_CLONEABLE;
+	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
 
 	// Load effect from file
 	SDLOG(0, "Scaler load\n");

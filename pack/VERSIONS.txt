@@ -2,7 +2,11 @@
 ============================================
 General:
 - Added nearest neighbour scaling option
-
+- Fixed enum ordering in the scaler (should *really* fix Mafia 2)
+- Fixed overlays/console not rendering in some games
+- Fixed normal resolution screenshot regression introduced in beta 8
+GeDoSaToTool:
+- Added option to launch at windows startup
 
 29-06-2014 -- beta 8 - "Rapidity is a justice"
 ==============================================

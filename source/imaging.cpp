@@ -6,13 +6,13 @@
 
 void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf) {
 	D3DSURFACE_DESC desc;
-	tempSurf->GetDesc(&desc);
+	surf->GetDesc(&desc);
 	RECT r;
 	r.left = 0;
 	r.top = 0;
 	r.right = desc.Width;
 	r.bottom = desc.Height;
-	device9->StretchRect(surf, NULL, tempSurf, &r, D3DTEXF_NONE);
+	device9->StretchRect(surf, &r, tempSurf, &r, D3DTEXF_NONE);
 	D3DLOCKED_RECT lockedR;
 	tempSurf->LockRect(&lockedR, &r, D3DLOCK_READONLY);
 	BYTE* buffer = new BYTE[lockedR.Pitch*desc.Height];
