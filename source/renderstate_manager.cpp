@@ -208,6 +208,8 @@ void RSManager::prePresent(bool doNotFlip) {
 	// Draw console
 	if(console.needsDrawing()) {
 		storeRenderState();
+		// restore neutral state
+		initStateBlock->Apply();
 		d3ddev->BeginScene();
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
