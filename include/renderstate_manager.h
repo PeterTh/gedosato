@@ -160,6 +160,7 @@ public:
 	void redirectSetCursorPosition(int X, int Y, DWORD Flags);
 
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
-	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
+	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
+	HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount);
 };

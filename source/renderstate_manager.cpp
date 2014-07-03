@@ -733,10 +733,14 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	return plugin->redirectSetPixelShader(pShader);
 }
 
+HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
+	return plugin->redirectSetRenderState(State, Value);
+}
+
 HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	return plugin->redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
-HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
-	return plugin->redirectSetRenderState(State, Value);
+HRESULT RSManager::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
+	return plugin->redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 }

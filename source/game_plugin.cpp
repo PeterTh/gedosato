@@ -16,4 +16,3 @@ GamePlugin* GamePlugin::getPlugin(IDirect3DDevice9 *device, RSManager &manager) 
 	#include "plugins.def"
 	return new GamePlugin(device, manager);
 }
-

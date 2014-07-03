@@ -39,6 +39,10 @@ public:
 		return d3ddev->SetRenderState(State, Value);
 	}
 
+	virtual HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
+		return d3ddev->DrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
+	}
+
 	virtual void toggleAA() { Console::get().add("AA not supported by this plugin!"); }
 	virtual void toggleAO() { Console::get().add("AO not supported by this plugin!"); }
 	virtual void toggleDOF() { Console::get().add("DoF not supported by this plugin!"); }

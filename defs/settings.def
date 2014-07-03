@@ -40,6 +40,7 @@ SETTING(bool, HideMouseCursor, "hideMouseCursor", false)
 
 // Graphics effects options
 SETTING(string, InjectPSHash, "injectPSHash", "")
+SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 
 SETTING(string, AAType, "aaType", "fxaa")
 SETTING(unsigned, AAQuality, "aaQuality", 0)
