@@ -10,6 +10,7 @@ Generic Plugin:
   (can now delay to first draw after marked pixel shader is set)
 GeDoSaToTool:
 - Added option to launch at windows startup
+- Added command line option for launching minimized
 
 29-06-2014 -- beta 8 - "Rapidity is a justice"
 ==============================================
