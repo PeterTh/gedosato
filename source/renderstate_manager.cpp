@@ -290,23 +290,22 @@ void RSManager::captureRTScreen(const string& stype) {
 	d3ddev->GetRenderTarget(0, &render);
 	if(render) {
 		imgWriter->writeSurface(buffer, render);
-		//D3DXSaveSurfaceToFile(buffer, D3DXIFF_BMP, render, NULL, NULL);
 		Console::get().add(format("Captured %s screenshot to %s", stype.c_str(), buffer));
 	}
 	SAFERELEASE(render);
 }
 
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
-	auto fullname = format("dump%03d_%s_%p.tga", dumpCaptureIndex++, name, surface);
+	auto fullname = format("%s\\tmp\\dump%03d_%s_%p.png", getInstallDirectory().c_str(), dumpCaptureIndex++, name, surface);
 	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname.c_str());
-	D3DXSaveSurfaceToFile(fullname.c_str(), D3DXIFF_TGA, surface, NULL, NULL);
+	D3DXSaveSurfaceToFile(fullname.c_str(), D3DXIFF_PNG, surface, NULL, NULL);
 }
 
 void RSManager::dumpTexture(const char* name, IDirect3DTexture9* tex) {
-	char fullname[128];
-	sprintf_s(fullname, 128, "dump%03d_%s_%p.tga", dumpCaptureIndex++, name, tex);
-	SDLOG(1, "!! dumped Tex %p to %s\n", tex, fullname);
-	D3DXSaveTextureToFile(fullname, D3DXIFF_TGA, tex, NULL);
+	IDirect3DSurface9* surf = NULL;
+	tex->GetSurfaceLevel(0, &surf);
+	if(surf) dumpSurface(name, surf);
+	SAFERELEASE(surf);
 }
 
 HRESULT RSManager::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {

@@ -5,6 +5,7 @@ General:
 - Fixed enum ordering in the scaler (should *really* fix Mafia 2)
 - Fixed overlays/console not rendering in some games
 - Fixed normal resolution screenshot regression introduced in beta 8
+- Fixed initialization for games which use automatic depth/stencil generation (e.g. Witcher 1)
 Generic Plugin:
 - Extended postprocessing/screenshot targeting functionality
   (can now delay to first draw after marked pixel shader is set)
