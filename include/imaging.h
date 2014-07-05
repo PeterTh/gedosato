@@ -12,6 +12,8 @@ class ImageWriter {
 	IDirect3DSurface9* tempSurf;
 	std::vector<std::future<void>> futures;
 
+	static const unsigned MAX_PARALLEL = 8;
+
 public:
 	ImageWriter(IDirect3DDevice9* dev, int wmax, int hmax) : device9(dev), tempSurf(NULL) {
 		device9->CreateRenderTarget(wmax, hmax, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, 0, TRUE, &tempSurf, NULL);
@@ -21,5 +23,5 @@ public:
 		// "futures" gets destroyed, since all the futures are created by async they will wait
 	}
 
-	void writeSurface(const string& fn, IDirect3DSurface9* surf);
+	void writeSurface(const string& fn, IDirect3DSurface9* surf, bool discardAlpha = true);
 };
