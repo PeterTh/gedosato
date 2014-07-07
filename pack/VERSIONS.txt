@@ -2,6 +2,7 @@
 ============================================
 General:
 - Added nearest neighbour scaling option
+- Added "interceptOnlySystemDlls" option to potentially increase compatibility with 3rd party injectors
 - Fixed enum ordering in the scaler (should *really* fix Mafia 2)
 - Fixed overlays/console not rendering in some games
 - Fixed normal resolution screenshot regression introduced in beta 8
@@ -12,6 +13,7 @@ Generic Plugin:
 GeDoSaToTool:
 - Added option to launch at windows startup
 - Added command line option for launching minimized
+- Check for and resolve leftover registry entries on startup
 
 29-06-2014 -- beta 8 - "Rapidity is a justice"
 ==============================================

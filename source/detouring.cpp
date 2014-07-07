@@ -571,7 +571,7 @@ HMODULE findDll(const string& name) {
 	// first try full path, may increase compatibility with other injectors
 	string fullPath = "C:\\Windows\\System32\\" + name;
 	HMODULE ret = GetModuleHandle(fullPath.c_str());
-	if(ret == NULL) ret = GetModuleHandle(name.c_str());
+	if(ret == NULL && !Settings::get().getInterceptOnlySystemDlls()) ret = GetModuleHandle(name.c_str());
 	return ret;
 }
 
