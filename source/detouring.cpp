@@ -510,10 +510,7 @@ GENERATE_INTERCEPT_HEADER(CreateDXGIFactory2, HRESULT, WINAPI, _In_ UINT flags, 
 }
 
 // D3D11 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#pragma warning( push )
-#pragma warning( disable : 4005 )
-#include <D3D11.h>
-#pragma warning( pop ) 
+#include "d3d11/d3d11.h"
 
 GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 		_In_opt_ IDXGIAdapter* pAdapter,
