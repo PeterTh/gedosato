@@ -6,9 +6,9 @@ const char* VER_NAME = "Underground Network";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 9;
-const unsigned VER_BUILD = 853;
+const unsigned VER_BUILD = 859;
 
-const char* VER_STRING = "version 0.9.853 built on 2014/07/09 19:02:54";
+const char* VER_STRING = "version 0.9.859 built on 2014/07/10 23:22:24";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

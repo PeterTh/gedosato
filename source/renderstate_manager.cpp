@@ -72,8 +72,13 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	// create state block for state save/restore
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
 	// create and capture default state block
+	d3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
+	d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+	d3ddev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+	d3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+	d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
-	initStateBlock->Capture();
 
 	// if required, determine depth/stencil surf type and create
 	if(downsampling && autoDepthStencil) {
