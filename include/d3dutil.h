@@ -18,3 +18,5 @@ TCHAR* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s);
 
 string D3DMatrixToString(const D3DMATRIX* pMatrix);
 string D3DPresentExFlagsToString(DWORD flags);
+
+void logRenderState(IDirect3DDevice9* dev, int level=-1);
