@@ -77,6 +77,8 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	d3ddev->SetRenderState(D3DRS_STENCILENABLE, FALSE);
 	d3ddev->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
 	d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, FALSE);
+	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);
+	d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
 
