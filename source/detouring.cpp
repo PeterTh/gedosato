@@ -21,6 +21,10 @@
 #include "d3d9/d3d9.h"
 #include "d3d9/d3d9int_ex.h"
 
+#include "d3d11/d3d11dev.h"
+#include "d3d11/d3d11devcontext.h"
+#include "dxgi/dxgiswapchain.h"
+
 #define GENERATE_INTERCEPT_HEADER(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
 __name##_FNType True##__name, __name##Pointer; \
@@ -512,6 +516,11 @@ GENERATE_INTERCEPT_HEADER(CreateDXGIFactory2, HRESULT, WINAPI, _In_ UINT flags, 
 // D3D11 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #include "d3d11/d3d11.h"
 
+namespace {
+	// used to check for delegation within the D3D11 dll
+	bool g_NeedD3D11Hooking = false;
+}
+
 GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 		_In_opt_ IDXGIAdapter* pAdapter,
 		D3D_DRIVER_TYPE DriverType,
@@ -523,8 +532,17 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 		_Out_opt_ ID3D11Device** ppDevice,
 		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
 		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
-	SDLOG(0, "DetouredD3D11CreateDevice\n");
-	return TrueD3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+	SDLOG(0, "DetouredD3D11CreateDevice ppDevice: %p (%p) ppImmediateContext: %p (%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext);
+	g_NeedD3D11Hooking = true;
+	HRESULT ret = TrueD3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
+	SDLOG(0, "-> ppDevice: %p (%p) ppImmediateContext: %p (%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext);
+	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
+	if(SUCCEEDED(ret) && g_NeedD3D11Hooking) {
+		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
+		if(ppImmediateContext != NULL) new hkID3D11DeviceContext(ppImmediateContext);
+		g_NeedD3D11Hooking = false;
+	}
+	return ret;
 }
 
 GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
@@ -540,8 +558,17 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 		_Out_opt_ ID3D11Device** ppDevice,
 		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
 		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
-	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain\n");
-	return TrueD3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
+	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain ppDevice: %p (%p) ppImmediateContext: %p (%p) ppSwapChain: %p (%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext, ppSwapChain, *ppSwapChain);
+	HRESULT ret = TrueD3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
+	SDLOG(0, "-> ppDevice: %p(%p) ppImmediateContext : %p(%p) ppSwapChain : %p(%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext, ppSwapChain, *ppSwapChain);
+	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
+	if(SUCCEEDED(ret)) {
+		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
+		if(ppImmediateContext != NULL) new hkID3D11DeviceContext(ppImmediateContext);
+		if(ppSwapChain != NULL) new hkIDXGISwapChain(ppSwapChain);
+		g_NeedD3D11Hooking = false;
+	}
+	return ret;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
