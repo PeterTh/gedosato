@@ -532,10 +532,12 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 		_Out_opt_ ID3D11Device** ppDevice,
 		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
 		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
-	SDLOG(0, "DetouredD3D11CreateDevice ppDevice: %p (%p) ppImmediateContext: %p (%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext);
+	SDLOG(0, "DetouredD3D11CreateDevice ppDevice: %p (%p) ppImmediateContext: %p (%p)\n",
+		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL);
 	g_NeedD3D11Hooking = true;
 	HRESULT ret = TrueD3D11CreateDevice(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, ppDevice, pFeatureLevel, ppImmediateContext);
-	SDLOG(0, "-> ppDevice: %p (%p) ppImmediateContext: %p (%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext);
+	SDLOG(0, "-> ppDevice: %p (%p) ppImmediateContext: %p (%p)\n",
+		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL);
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
 	if(SUCCEEDED(ret) && g_NeedD3D11Hooking) {
 		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
@@ -558,9 +560,11 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 		_Out_opt_ ID3D11Device** ppDevice,
 		_Out_opt_ D3D_FEATURE_LEVEL* pFeatureLevel,
 		_Out_opt_ ID3D11DeviceContext** ppImmediateContext) {
-	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain ppDevice: %p (%p) ppImmediateContext: %p (%p) ppSwapChain: %p (%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext, ppSwapChain, *ppSwapChain);
+	SDLOG(0, "DetouredD3D11CreateDeviceAndSwapChain ppDevice: %p (%p) ppImmediateContext: %p (%p) ppSwapChain: %p (%p)\n",
+		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL, ppSwapChain, ppSwapChain ? *ppSwapChain : NULL);
 	HRESULT ret = TrueD3D11CreateDeviceAndSwapChain(pAdapter, DriverType, Software, Flags, pFeatureLevels, FeatureLevels, SDKVersion, pSwapChainDesc, ppSwapChain, ppDevice, pFeatureLevel, ppImmediateContext);
-	SDLOG(0, "-> ppDevice: %p(%p) ppImmediateContext : %p(%p) ppSwapChain : %p(%p)\n", ppDevice, *ppDevice, ppImmediateContext, *ppImmediateContext, ppSwapChain, *ppSwapChain);
+	SDLOG(0, "-> ppDevice: %p(%p) ppImmediateContext : %p(%p) ppSwapChain : %p(%p)\n",
+		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL, ppSwapChain, ppSwapChain ? *ppSwapChain : NULL);
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
 	if(SUCCEEDED(ret)) {
 		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
