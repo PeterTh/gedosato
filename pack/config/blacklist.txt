@@ -59,3 +59,5 @@ powerpnt
 winword
 AcroRd32
 dotnetfx35
+pinnacle
+pinnacle_updater
