@@ -57,7 +57,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	renderWidth = rw;
 	renderHeight = rh;
 	numBackBuffers = numBBs;
-	bbFormat = bbFormat;
+	backbufferFormat = bbFormat;
 	swapEffect = swapEff == D3DSWAPEFFECT_COPY ? SWAP_COPY : (swapEff == D3DSWAPEFFECT_DISCARD ? SWAP_DISCARD : SWAP_FLIP);
 	if(swapEffect == SWAP_FLIP) numBackBuffers++; // account for the "front buffer" in the swap chain
 		
