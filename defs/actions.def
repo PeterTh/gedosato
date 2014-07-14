@@ -20,6 +20,7 @@ ACTION(setBilinearScaling, if(RSManager::get().getScaler()) RSManager::get().get
 ACTION(setBicubicScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::BICUBIC))
 ACTION(setLanczosScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::LANCZOS))
 ACTION(setNearestScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->setScaling(Scaler::NEAREST))
+ACTION(setNextScaling, if(RSManager::get().getScaler()) RSManager::get().getScaler()->nextScaling())
 
 ACTION(toggleAO, RSManager::get().toggleAO())
 ACTION(toggleDOF, RSManager::get().toggleDOF())

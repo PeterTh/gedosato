@@ -126,6 +126,12 @@ void Scaler::setScaling(scalingType t) {
 	Console::get().add(format("Set scaling type to %s", getScalingName()));
 }
 
+void Scaler::nextScaling() {
+	scalingType newSType = static_cast<scalingType>(sType+1);
+	if(newSType == STYPE_END) newSType = BILINEAR;
+	setScaling(newSType);
+}
+
 void Scaler::showStatus() {
 	Console::get().add(format("%s (%s scaling)", status.c_str(), getScalingName()));
 }
