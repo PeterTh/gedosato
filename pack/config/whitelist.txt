@@ -20,3 +20,5 @@ Blackguards
 EoCApp
 kick_win
 AlanWake
+lcgol
+tru
