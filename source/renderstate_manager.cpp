@@ -65,7 +65,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	Console::setLatest(&console);
 	imgWriter = std::unique_ptr<ImageWriter>(new ImageWriter(d3ddev, rw, rh));
 
-	// perf measurement
+	// performance measurement
 	console.add(frameTimeText);
 	perfMonitor = new D3DPerfMonitor(d3ddev, 120);
 	

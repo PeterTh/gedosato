@@ -22,3 +22,5 @@ kick_win
 AlanWake
 lcgol
 tru
+ffxiv
+ffxiv*
