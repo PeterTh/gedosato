@@ -4,8 +4,8 @@ HOOK(LoadLibraryW, "Kernel32.dll")
 HOOK(LoadLibraryExA, "Kernel32.dll")
 HOOK(LoadLibraryExW, "Kernel32.dll")
 
-HOOK(Direct3DCreate9, "D3d9.dll")
-HOOK(Direct3DCreate9Ex, "D3d9.dll")
+HOOK(Direct3DCreate9, "D3d9*.dll")
+HOOK(Direct3DCreate9Ex, "D3d9*.dll")
 
 HOOK(D3DXCreateTextureFromFileInMemory, "d3dx9_*.dll")
 HOOK(D3DXCreateTextureFromFileInMemoryEx, "d3dx9_*.dll")
