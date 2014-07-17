@@ -26,3 +26,4 @@ lcgol                    || Lara Croft and the Guardian of Light
 tru                      || Tomb Raider: Underworld
 ffxiv                    || Final Fantasy XIV
 ffxiv*                   || Final Fantasy XIV Launcher or Configurator
+DayZ                     || DayZ Standalone

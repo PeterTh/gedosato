@@ -56,6 +56,16 @@ namespace {
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName) {
 	SDLOG(2, "DetouredLoadLibraryA %s\n", lpLibFileName);
+
+	std::string fn(lpLibFileName);
+	boost::algorithm::to_lower(fn);
+	if (Settings::get().getPreventSteamOverlay() && boost::algorithm::ends_with(fn, "gameoverlayrenderer.dll"))
+	{
+		SDLOG(2, "-> Steam overlay detected, denying access to file\n");
+		SetLastError(ERROR_ACCESS_DENIED);
+		return NULL;
+	}
+
 	HMODULE mod = TrueLoadLibraryA(lpLibFileName);
 	// restart detour in case we missed anything
 	if(mod) restartDetour(lpLibFileName);
@@ -63,6 +73,16 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileNa
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName) {
 	SDLOG(2, "DetouredLoadLibraryW %s\n", CW2A(lpLibFileName));
+
+	std::wstring fn(lpLibFileName);
+	boost::algorithm::to_lower(fn);
+	if (Settings::get().getPreventSteamOverlay() && boost::algorithm::ends_with(fn, L"gameoverlayrenderer.dll"))
+	{
+		SDLOG(2, "-> Steam overlay detected, denying access to file\n");
+		SetLastError(ERROR_ACCESS_DENIED);
+		return NULL;
+	}
+
 	HMODULE mod = TrueLoadLibraryW(lpLibFileName);
 	// restart detour in case we missed anything
 	if(mod) restartDetour(CW2A(lpLibFileName));
@@ -71,8 +91,19 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileN
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
 	SDLOG(2, "DetouredLoadLibraryExA %s\n", lpLibFileName);
+
 	string fn(lpLibFileName);
 	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this 
+	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
+
+	boost::algorithm::to_lower(fn);
+	if (Settings::get().getPreventSteamOverlay() && boost::algorithm::ends_with(fn, "gameoverlayrenderer.dll"))
+	{
+		SDLOG(2, "-> Steam overlay detected, denying access to file\n");
+		SetLastError(ERROR_ACCESS_DENIED);
+		return NULL;
+	}
+
 	HMODULE mod = TrueLoadLibraryExA(lpLibFileName, hFile, dwFlags);
 	// restart detour in case we missed anything
 	if(mod) restartDetour(lpLibFileName);
@@ -80,8 +111,18 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFile
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryExW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
 	SDLOG(2, "DetouredLoadLibraryExW %s\n", CW2A(lpLibFileName));
+
 	string fn((CW2A(lpLibFileName)));
 	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
+
+	boost::algorithm::to_lower(fn);
+	if (Settings::get().getPreventSteamOverlay() && boost::algorithm::ends_with(fn, "gameoverlayrenderer.dll"))
+	{
+		SDLOG(2, "-> Steam overlay detected, denying access to file\n");
+		SetLastError(ERROR_ACCESS_DENIED);
+		return NULL;
+	}
+
 	HMODULE mod = TrueLoadLibraryExW(lpLibFileName, hFile, dwFlags);
 	// restart detour in case we missed anything
 	if(mod) restartDetour(CW2A(lpLibFileName));
