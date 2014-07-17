@@ -2,25 +2,27 @@
 # One application name per line (application name = file name of the .exe without the .exe)
 # Wildcards supported (* = any sequence of characters, ? = any single character)
 
-Might and Magic X Legacy
-yso_win
-Tropico4
-consortium
-DarkSoulsII
-ChildofLight
-config
-DragonAge2Launcher
-DragonAge2Config
-DragonAge2
-Configurator
-witcher2
-DAOriginsConfig
-daorigins
-Blackguards
-EoCApp
-kick_win
-AlanWake
-lcgol
-tru
-ffxiv
-ffxiv*
+# Format: 
+# Exe File Name (or pattern) || Readable Name (optional)
+
+Might and Magic X Legacy || Might and Magic X Legacy
+yso_win                  || Ys Origin
+Tropico4                 || Tropico 4
+consortium               || Consortium
+DarkSoulsII              || Dark Souls 2
+ChildofLight             || Child of Light
+config                   || Configurator (multiple)
+DragonAge2               || Dragon Age 2
+DragonAge2*              || Dragon Age 2 Launcher or Configurator
+Configurator             || Configurator (multiple)
+witcher2                 || The Witcher 2
+DAOriginsConfig          || Dragon Age: Origins Configurator
+daorigins                || Dragon Age: Origins
+Blackguards              || Blackguards (The Dark Eye)
+EoCApp                   || Divinity: Original Sin
+kick_win                 || Marlow Briggs
+AlanWake                 || Alan Wake
+lcgol                    || Lara Croft and the Guardian of Light
+tru                      || Tomb Raider: Underworld
+ffxiv                    || Final Fantasy XIV
+ffxiv*                   || Final Fantasy XIV Launcher or Configurator

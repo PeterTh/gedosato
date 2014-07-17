@@ -3,6 +3,7 @@
 
 #include "d3dutil.h"
 #include "renderstate_manager.h"
+#include "blacklist.h"
 
 GenericPlugin::~GenericPlugin() {
 	SAFERELEASE(tmpSurf);
@@ -25,6 +26,7 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 }
 
 void GenericPlugin::reportStatus() {
+	Console::get().add(format("Running on executable %s (%s)", getExeFileName().c_str(), getListedName().c_str()));
 	if(doAA && (smaa || fxaa)) {
 		if(smaa) Console::get().add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));
 		else Console::get().add(format("FXAA enabled, quality level %d", Settings::get().getAAQuality()));
