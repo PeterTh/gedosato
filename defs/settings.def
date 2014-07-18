@@ -20,6 +20,8 @@ SETTING(string, ScalingType, "scalingType", "linear")
 SETTING(bool, ForceAlwaysDownsamplingRes, "forceAlwaysDownsamplingRes", false)
 SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", false)
 SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)
+SETTING(bool, PreventSteamOverlay, "preventSteamOverlay", false)
+
 
 // Texture options
 SETTING(bool, EnableTextureDumping, "enableTextureDumping", false)
