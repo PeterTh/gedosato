@@ -5,6 +5,7 @@
 # Format: 
 # Exe File Name (or pattern) || Readable Name (optional)
 
+
 AlanWake                 || Alan Wake
 Blackguards              || Blackguards (The Dark Eye)
 ChildofLight             || Child of Light
@@ -14,6 +15,7 @@ consortium               || Consortium
 daorigins                || Dragon Age: Origins
 DAOriginsConfig          || Dragon Age: Origins Configurator
 DarkSoulsII              || Dark Souls 2
+DayZ                     || DayZ Standalone
 DragonAge2               || Dragon Age 2
 DragonAge2*              || Dragon Age 2 Launcher or Configurator
 EoCApp                   || Divinity: Original Sin
