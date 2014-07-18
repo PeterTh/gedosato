@@ -7,6 +7,8 @@ General:
 - Now possible to list and query readable app name from whitelist
 Generic Plugin:
 - Show exe name and (if available) readable name in status display
+GeDoSaToTool:
+- Can now sort black/whitelists
 
 13-07-2014 -- beta 9 - "Underground Network"
 ============================================
