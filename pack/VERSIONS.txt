@@ -5,6 +5,7 @@ General:
 - Fixed stupid typo preventing games with backbuffer formats other
   than the default from working correctly (thanks Boulotaur2024)
 - Now possible to list and query readable app name from whitelist
+- Added option to prevent Steam Overlay loading (thanks GoaLitiuM)
 Generic Plugin:
 - Show exe name and (if available) readable name in status display
 GeDoSaToTool:
