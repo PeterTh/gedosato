@@ -62,6 +62,11 @@ namespace {
 			SetLastError(ERROR_ACCESS_DENIED);
 			return true;
 		}
+		if (boost::algorithm::ends_with(fn, L"dfhengine.dll")) {
+			SDLOG(2, "-> DFHEngine (FarCry ad system) detected, denying access to file\n");
+			SetLastError(ERROR_ACCESS_DENIED);
+			return true;
+		}
 		return false;
 	}
 }
