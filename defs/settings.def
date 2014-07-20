@@ -21,6 +21,7 @@ SETTING(bool, ForceAlwaysDownsamplingRes, "forceAlwaysDownsamplingRes", false)
 SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", false)
 SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)
 SETTING(bool, PreventSteamOverlay, "preventSteamOverlay", false)
+SETTING(bool, KeepOriginalClientRect, "keepOriginalClientRect", false)
 
 
 // Texture options

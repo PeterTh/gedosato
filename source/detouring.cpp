@@ -307,7 +307,7 @@ GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExW, LONG, WINAPI, _In_opt_ LPCWS
 GENERATE_INTERCEPT_HEADER(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect) {
 	SDLOG(2, "DetouredGetClientRect\n");
 	HRESULT ret = TrueGetClientRect(hWnd, lpRect);
-	if(RSManager::currentlyDownsampling()) {
+	if(RSManager::currentlyDownsampling() && !Settings::get().getKeepOriginalClientRect()) {
 		SDLOG(2, "- override from %s\n", RectToString(lpRect).c_str());
 		lpRect->right = Settings::get().getRenderWidth();
 		lpRect->bottom = Settings::get().getRenderHeight();
