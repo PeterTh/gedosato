@@ -7,6 +7,7 @@
 
 
 AlanWake                 || Alan Wake
+bionic_commando          || Bionic Commando
 Blackguards              || Blackguards (The Dark Eye)
 ChildofLight             || Child of Light
 config                   || Configurator (multiple)
@@ -21,9 +22,13 @@ DragonAge2*              || Dragon Age 2 Launcher or Configurator
 EoCApp                   || Divinity: Original Sin
 ffxiv                    || Final Fantasy XIV
 ffxiv*                   || Final Fantasy XIV Launcher or Configurator
+HitmanBloodMoney         || Hitman: Blood Money
+hl2                      || Half-Life 2, Portal
 kick_win                 || Marlow Briggs
 lcgol                    || Lara Croft and the Guardian of Light
 Might and Magic X Legacy || Might and Magic X Legacy
+Reckoning                || Kingdom's of Amalur: Reckoning
+ShippingPC-SkyGame       || Dark Void
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
 witcher2                 || The Witcher 2
