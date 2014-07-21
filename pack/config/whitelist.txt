@@ -23,6 +23,8 @@ ffxiv                    || Final Fantasy XIV
 ffxiv*                   || Final Fantasy XIV Launcher or Configurator
 kick_win                 || Marlow Briggs
 lcgol                    || Lara Croft and the Guardian of Light
+MassEffect3              || Mass Effect 3
+MassEffect3Config        || Mass Effect 3 Configurator
 Might and Magic X Legacy || Might and Magic X Legacy
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
