@@ -62,7 +62,7 @@ namespace {
 			SetLastError(ERROR_ACCESS_DENIED);
 			return true;
 		}
-		if (boost::algorithm::ends_with(fn, L"dfhengine.dll")) {
+		if(boost::algorithm::iequals(getExeFileName(),"FarCry.exe") && boost::algorithm::ends_with(fn, L"dfhengine.dll")) {
 			SDLOG(2, "-> DFHEngine (FarCry ad system) detected, denying access to file\n");
 			SetLastError(ERROR_ACCESS_DENIED);
 			return true;
@@ -628,7 +628,11 @@ HMODULE findDll(const string& name) {
 		}
 	}
 	// first try full path, may increase compatibility with other injectors
-	string fullPath = "C:\\Windows\\System32\\" + name;
+	// ... Now with GetSystemDirectory !
+	char path[MAX_PATH];
+	GetSystemDirectory(path, MAX_PATH);
+	string fullPath = path;
+	fullPath.append("\\" + name);
 	HMODULE ret = GetModuleHandle(fullPath.c_str());
 	if(ret == NULL && !Settings::get().getInterceptOnlySystemDlls()) ret = GetModuleHandle(name.c_str());
 	return ret;
