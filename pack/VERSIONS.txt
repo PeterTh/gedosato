@@ -10,6 +10,7 @@ Generic Plugin:
 - Show exe name and (if available) readable name in status display
 GeDoSaToTool:
 - Can now sort black/whitelists
+- Fixed working directory when launched at startup
 
 13-07-2014 -- beta 9 - "Underground Network"
 ============================================
