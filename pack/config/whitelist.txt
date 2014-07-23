@@ -7,6 +7,7 @@
 
 
 AlanWake                 || Alan Wake
+bionic_commando          || Bionic Commando
 Blackguards              || Blackguards (The Dark Eye)
 CastlevaniaLoSUE         || Castlevania: Lords of Shadow
 ChildofLight             || Child of Light
@@ -25,12 +26,16 @@ ffxiv*                   || Final Fantasy XIV Launcher or Configurator
 grimrock                 || Legend of Grimrock
 GSGameExe_DX9            || Giana Sisters: Twisted Dreams
 GSLauncher               || Giana Sisters: Twisted Dreams Launcher
+HitmanBloodMoney         || Hitman: Blood Money
+hl2                      || Half-Life 2, Portal
 kick_win                 || Marlow Briggs
 lcgol                    || Lara Croft and the Guardian of Light
 MassEffect3              || Mass Effect 3
 MassEffect3Config        || Mass Effect 3 Configurator
 Might and Magic X Legacy || Might and Magic X Legacy
 runner2                  || BIT:TRIP Runner 2
+Reckoning                || Kingdom's of Amalur: Reckoning
+ShippingPC-SkyGame       || Dark Void
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
 witcher2                 || The Witcher 2
