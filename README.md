@@ -6,6 +6,9 @@ General
 
 This file is intended for developers who want to improve GeDoSaTo or use it as a base for other modifications.
 
+If you are interested in creating custom game profiles, an in-depth guide is available here:
+http://www.pcgamer.com/2014/07/24/how-to-create-sweetfx-style-shaders-that-dont-affect-the-hud-with-durantes-gedosato/
+
 All the source code is released under the conditions of the GPLv3, except for
 - SuperFastHash
 - SMAA and FXAA

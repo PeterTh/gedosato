@@ -33,8 +33,8 @@ lcgol                    || Lara Croft and the Guardian of Light
 MassEffect3              || Mass Effect 3
 MassEffect3Config        || Mass Effect 3 Configurator
 Might and Magic X Legacy || Might and Magic X Legacy
-runner2                  || BIT:TRIP Runner 2
 Reckoning                || Kingdom's of Amalur: Reckoning
+runner2                  || BIT:TRIP Runner 2
 ShippingPC-SkyGame       || Dark Void
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
