@@ -30,6 +30,8 @@ HitmanBloodMoney         || Hitman: Blood Money
 hl2                      || Half-Life 2, Portal
 kick_win                 || Marlow Briggs
 lcgol                    || Lara Croft and the Guardian of Light
+LEGOMARVEL               || LEGO Marvel Superheroes
+MassEffect               || Mass Effect
 MassEffect3              || Mass Effect 3
 MassEffect3Config        || Mass Effect 3 Configurator
 Might and Magic X Legacy || Might and Magic X Legacy
