@@ -307,7 +307,7 @@ GENERATE_INTERCEPT_HEADER(ChangeDisplaySettingsExW, LONG, WINAPI, _In_opt_ LPCWS
 GENERATE_INTERCEPT_HEADER(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect) {
 	SDLOG(2, "DetouredGetClientRect\n");
 	HRESULT ret = TrueGetClientRect(hWnd, lpRect);
-	if(RSManager::currentlyDownsampling()) {
+	if(RSManager::currentlyDownsampling() && !Settings::get().getKeepOriginalClientRect()) {
 		SDLOG(2, "- override from %s\n", RectToString(lpRect).c_str());
 		lpRect->right = Settings::get().getRenderWidth();
 		lpRect->bottom = Settings::get().getRenderHeight();
@@ -628,7 +628,11 @@ HMODULE findDll(const string& name) {
 		}
 	}
 	// first try full path, may increase compatibility with other injectors
-	string fullPath = "C:\\Windows\\System32\\" + name;
+	// ... Now with GetSystemDirectory !
+	char path[MAX_PATH];
+	GetSystemDirectory(path, MAX_PATH);
+	string fullPath = path;
+	fullPath.append("\\" + name);
 	HMODULE ret = GetModuleHandle(fullPath.c_str());
 	if(ret == NULL && !Settings::get().getInterceptOnlySystemDlls()) ret = GetModuleHandle(name.c_str());
 	return ret;

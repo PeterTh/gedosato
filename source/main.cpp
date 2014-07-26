@@ -26,6 +26,7 @@
 
 FILE* g_oFile = NULL;
 bool g_active = false;
+HMODULE hlD3d9 = NULL;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
 	SDLOG(18, "GeDoSaToHook called\n");
@@ -88,6 +89,17 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 
 //		LuaManager::get().init();
 
+		// Forces to load d3d9 much earlier than the hooked game would
+		// But unnecessary when 3rd party injectors get into the mix since
+		// they (supposedly) take care of the LoadLibrary themselves
+		if (!Settings::get().getInterceptOnlySystemDlls()) {
+			// Get path to the original d3d9.dll
+			char path[MAX_PATH];
+			GetSystemDirectory(path, MAX_PATH);
+			strcat_s(path, MAX_PATH, "\\d3d9.dll");
+			hlD3d9 = LoadLibrary(path);
+		}
+
 		// detour
 		startDetour();
 		return true;
@@ -97,6 +109,8 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		endDetour();
 		SDLOG(-1, "===== end =\n");
 		fclose(g_oFile);
+		if (hlD3d9)
+			FreeLibrary(hlD3d9);
 	}
     return false;
 }
