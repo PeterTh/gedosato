@@ -6,6 +6,7 @@
 #include "smaa.h"
 #include "fxaa.h"
 #include "post.h"
+#include "rendertarget.h"
 
 class GenericPlugin : public GamePlugin {
 
@@ -13,8 +14,7 @@ class GenericPlugin : public GamePlugin {
 	FXAA* fxaa;
 	SMAA* smaa;
 	bool doPost, doAA;
-	IDirect3DTexture9* tmpTex;
-	IDirect3DSurface9* tmpSurf;
+	RenderTargetPtr tmp;
 	bool postDone, postReady;
 	DWORD injectRSType, injectRSValue;
 
@@ -26,7 +26,6 @@ public:
 	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)
 		, post(NULL), fxaa(NULL), smaa(NULL)
 		, doPost(true), doAA(true)
-		, tmpTex(NULL), tmpSurf(NULL)
 		, postDone(false), postReady(false)
 		, injectRSType(0), injectRSValue(0)
 	{ }

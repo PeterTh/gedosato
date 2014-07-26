@@ -6,8 +6,6 @@
 #include "blacklist.h"
 
 GenericPlugin::~GenericPlugin() {
-	SAFERELEASE(tmpSurf);
-	SAFERELEASE(tmpTex);
 	SAFEDELETE(fxaa);
 	SAFEDELETE(smaa);
 	SAFEDELETE(post);
@@ -21,8 +19,7 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 	}
 	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh, false);
 
-	d3ddev->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat, D3DPOOL_DEFAULT, &tmpTex, NULL);
-	tmpTex->GetSurfaceLevel(0, &tmpSurf);
+	tmp = RSManager::getRTMan().createTexture(rw, rh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
 
 	if(!Settings::get().getInjectRenderstate().empty()) {
 		auto str = Settings::get().getInjectRenderstate();
@@ -54,20 +51,20 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 		postDone = true;
 		SDLOG(8, "Generic plugin processing start\n");
 		if(doAA || doPost) {
-			d3ddev->StretchRect(backBuffer, NULL, tmpSurf, NULL, D3DTEXF_NONE);
+			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
 			bool didAA = false;
 			if(doAA && (fxaa || smaa)) {
 				didAA = true;
 				if(fxaa) {
-					fxaa->go(tmpTex, backBuffer);
+					fxaa->go(tmp->getTex(), backBuffer);
 				}
 				else if(smaa) {
-					smaa->go(tmpTex, tmpTex, backBuffer, SMAA::INPUT_COLOR);
+					smaa->go(tmp->getTex(), tmp->getTex(), backBuffer, SMAA::INPUT_COLOR);
 				}
 			}
 			if(doPost && post) {
-				if(didAA) d3ddev->StretchRect(backBuffer, NULL, tmpSurf, NULL, D3DTEXF_NONE);
-				post->go(tmpTex, backBuffer);
+				if(didAA) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+				post->go(tmp->getTex(), backBuffer);
 			}
 		}
 		SDLOG(8, "Generic plugin processing end\n");

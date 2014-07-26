@@ -2,6 +2,7 @@
 =====================================
 General:
 - Added keybinding to toggle through scaling methods
+- Fixed downsampling with more than 3 level
 - Fixed stupid typo preventing games with backbuffer formats other
   than the default from working correctly (thanks Boulotaur2024)
 - Now possible to list and query readable app name from whitelist
