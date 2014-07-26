@@ -43,3 +43,5 @@ tru                      || Tomb Raider: Underworld
 witcher2                 || The Witcher 2
 yso_win                  || Ys Origin
 StateOfDecay             || State Of Decay
+Injustice                || Injustice: Gods Among Us
+RoA                      || Rock of Ages
