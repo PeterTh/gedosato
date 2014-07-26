@@ -6,9 +6,9 @@ const char* VER_NAME = "Poltergeist";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 10;
-const unsigned VER_BUILD = 907;
+const unsigned VER_BUILD = 910;
 
-const char* VER_STRING = "version 0.10.907 built on 2014/07/26 19:29:13";
+const char* VER_STRING = "version 0.10.910 built on 2014/07/26 19:54:32";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";
