@@ -1,17 +1,19 @@
-13-07-2014 -- beta 10 - "Poltergeist"
+27-07-2014 -- beta 10 - "Poltergeist"
 =====================================
 General:
 - Added keybinding to toggle through scaling methods
+- Added option to prevent Steam Overlay loading (thanks GoaLitiuM)
+- Now possible to list and query readable app name from whitelist
 - Fixed downsampling with more than 3 level
 - Fixed stupid typo preventing games with backbuffer formats other
   than the default from working correctly (thanks Boulotaur2024)
-- Now possible to list and query readable app name from whitelist
-- Added option to prevent Steam Overlay loading (thanks GoaLitiuM)
 - Fixed crash when framedumping, store framedumps as TGA, create folders for each
+- Fixed crash with special characters in blacklist/whitelist entries
+- Fixed "interceptOnlySystemDlls" with nonstandard system paths
 Generic Plugin:
 - Show exe name and (if available) readable name in status display
 - Added option to target screenshots/postprocessing to specific renderstate changes
-  (injectRenderstate [state],[value]  -- used in Ys Origin profile)
+  ("injectRenderstate [state],[value]"  -- used in Ys Origin profile)
 - Added lots of profiles, thanks to all the contributors
 GeDoSaToTool:
 - Can now sort black/whitelists
