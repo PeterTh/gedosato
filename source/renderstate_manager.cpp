@@ -141,13 +141,6 @@ void RSManager::releaseResources() {
 }
 
 void RSManager::prePresent(bool doNotFlip) {
-	if(dumpingFrame) {
-		dumpSurface("framedump_prePresent", backBuffers[0]->getSurf());
-		SDLOG(0, "============================================\nFinished dumping frame.\n");
-		Settings::get().restoreLogLevel();
-		dumpingFrame = false;
-	}
-
 	// downsample offscreen backbuffer to screen
 	if(downsampling) {
 		storeRenderState();
@@ -196,6 +189,18 @@ void RSManager::prePresent(bool doNotFlip) {
 		d3ddev->EndScene();
 		restoreRenderState();
 	}
+
+	// Stop dumping
+	if(dumpingFrame) {
+		if(downsampling) {
+			dumpSurface("framedump_prePresent", backBuffers[0]->getSurf());
+		}
+		SDLOG(0, "============================================\nFinished dumping frame.\n");
+		Settings::get().restoreLogLevel();
+		dumpingFrame = false;
+		console.add("Finished dumping frame.");
+	}
+
 
 	// Full-size screenshots
 	if(takeScreenshot == SCREENSHOT_FULL || takeScreenshot == SCREENSHOT_HUDLESS || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
@@ -303,9 +308,11 @@ void RSManager::captureRTScreen(const string& stype) {
 }
 
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
-	auto fullname = format("%s\\tmp\\dump%03d_%s_%p.png", getInstallDirectory().c_str(), dumpCaptureIndex++, name, surface);
+	auto dirname = format("%s\\tmp\\%s", getInstallDirectory().c_str(), getExeFileName().c_str());
+	CreateDirectory(dirname.c_str(), NULL);
+	auto fullname = format("%s\\dump%03d_%s_%p.tga", dirname.c_str(), dumpCaptureIndex++, name, surface);
 	SDLOG(1, "!! dumped RT %p to %s\n", surface, fullname.c_str());
-	D3DXSaveSurfaceToFile(fullname.c_str(), D3DXIFF_PNG, surface, NULL, NULL);
+	D3DXSaveSurfaceToFile(fullname.c_str(), D3DXIFF_TGA, surface, NULL, NULL);
 }
 
 void RSManager::dumpTexture(const char* name, IDirect3DTexture9* tex) {
