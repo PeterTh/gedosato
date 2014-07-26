@@ -14,8 +14,12 @@ string format(const char* formatString, ...) {
 
 bool matchWildcard(const string& str, const string& pattern) {
 	string regex = pattern;
-	boost::replace_all(regex, ".", "\\.");
+	const char* escapeChars[] = { ".", "+", "(", ")", "[", "]", "^", "$"};
+	for(auto ch : escapeChars) {
+		boost::replace_all(regex, ch, string("\\") + ch);
+	}
 	boost::replace_all(regex, "*", ".*");
+	boost::replace_all(regex, "?", ".");
 	regex = string(".*") + regex;
 	std::regex rx(regex, std::regex::icase);
 	return std::regex_match(str, rx);
