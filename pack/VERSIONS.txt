@@ -9,6 +9,8 @@ General:
 - Fixed crash when framedumping, store framedumps as TGA, create folders for each
 Generic Plugin:
 - Show exe name and (if available) readable name in status display
+- Added option to target screenshots/postprocessing to specific renderstate changes
+  (injectRenderstate [state],[value]  -- used in Ys Origin profile)
 - Added lots of profiles, thanks to all the contributors
 GeDoSaToTool:
 - Can now sort black/whitelists

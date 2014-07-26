@@ -23,6 +23,19 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 
 	d3ddev->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat, D3DPOOL_DEFAULT, &tmpTex, NULL);
 	tmpTex->GetSurfaceLevel(0, &tmpSurf);
+
+	if(!Settings::get().getInjectRenderstate().empty()) {
+		auto str = Settings::get().getInjectRenderstate();
+		vector<string> strs;
+		boost::split(strs, str, boost::is_any_of(" ,"));
+		if(strs.size() != 2) {
+			SDLOG(-1, "ERROR: %s is not a valid setting for InjectRenderstate", str.c_str());
+		}
+		else {
+			injectRSType = std::stoul(strs[0]);
+			injectRSValue = std::stoul(strs[1]);
+		}
+	}
 }
 
 void GenericPlugin::reportStatus() {
@@ -86,16 +99,20 @@ void GenericPlugin::prePresent() {
 	postReady = false;
 }
 
+void GenericPlugin::performInjection() {
+	if(Settings::get().getInjectDelayAfterDraw()) {
+		SDLOG(8, "Generic plugin: found injection point, readying postprocessing\n");
+		postReady = true;
+	}
+	else {
+		SDLOG(8, "Generic plugin: found injection point, performing postprocessing\n");
+		processCurrentBB();
+	}
+}
+
 HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	if(!postDone && manager.getShaderManager().getName(pShader) == Settings::get().getInjectPSHash()) {
-		if(Settings::get().getInjectDelayAfterDraw()) {
-			SDLOG(8, "Generic plugin: found shader, readying postprocessing\n");
-			postReady = true;
-		}
-		else {
-			SDLOG(8, "Generic plugin: found shader, performing postprocessing\n");
-			processCurrentBB();
-		}
+		performInjection();
 	}
 	return GamePlugin::redirectSetPixelShader(pShader);
 }
@@ -107,4 +124,11 @@ HRESULT GenericPlugin::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT B
 		processCurrentBB();
 	}
 	return ret;
+}
+
+HRESULT GenericPlugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
+	if(!postDone && State == injectRSType && Value == injectRSValue) {
+		performInjection();
+	}
+	return GamePlugin::redirectSetRenderState(State, Value);
 }
