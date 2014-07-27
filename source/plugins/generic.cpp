@@ -6,8 +6,6 @@
 #include "blacklist.h"
 
 GenericPlugin::~GenericPlugin() {
-	SAFERELEASE(tmpSurf);
-	SAFERELEASE(tmpTex);
 	SAFEDELETE(fxaa);
 	SAFEDELETE(smaa);
 	SAFEDELETE(post);
@@ -21,8 +19,20 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 	}
 	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh, false);
 
-	d3ddev->CreateTexture(rw, rh, 1, D3DUSAGE_RENDERTARGET, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat, D3DPOOL_DEFAULT, &tmpTex, NULL);
-	tmpTex->GetSurfaceLevel(0, &tmpSurf);
+	tmp = RSManager::getRTMan().createTexture(rw, rh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
+
+	if(!Settings::get().getInjectRenderstate().empty()) {
+		auto str = Settings::get().getInjectRenderstate();
+		vector<string> strs;
+		boost::split(strs, str, boost::is_any_of(" ,"));
+		if(strs.size() != 2) {
+			SDLOG(-1, "ERROR: %s is not a valid setting for InjectRenderstate", str.c_str());
+		}
+		else {
+			injectRSType = std::stoul(strs[0]);
+			injectRSValue = std::stoul(strs[1]);
+		}
+	}
 }
 
 void GenericPlugin::reportStatus() {
@@ -41,20 +51,20 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 		postDone = true;
 		SDLOG(8, "Generic plugin processing start\n");
 		if(doAA || doPost) {
-			d3ddev->StretchRect(backBuffer, NULL, tmpSurf, NULL, D3DTEXF_NONE);
+			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
 			bool didAA = false;
 			if(doAA && (fxaa || smaa)) {
 				didAA = true;
 				if(fxaa) {
-					fxaa->go(tmpTex, backBuffer);
+					fxaa->go(tmp->getTex(), backBuffer);
 				}
 				else if(smaa) {
-					smaa->go(tmpTex, tmpTex, backBuffer, SMAA::INPUT_COLOR);
+					smaa->go(tmp->getTex(), tmp->getTex(), backBuffer, SMAA::INPUT_COLOR);
 				}
 			}
 			if(doPost && post) {
-				if(didAA) d3ddev->StretchRect(backBuffer, NULL, tmpSurf, NULL, D3DTEXF_NONE);
-				post->go(tmpTex, backBuffer);
+				if(didAA) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+				post->go(tmp->getTex(), backBuffer);
 			}
 		}
 		SDLOG(8, "Generic plugin processing end\n");
@@ -86,16 +96,20 @@ void GenericPlugin::prePresent() {
 	postReady = false;
 }
 
+void GenericPlugin::performInjection() {
+	if(Settings::get().getInjectDelayAfterDraw()) {
+		SDLOG(8, "Generic plugin: found injection point, readying postprocessing\n");
+		postReady = true;
+	}
+	else {
+		SDLOG(8, "Generic plugin: found injection point, performing postprocessing\n");
+		processCurrentBB();
+	}
+}
+
 HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	if(!postDone && manager.getShaderManager().getName(pShader) == Settings::get().getInjectPSHash()) {
-		if(Settings::get().getInjectDelayAfterDraw()) {
-			SDLOG(8, "Generic plugin: found shader, readying postprocessing\n");
-			postReady = true;
-		}
-		else {
-			SDLOG(8, "Generic plugin: found shader, performing postprocessing\n");
-			processCurrentBB();
-		}
+		performInjection();
 	}
 	return GamePlugin::redirectSetPixelShader(pShader);
 }
@@ -107,4 +121,11 @@ HRESULT GenericPlugin::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT B
 		processCurrentBB();
 	}
 	return ret;
+}
+
+HRESULT GenericPlugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
+	if(!postDone && State == injectRSType && Value == injectRSValue) {
+		performInjection();
+	}
+	return GamePlugin::redirectSetRenderState(State, Value);
 }

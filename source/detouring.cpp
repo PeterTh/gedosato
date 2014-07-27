@@ -628,7 +628,10 @@ HMODULE findDll(const string& name) {
 		}
 	}
 	// first try full path, may increase compatibility with other injectors
-	string fullPath = "C:\\Windows\\System32\\" + name;
+	char sysdir[256];
+	GetSystemDirectory(sysdir, 256);
+	string fullPath = string(sysdir) + "\\" + name;
+	SDLOG(18, "Full dll path: %s\n", fullPath.c_str());
 	HMODULE ret = GetModuleHandle(fullPath.c_str());
 	if(ret == NULL && !Settings::get().getInterceptOnlySystemDlls()) ret = GetModuleHandle(name.c_str());
 	return ret;
@@ -640,15 +643,15 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 		HMODULE dllhandle = findDll(dllname);
 		if(dllhandle) {
 			*ppTarget = GetProcAddress(dllhandle, name);
-			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); \
-			if(ret == MH_OK) { SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); } \
-			else { SDLOG(0, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle); } \
-			ret = MH_EnableHook(*ppTarget); \
+			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); 
+			if(ret == MH_OK) { SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); } 
+			else { SDLOG(0, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle); } 
+			ret = MH_EnableHook(*ppTarget); 
 			if(ret == MH_OK) { 
 				SDLOG(1, " -> Enabled hook for %s\n", name); 
 				flag = true;
-			} \
-			else { SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); } \
+			} 
+			else { SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); } 
 		} else SDLOG(6, " -> DLL not found!\n")
 	}
 }
