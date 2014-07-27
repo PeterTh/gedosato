@@ -41,7 +41,6 @@ RoA                      || Rock of Ages
 runner2                  || BIT:TRIP Runner 2
 ShippingPC-SkyGame       || Dark Void
 StateOfDecay             || State Of Decay
-StateOfDecay             || State Of Decay
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
 witcher2                 || The Witcher 2
