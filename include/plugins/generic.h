@@ -15,7 +15,7 @@ class GenericPlugin : public GamePlugin {
 	SMAA* smaa;
 	bool doPost, doAA;
 	RenderTargetPtr tmp;
-	bool postDone, postReady;
+	bool postDone, postReady, hudEnabled;
 	DWORD injectRSType, injectRSValue;
 
 	void process(IDirect3DSurface9* backBuffer);
@@ -26,7 +26,7 @@ public:
 	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)
 		, post(NULL), fxaa(NULL), smaa(NULL)
 		, doPost(true), doAA(true)
-		, postDone(false), postReady(false)
+		, postDone(false), postReady(false), hudEnabled(true)
 		, injectRSType(0), injectRSValue(0)
 	{ }
 
@@ -40,6 +40,7 @@ public:
 
 	virtual void toggleAA() override { if(smaa || fxaa) { doAA = !doAA; Console::get().add(doAA ? "AA enabled" : "AA disabled"); } else { Console::get().add("AA disabled in configuration!"); } }
 	virtual void togglePost() override { if(post) { doPost = !doPost; Console::get().add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { Console::get().add("Post-processing disabled in configuration!"); } }
+	virtual void toggleHUD() override;
 
 	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
 	virtual HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) override;

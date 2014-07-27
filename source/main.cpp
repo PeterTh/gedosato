@@ -22,7 +22,6 @@
 #include "registry.h"
 #include "blacklist.h"
 #include "string_utils.h"
-//#include "lua_integration.h"
 
 FILE* g_oFile = NULL;
 bool g_active = false;
@@ -85,8 +84,11 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		 
 		KeyActions::get().load();
 		KeyActions::get().report();
-
-//		LuaManager::get().init();
+		
+		if(Settings::get().getLoadD3DEarly()) {
+			auto dllname = getSystemDllName("d3d9.dll");
+			LoadLibrary(dllname.c_str());
+		}
 
 		// detour
 		startDetour();

@@ -3,6 +3,7 @@
 General:
 - Added keybinding to toggle through scaling methods
 - Added option to prevent Steam Overlay loading (thanks GoaLitiuM)
+- Added "loadD3DEarly" compatibility option
 - Now possible to list and query readable app name from whitelist
 - Fixed downsampling with more than 3 level
 - Fixed stupid typo preventing games with backbuffer formats other

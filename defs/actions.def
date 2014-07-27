@@ -27,6 +27,7 @@ ACTION(toggleDOF, RSManager::get().toggleDOF())
 ACTION(togglePost, RSManager::get().togglePost())
 ACTION(toggleBloom, RSManager::get().toggleBloom())
 
+ACTION(toggleHUD, RSManager::get().toggleHUD())
 ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::SCREENSHOT_HUDLESS))
 
 ACTION(dumpBloom, RSManager::get().dumpBloom())

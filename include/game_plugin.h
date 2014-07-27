@@ -48,6 +48,8 @@ public:
 	virtual void toggleDOF() { Console::get().add("DoF not supported by this plugin!"); }
 	virtual void toggleBloom() { Console::get().add("Bloom not supported by this plugin!"); }
 	virtual void togglePost() { Console::get().add("Postprocessing not supported by this plugin!"); }
+	virtual void toggleHUD() { Console::get().add("HUD toggling not supported by this plugin!"); }
+
 	virtual void dumpSSAO() { Console::get().add("AO not supported by this plugin!"); }
 	virtual void dumpBloom() { Console::get().add("Bloom not supported by this plugin!"); }
 };

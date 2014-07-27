@@ -609,6 +609,14 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+string getSystemDllName(const string& name) {
+	char sysdir[MAX_PATH];
+	GetSystemDirectory(sysdir, MAX_PATH);
+	string fullPath = string(sysdir) + "\\" + name;
+	SDLOG(18, "Full dll path: %s\n", fullPath.c_str());
+	return fullPath;
+}
+
 HMODULE findDll(const string& name) {
 	if(name.find("*") != name.npos) {
 		SDLOG(16, "Dll pattern search...\n");
@@ -628,10 +636,7 @@ HMODULE findDll(const string& name) {
 		}
 	}
 	// first try full path, may increase compatibility with other injectors
-	char sysdir[256];
-	GetSystemDirectory(sysdir, 256);
-	string fullPath = string(sysdir) + "\\" + name;
-	SDLOG(18, "Full dll path: %s\n", fullPath.c_str());
+	string fullPath = getSystemDllName(name);
 	HMODULE ret = GetModuleHandle(fullPath.c_str());
 	if(ret == NULL && !Settings::get().getInterceptOnlySystemDlls()) ret = GetModuleHandle(name.c_str());
 	return ret;

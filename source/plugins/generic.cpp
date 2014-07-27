@@ -115,6 +115,7 @@ HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 }
 
 HRESULT GenericPlugin::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
+	if(!hudEnabled && postDone) return D3D_OK;
 	HRESULT ret = GamePlugin::redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 	if(!postDone && postReady) {
 		SDLOG(8, "Generic plugin: found shader, waited until draw, performing postprocessing\n");
@@ -128,4 +129,14 @@ HRESULT GenericPlugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Va
 		performInjection();
 	}
 	return GamePlugin::redirectSetRenderState(State, Value);
+}
+
+void GenericPlugin::toggleHUD() {
+	if(injectRSType == 0 && Settings::get().getInjectPSHash().empty()) {
+		Console::get().add("ERROR: HUD toggling requires some form of injection targeting.");
+	}
+	else {
+		hudEnabled = !hudEnabled;
+		Console::get().add(string("HUD rendering ") + (hudEnabled ? "enabled" : "disabled"));
+	}
 }

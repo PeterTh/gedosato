@@ -124,12 +124,14 @@ public:
 	
 	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 	void dumpTexture(const char* name, IDirect3DTexture9* tex);
-	
+
+	void toggleHUD() { plugin->toggleHUD(); }
 	void toggleAA() { plugin->toggleAA(); }
 	void toggleAO() { plugin->toggleAO(); }
 	void toggleDOF() { plugin->toggleDOF(); }
 	void toggleBloom() { plugin->toggleBloom(); }
 	void togglePost() { plugin->togglePost(); }
+
 	void dumpSSAO() { plugin->dumpSSAO(); }
 	void dumpBloom() { plugin->dumpBloom(); }
 
