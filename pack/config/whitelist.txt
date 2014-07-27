@@ -8,6 +8,7 @@
 AlanWake                 || Alan Wake
 bionic_commando          || Bionic Commando
 Blackguards              || Blackguards (The Dark Eye)
+Borderlands2             || Borderlands 2
 CastlevaniaLoSUE         || Castlevania: Lords of Shadow
 ChildofLight             || Child of Light
 config                   || Configurator (multiple)
@@ -17,6 +18,7 @@ daorigins                || Dragon Age: Origins
 DAOriginsConfig          || Dragon Age: Origins Configurator
 DarkSoulsII              || Dark Souls 2
 DayZ                     || DayZ Standalone
+dota                     || Dota 2
 DragonAge2               || Dragon Age 2
 DragonAge2*              || Dragon Age 2 Launcher or Configurator
 EoCApp                   || Divinity: Original Sin
@@ -29,6 +31,7 @@ HitmanBloodMoney         || Hitman: Blood Money
 hl2                      || Half-Life 2, Portal
 Injustice                || Injustice: Gods Among Us
 kick_win                 || Marlow Briggs
+Launcher                 || Borderlands 2 Launcher
 lcgol                    || Lara Croft and the Guardian of Light
 LEGOMARVEL               || LEGO Marvel Superheroes
 MassEffect               || Mass Effect
