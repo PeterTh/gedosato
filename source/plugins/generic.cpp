@@ -49,6 +49,7 @@ void GenericPlugin::reportStatus() {
 void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 	if(!postDone) {
 		postDone = true;
+		processedBB = backBuffer;
 		SDLOG(8, "Generic plugin processing start\n");
 		if(doAA || doPost) {
 			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
@@ -88,6 +89,11 @@ void GenericPlugin::processCurrentBB() {
 
 
 void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
+	// move rendered content to BB if HUD hidden and it was rendered to different RT
+	if(postDone && !hudEnabled && processedBB != NULL && backBuffer != processedBB) {
+		d3ddev->StretchRect(processedBB, NULL, backBuffer, NULL, D3DTEXF_NONE);
+	}
+	processedBB = NULL;
 	process(backBuffer);
 }
 
@@ -114,15 +120,32 @@ HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	return GamePlugin::redirectSetPixelShader(pShader);
 }
 
-HRESULT GenericPlugin::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
+HRESULT GenericPlugin::drawingStep(std::function<HRESULT(void)> drawCall) {
 	if(!hudEnabled && postDone) return D3D_OK;
-	HRESULT ret = GamePlugin::redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
+	HRESULT ret = drawCall();
 	if(!postDone && postReady) {
 		SDLOG(8, "Generic plugin: found shader, waited until draw, performing postprocessing\n");
 		processCurrentBB();
 	}
 	return ret;
 }
+
+HRESULT GenericPlugin::redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
+	return drawingStep([&](){ return GamePlugin::redirectDrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount); });
+}
+
+HRESULT GenericPlugin::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
+	return drawingStep([&](){ return GamePlugin::redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount); });
+}
+
+HRESULT GenericPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
+	return drawingStep([&](){ return GamePlugin::redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride); });
+}
+
+HRESULT GenericPlugin::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void * pIndexData, D3DFORMAT IndexDataFormat, CONST void * pVertexStreamZeroData, UINT VertexStreamZeroStride) {
+	return drawingStep([&](){ return GamePlugin::redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride); });
+}
+
 
 HRESULT GenericPlugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	if(!postDone && State == injectRSType && Value == injectRSValue) {
