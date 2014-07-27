@@ -39,10 +39,10 @@ MassEffect3              || Mass Effect 3
 MassEffect3Config        || Mass Effect 3 Configurator
 Might and Magic X Legacy || Might and Magic X Legacy
 Reckoning                || Kingdom's of Amalur: Reckoning
+RememberMe               || Remember Me
 RoA                      || Rock of Ages
 runner2                  || BIT:TRIP Runner 2
 ShippingPC-SkyGame       || Dark Void
-StateOfDecay             || State Of Decay
 StateOfDecay             || State Of Decay
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
