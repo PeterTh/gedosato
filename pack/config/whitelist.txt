@@ -8,6 +8,7 @@
 AlanWake                 || Alan Wake
 bionic_commando          || Bionic Commando
 Blackguards              || Blackguards (The Dark Eye)
+Borderlands2             || Borderlands 2
 CastlevaniaLoSUE         || Castlevania: Lords of Shadow
 ChildofLight             || Child of Light
 config                   || Configurator (multiple)
@@ -17,6 +18,7 @@ daorigins                || Dragon Age: Origins
 DAOriginsConfig          || Dragon Age: Origins Configurator
 DarkSoulsII              || Dark Souls 2
 DayZ                     || DayZ Standalone
+dota                     || Dota 2
 DragonAge2               || Dragon Age 2
 DragonAge2*              || Dragon Age 2 Launcher or Configurator
 EoCApp                   || Divinity: Original Sin
@@ -25,11 +27,11 @@ ffxiv*                   || Final Fantasy XIV Launcher or Configurator
 grimrock                 || Legend of Grimrock
 GSGameExe_DX9            || Giana Sisters: Twisted Dreams
 GSLauncher               || Giana Sisters: Twisted Dreams Launcher
-HawkenGame-Win32-Shipping || Hawken
 HitmanBloodMoney         || Hitman: Blood Money
 hl2                      || Half-Life 2, Portal
 Injustice                || Injustice: Gods Among Us
 kick_win                 || Marlow Briggs
+Launcher                 || Borderlands 2 Launcher
 lcgol                    || Lara Croft and the Guardian of Light
 LEGOMARVEL               || LEGO Marvel Superheroes
 MassEffect               || Mass Effect
@@ -40,6 +42,7 @@ Reckoning                || Kingdom's of Amalur: Reckoning
 RoA                      || Rock of Ages
 runner2                  || BIT:TRIP Runner 2
 ShippingPC-SkyGame       || Dark Void
+StateOfDecay             || State Of Decay
 StateOfDecay             || State Of Decay
 Tropico4                 || Tropico 4
 tru                      || Tomb Raider: Underworld
