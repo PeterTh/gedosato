@@ -22,7 +22,6 @@ SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", false)
 SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)
 SETTING(bool, PreventSteamOverlay, "preventSteamOverlay", false)
 
-
 // Texture options
 SETTING(bool, EnableTextureDumping, "enableTextureDumping", false)
 SETTING(bool, EnableTextureOverride, "enableTextureOverride", false)
@@ -44,9 +43,9 @@ SETTING(bool, HideMouseCursor, "hideMouseCursor", false)
 // Injection options
 SETTING(string, InjectPSHash, "injectPSHash", "")
 SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
+SETTING(string, InjectRenderstate, "injectRenderstate", "")
 
 // Graphics effects options
-
 SETTING(string, AAType, "aaType", "fxaa")
 SETTING(unsigned, AAQuality, "aaQuality", 0)
 

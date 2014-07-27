@@ -61,3 +61,4 @@ WerFault
 wininit
 winword
 XBoxStat
+notepad++
