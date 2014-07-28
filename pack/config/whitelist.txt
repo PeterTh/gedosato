@@ -8,6 +8,7 @@
 AlanWake                 || Alan Wake
 bionic_commando          || Bionic Commando
 Blackguards              || Blackguards (The Dark Eye)
+Borderlands              || Borderlands
 Borderlands2             || Borderlands 2
 CastlevaniaLoSUE         || Castlevania: Lords of Shadow
 ChildofLight             || Child of Light
