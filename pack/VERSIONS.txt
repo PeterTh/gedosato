@@ -5,6 +5,7 @@ General:
 - Fixed Steam overlay rendering with alternative injection method
 GeDoSaToTool:
 - Unified injection methods
+- Stop accumulating empty lines when sorting
 
 27-07-2014 -- beta 10 - "Poltergeist"
 =====================================
