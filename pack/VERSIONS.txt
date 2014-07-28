@@ -6,7 +6,7 @@ General:
 - Added option to prevent Steam Overlay loading (thanks GoaLitiuM)
 - Added "loadD3DEarly" compatibility option
 - Now possible to list and query readable app name from whitelist
-- Fixed downsampling with more than 3 level
+- Fixed downsampling with more than 3 levels
 - Fixed stupid typo preventing games with backbuffer formats other
   than the default from working correctly (thanks Boulotaur2024)
 - Fixed crash when framedumping, store framedumps as TGA, create folders for each
