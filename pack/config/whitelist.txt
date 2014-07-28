@@ -30,6 +30,7 @@ GSLauncher               || Giana Sisters: Twisted Dreams Launcher
 HitmanBloodMoney         || Hitman: Blood Money
 hl2                      || Half-Life 2, Portal
 Injustice                || Injustice: Gods Among Us
+kb                       || King's Bounty (All Versions)
 kick_win                 || Marlow Briggs
 Launcher                 || Borderlands 2 Launcher
 lcgol                    || Lara Croft and the Guardian of Light
