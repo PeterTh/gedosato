@@ -1,3 +1,8 @@
+??-08-2014 -- beta 11 - "At Sixes and Sevens"
+=============================================
+General:
+- Hook d3d9 debug dll separately (restoring third party injector compatibility)
+
 27-07-2014 -- beta 10 - "Poltergeist"
 =====================================
 General:

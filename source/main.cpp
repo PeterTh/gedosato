@@ -84,8 +84,14 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		 
 		KeyActions::get().load();
 		KeyActions::get().report();
-		
+
+		if(!Settings::get().getPreventSteamOverlay()) {
+			SDLOG(2, "Attempting to pre-load Steam overlay dll.\n");
+			LoadLibrary("gameoverlayrenderer.dll");
+		}
+
 		if(Settings::get().getLoadD3DEarly()) {
+			SDLOG(2, "Early d3d loading.\n");
 			auto dllname = getSystemDllName("d3d9.dll");
 			LoadLibrary(dllname.c_str());
 		}

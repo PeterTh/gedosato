@@ -33,7 +33,7 @@ hl2                      || Half-Life 2, Portal
 Injustice                || Injustice: Gods Among Us
 kb                       || King's Bounty (All Versions)
 kick_win                 || Marlow Briggs
-Launcher                 || Borderlands 2 Launcher
+Launcher                 || Launcher (multiple)
 lcgol                    || Lara Croft and the Guardian of Light
 LEGOMARVEL               || LEGO Marvel Superheroes
 MassEffect               || Mass Effect
