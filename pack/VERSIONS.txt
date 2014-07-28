@@ -2,6 +2,9 @@
 =============================================
 General:
 - Hook d3d9 debug dll separately (restoring third party injector compatibility)
+- Fixed Steam overlay rendering with alternative injection method
+GeDoSaToTool:
+- Unified injection methods
 
 27-07-2014 -- beta 10 - "Poltergeist"
 =====================================
