@@ -19,6 +19,7 @@ public:
 
 	RenderTargetPtr createTexture(unsigned width, unsigned height, RenderTarget::Format fmt);
 	RenderTargetPtr createTexture(unsigned width, unsigned height, D3DFORMAT fmt);
+	RenderTargetPtr createTexture(unsigned width, unsigned height, D3DFORMAT fmt, D3DMULTISAMPLE_TYPE mstype, unsigned msquality);
 	RenderTargetPtr createTexture(unsigned width, unsigned height);
 
 	RenderTargetPtr createSurface(unsigned width, unsigned height, RenderTarget::Format fmt);

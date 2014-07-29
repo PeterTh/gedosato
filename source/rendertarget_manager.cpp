@@ -7,6 +7,10 @@ RenderTargetPtr RenderTargetManager::createTexture(unsigned width, unsigned heig
 	return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatFromFormat(fmt), RenderTarget::TEXTURE_USE));
 }
 
+RenderTargetPtr RenderTargetManager::createTexture(unsigned width, unsigned height, D3DFORMAT fmt, D3DMULTISAMPLE_TYPE mstype, unsigned msquality) {
+	return RenderTargetPtr(new RenderTarget(device, width, height, fmt, RenderTarget::TEXTURE_USE, mstype, msquality));
+}
+
 RenderTargetPtr RenderTargetManager::createTexture(unsigned width, unsigned height, D3DFORMAT fmt) {
 	return RenderTargetPtr(new RenderTarget(device, width, height, fmt, RenderTarget::TEXTURE_USE));
 }

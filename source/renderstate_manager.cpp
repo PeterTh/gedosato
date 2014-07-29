@@ -50,7 +50,9 @@ void RSManager::showStatus() {
 	plugin->reportStatus();
 }
 
-void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat) {
+void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, 
+		unsigned numBBs, D3DFORMAT bbFormat, D3DMULTISAMPLE_TYPE multiSampleType, unsigned multiSampleQuality, 
+		D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat) {
 	if(inited) releaseResources();
 	SDLOG(0, "RenderstateManager resource initialization started\n");
 	this->downsampling = downsampling;
@@ -60,7 +62,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	if(bbFormat != D3DFMT_UNKNOWN) backbufferFormat = bbFormat;
 	swapEffect = swapEff == D3DSWAPEFFECT_COPY ? SWAP_COPY : (swapEff == D3DSWAPEFFECT_DISCARD ? SWAP_DISCARD : SWAP_FLIP);
 	if(swapEffect == SWAP_FLIP) numBackBuffers++; // account for the "front buffer" in the swap chain
-		
+	
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
 	imgWriter = std::unique_ptr<ImageWriter>(new ImageWriter(d3ddev, rw, rh));
@@ -82,11 +84,10 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
 
-
 	if(downsampling) {
 		// if required, determine depth/stencil surf type and create
 		if(autoDepthStencil) {
-			d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
+			d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, multiSampleType, multiSampleQuality, false, &depthStencilSurf, NULL);
 			SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(depthStencilFormat));
 			// set our depth stencil surface
 			d3ddev->SetDepthStencilSurface(depthStencilSurf);
@@ -95,7 +96,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 		// generate backbuffers
 		SDLOG(2, "Generating backbuffers:\n")
 		for(unsigned i=0; i<numBackBuffers; ++i) {
-			backBuffers.push_back(rtMan->createTexture(rw, rh, backbufferFormat));
+			backBuffers.push_back(rtMan->createTexture(rw, rh, backbufferFormat, multiSampleType, multiSampleQuality));
 			SDLOG(2, "Backbuffer %u: %p\n", i, backBuffers[i]);
 		}
 
@@ -536,6 +537,7 @@ namespace {
 			pPresentationParameters->Windowed ? "true" : "false", pPresentationParameters->FullScreen_RefreshRateInHz, D3DSwapEffectToString(pPresentationParameters->SwapEffect));
 		SDLOG(0, " - - Autodepthstencil: %8s  Format: %s  Discard: %s\n", 
 			pPresentationParameters->EnableAutoDepthStencil ? "true" : "false", D3DFormatToString(pPresentationParameters->AutoDepthStencilFormat), pPresentationParameters->Flags&D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL ? "true" : "false");
+		SDLOG(0, " - - Multisampling Type: %s  Quality: %d\n", D3DMultisampleTypeToString(pPresentationParameters->MultiSampleType), pPresentationParameters->MultiSampleQuality)
 		if(pFullscreenDisplayMode != NULL) {
 			SDLOG(0, " - D3DDISPLAYMODEEX set\n")
 			SDLOG(0, " - - FS: %4u x %4u @ %3u Hz %16s\n", pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height, pFullscreenDisplayMode->RefreshRate, D3DFormatToString(pFullscreenDisplayMode->Format));
@@ -597,7 +599,9 @@ namespace {
 			downsampling ? Settings::get().getRenderHeight() : pPresentationParameters->BackBufferHeight,
 			downsampling ? pPresentationParameters->BackBufferCount : 0,
 			downsampling ? pPresentationParameters->BackBufferFormat : D3DFMT_UNKNOWN,
-			pPresentationParameters->SwapEffect, pPresentationParameters->EnableAutoDepthStencil?true:false, pPresentationParameters->AutoDepthStencilFormat);
+			pPresentationParameters->MultiSampleType, pPresentationParameters->MultiSampleQuality,
+			pPresentationParameters->SwapEffect, 
+			pPresentationParameters->EnableAutoDepthStencil?true:false, pPresentationParameters->AutoDepthStencilFormat);
 	}
 }
 

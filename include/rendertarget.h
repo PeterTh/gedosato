@@ -37,23 +37,39 @@ public:
 	}
 
 	// TODO remove once migration is complete
-	IDirect3DSurface9 *getSurf() { return surf9; };
-	IDirect3DTexture9 *getTex() { return tex9; };
+	IDirect3DSurface9 *getSurf() {
+		if(multisampling) dirty = true;
+		return surf9; 
+	};
+	IDirect3DTexture9 *getTex() {
+		if(multisampling && dirty) {
+			IDirect3DSurface9* texsurf = NULL;
+			tex9->GetSurfaceLevel(0, &texsurf);
+			d3ddev->StretchRect(surf9, NULL, texsurf, NULL, D3DTEXF_NONE);
+			SAFERELEASE(texsurf);
+			dirty = false;
+		}
+		return tex9; 
+	};
 
 private:
 	friend class RenderTargetManager;
 
+	IDirect3DDevice9 *d3ddev;
 	IDirect3DSurface9 *surf9;
 	IDirect3DTexture9 *tex9;
+	bool multisampling, dirty;
 
-	RenderTarget(IDirect3DDevice9* dev, unsigned width, unsigned height, D3DFORMAT fmt, Usage usage) 
-			: surf9(NULL), tex9(NULL) {
+	RenderTarget(IDirect3DDevice9* dev, unsigned width, unsigned height, D3DFORMAT fmt, Usage usage, D3DMULTISAMPLE_TYPE mstype = D3DMULTISAMPLE_NONE, unsigned msquality = 0)
+			: d3ddev(dev), surf9(NULL), tex9(NULL), multisampling(false), dirty(true) {
+		multisampling = mstype != D3DMULTISAMPLE_NONE;
 		if(usage == TEXTURE_USE) {
 			dev->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, fmt, D3DPOOL_DEFAULT, &tex9, NULL);
-			tex9->GetSurfaceLevel(0, &surf9);
+			if(multisampling) dev->CreateRenderTarget(width, height, fmt, mstype, msquality, false, &surf9, NULL);
+			else tex9->GetSurfaceLevel(0, &surf9);
 		}
 		else {
-			dev->CreateRenderTarget(width, height, fmt, D3DMULTISAMPLE_NONE, 0, false, &surf9, NULL);
+			dev->CreateRenderTarget(width, height, fmt, mstype, msquality, false, &surf9, NULL);
 		}
 	}
 
