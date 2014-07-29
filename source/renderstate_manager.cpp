@@ -82,15 +82,16 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, unsig
 	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
 
-	// if required, determine depth/stencil surf type and create
-	if(downsampling && autoDepthStencil) {
-		d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
-		SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(depthStencilFormat));
-		// set our depth stencil surface
-		d3ddev->SetDepthStencilSurface(depthStencilSurf);
-	}
 
 	if(downsampling) {
+		// if required, determine depth/stencil surf type and create
+		if(autoDepthStencil) {
+			d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, D3DMULTISAMPLE_NONE, 0, false, &depthStencilSurf, NULL);
+			SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(depthStencilFormat));
+			// set our depth stencil surface
+			d3ddev->SetDepthStencilSurface(depthStencilSurf);
+		}
+
 		// generate backbuffers
 		SDLOG(2, "Generating backbuffers:\n")
 		for(unsigned i=0; i<numBackBuffers; ++i) {
@@ -516,7 +517,13 @@ HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* p
 	return res;
 }
 
-HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 ** ppZStencilSurface) {
+HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface) {
+	if(downsampling) {
+		SDLOG(4, "redirectGetDepthStencilSurface\n");
+		*ppZStencilSurface = depthStencilSurf;
+		(*ppZStencilSurface)->AddRef();
+		return D3D_OK;
+	}
 	return d3ddev->GetDepthStencilSurface(ppZStencilSurface);
 }
 
@@ -527,6 +534,8 @@ namespace {
 		SDLOG(0, " - - Backbuffer(s): %4u x %4u %16s *%d \n", pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight, D3DFormatToString(pPresentationParameters->BackBufferFormat), pPresentationParameters->BackBufferCount);
 		SDLOG(0, " - - PresentationInterval: %2u   Windowed: %5s    Refresh: %3u Hz    SwapEffect: %s\n", pPresentationParameters->PresentationInterval, 
 			pPresentationParameters->Windowed ? "true" : "false", pPresentationParameters->FullScreen_RefreshRateInHz, D3DSwapEffectToString(pPresentationParameters->SwapEffect));
+		SDLOG(0, " - - Autodepthstencil: %8s  Format: %s  Discard: %s\n", 
+			pPresentationParameters->EnableAutoDepthStencil ? "true" : "false", D3DFormatToString(pPresentationParameters->AutoDepthStencilFormat), pPresentationParameters->Flags&D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL ? "true" : "false");
 		if(pFullscreenDisplayMode != NULL) {
 			SDLOG(0, " - D3DDISPLAYMODEEX set\n")
 			SDLOG(0, " - - FS: %4u x %4u @ %3u Hz %16s\n", pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height, pFullscreenDisplayMode->RefreshRate, D3DFormatToString(pFullscreenDisplayMode->Format));
@@ -749,6 +758,9 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 
 HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	return plugin->redirectSetRenderState(State, Value);
+}
+HRESULT RSManager::redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value) {
+	return d3ddev->SetSamplerState(Sampler, Type, Value);
 }
 
 HRESULT RSManager::redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {

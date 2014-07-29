@@ -624,7 +624,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State, DW
 HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value) {
 	RSManager::setLatest(rsMan);
 	SDLOG(14, "SetSamplerState sampler %lu:   state type: %s   value: %lu\n", Sampler, D3DSamplerStateTypeToString(Type), Value);
-	return m_pD3Ddev->SetSamplerState(Sampler, Type, Value);
+	return RSManager::get().redirectSetSamplerState(Sampler, Type, Value);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetScissorRect(CONST RECT* pRect) {

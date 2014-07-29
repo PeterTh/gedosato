@@ -163,6 +163,7 @@ public:
 
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
+	HRESULT redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value);
 
 	HRESULT redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
 	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
