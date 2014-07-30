@@ -519,7 +519,7 @@ HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* p
 }
 
 HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface) {
-	if(downsampling) {
+	if(downsampling && depthStencilSurf != NULL) {
 		SDLOG(4, "redirectGetDepthStencilSurface\n");
 		*ppZStencilSurface = depthStencilSurf;
 		(*ppZStencilSurface)->AddRef();
