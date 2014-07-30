@@ -45,7 +45,7 @@ void DS2Plugin::reportStatus() {
 	else Console::get().add("DoF disabled");
 	if(ssao && doAO) Console::get().add(format("SSAO enabled, strength %d, scale %d, blur %s", Settings::get().getSsaoStrength(), Settings::get().getSsaoScale(), Settings::get().getSsaoBlurType().c_str()));
 	else Console::get().add("SSAO disabled");
-	if(bloom && doBloom) Console::get().add(format("Bloom enabled"));
+	if(bloom && doBloom) Console::get().add("Bloom enabled");
 	else Console::get().add("Bloom disabled");
 }
 

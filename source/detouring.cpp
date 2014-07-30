@@ -1,11 +1,5 @@
 #include "Detouring.h"
 
-#include <Windows.h>
-#include <atlbase.h>
-#include <atlconv.h>
-#include <mmsystem.h>
-#include <Psapi.h>
-
 #define DIRECTINPUT_VERSION 0x0800
 #include <dinput.h>
 

@@ -1,5 +1,3 @@
-
-#include <windows.h>
 #include <fstream>
 #include <ostream>
 #include <iostream>
@@ -8,10 +6,10 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/timeb.h>
-#include <strsafe.h>
 
 #include <boost/algorithm/string.hpp>
 
+#include "winutil.h"
 #include "main.h"
 #include "d3d9.h"
 #include "version.h"
@@ -22,6 +20,7 @@
 #include "registry.h"
 #include "blacklist.h"
 #include "string_utils.h"
+
 
 FILE* g_oFile = NULL;
 bool g_active = false;
@@ -177,25 +176,6 @@ void __cdecl sdlog(const char *fmt, ...) {
 	va_end (va_alist);
 
 	fflush(g_oFile);
-}
-
-void errorExit(LPTSTR lpszFunction) { 
-    // Retrieve the system error message for the last-error code
-    LPVOID lpMsgBuf;
-    LPVOID lpDisplayBuf;
-    DWORD dw = GetLastError(); 
-
-    FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        NULL, dw, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL );
-
-    // Display the error message and exit the process
-    lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR)); 
-    StringCchPrintf((LPTSTR)lpDisplayBuf, LocalSize(lpDisplayBuf) / sizeof(TCHAR), TEXT("%s failed with error %d: %s"), lpszFunction, dw, lpMsgBuf); 
-    MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK); 
-
-    LocalFree(lpMsgBuf);
-    LocalFree(lpDisplayBuf);
-    ExitProcess(dw); 
 }
 
 bool fileExists(const char *filename) {

@@ -1,13 +1,12 @@
-#include <windows.h>
 #include <fstream>
 #include <ostream>
 #include <iostream>
 #include <list>
 
+#include "winutil.h"
 #include "main.h"
 #include "d3d9.h"
 #include "d3dutil.h"
-#include "winutil.h"
 #include "renderstate_manager.h"
 #include "window_manager.h"
 #include "Settings.h"

@@ -1,6 +1,7 @@
 ??-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================
 General:
+- Added support for multisampling while downsampling
 - Fixed Steam overlay rendering with alternative injection method
 - Fixed handling of GetDepthStencilSurface
 - Hook d3d9 debug dll separately (restoring third party injector compatibility)

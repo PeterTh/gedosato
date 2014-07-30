@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include <windows.h>
+#include "winutil.h"
+
 #include <dxgitype.h>
 #include <dxgi1_2.h>
 

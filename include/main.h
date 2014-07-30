@@ -51,7 +51,6 @@ bool fileExists(const char *filename);
 void __cdecl sdlogtime(int level);
 void __cdecl sdlog(const char * fmt, ...);
 void messageErrorAndExit(string error);
-void errorExit(LPTSTR lpszFunction);
 
 const string& getInstallDirectory();
 const bool getUseBlacklist();

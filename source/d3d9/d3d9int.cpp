@@ -1,6 +1,6 @@
 /*	Direct3D9 Interface */
 
-#include <windows.h>
+#include "winutil.h"
 #include "main.h"
 #include "d3d9.h"
 #include "d3dutil.h"
