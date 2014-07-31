@@ -84,7 +84,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		KeyActions::get().load();
 		KeyActions::get().report();
 
-		if(!Settings::get().getPreventSteamOverlay()) {
+		if(!Settings::get().getPreventSteamOverlay() && Settings::get().getLoadSteamOverlayEarly()) {
 			SDLOG(2, "Attempting to pre-load Steam overlay dll.\n");
 			LoadLibrary("gameoverlayrenderer.dll");
 		}
