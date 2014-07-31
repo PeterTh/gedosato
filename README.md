@@ -17,7 +17,7 @@ which have their own licensing terms included.
 Requirements & Dependencies
 ===========================
 
-- Visual C++
+- Visual C++ (2013 or later)
 - The DirectX SDK
 - Boost (http://www.boost.org/)
 - MinHook (this fork: https://github.com/RaMMicHaeL/minhook)
