@@ -51,3 +51,4 @@ Tropico4                     || Tropico 4
 tru                          || Tomb Raider: Underworld
 witcher2                     || The Witcher 2
 yso_win                      || Ys Origin
+Condemned                    || Condemned: Criminal Origins
