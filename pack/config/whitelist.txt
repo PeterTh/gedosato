@@ -12,6 +12,7 @@ Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow
 ChildofLight                 || Child of Light
+Condemned                    || Condemned: Criminal Origins
 config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
 consortium                   || Consortium
