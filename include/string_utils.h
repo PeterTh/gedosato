@@ -22,7 +22,7 @@ namespace {
 	}
 }
 
-template<typename...Rest> 
+template<typename... Rest> 
 string format(const char* formatString, Rest... rest) {
 	return format_impl(boost::format(formatString), rest...).str();
 }
