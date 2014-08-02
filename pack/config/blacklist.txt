@@ -7,6 +7,7 @@ AdobeARM
 ASUSAUDIOCENTER
 AutoHotkey
 AvastUI
+Creative_Audio_Engine_Cleanup*
 Dbgview
 devenv
 DllHost
@@ -20,6 +21,9 @@ FlashPlayerPlugin_*
 foobar2000
 FSViewer
 GeDoSaTo*
+git
+GitHub
+git-remote-https
 HsMgr
 ImpulseNow
 javaw
@@ -29,6 +33,7 @@ miranda32
 MSIAfterburner
 mumble
 NclMSBTSrvEx
+notepad++
 NvBackend
 NvTmru
 photoshop
@@ -43,6 +48,8 @@ RTSS
 Rundll32
 runonce
 RzSynapse
+SAM.Game
+SAM.Picker
 SciTE
 ScpServer
 services
@@ -61,4 +68,3 @@ WerFault
 wininit
 winword
 XBoxStat
-notepad++
