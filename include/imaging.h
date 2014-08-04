@@ -19,8 +19,10 @@ public:
 		device9->CreateRenderTarget(wmax, hmax, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, 0, TRUE, &tempSurf, NULL);
 	}
 	~ImageWriter() {
+		for(auto& f : futures) {
+			f.wait();
+		}
 		SAFERELEASE(tempSurf);
-		// "futures" gets destroyed, since all the futures are created by async they will wait
 	}
 
 	void writeSurface(const string& fn, IDirect3DSurface9* surf, bool discardAlpha = true);
