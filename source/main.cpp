@@ -57,7 +57,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist.txt") : !onList(getExeFileName(), "whitelist.txt")) {
 			OutputDebugString("GeDoSaTo: blacklisted / not whitelisted");
 			if(getExeFileName() == "GeDoSaToTool") return true;
-			return false;
+			return true;
 		}
 		g_active = true;
 		OutputDebugString("GeDoSaTo: Active");
