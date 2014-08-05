@@ -4,6 +4,7 @@ General:
 - Added support for multisampling while downsampling
 - Fixed Steam overlay rendering with alternative injection method
 - Fixed handling of GetDepthStencilSurface
+- Fixed crash bug with Steam Big Picture Mode
 - Hook d3d9 debug dll separately (restoring third party injector compatibility)
 GeDoSaToTool:
 - Unified injection methods
