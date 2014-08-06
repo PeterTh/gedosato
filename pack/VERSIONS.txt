@@ -2,6 +2,7 @@
 =============================================
 General:
 - Added support for multisampling while downsampling
+- Made the presentInterval setting work even when not downsampling
 - Fixed Steam overlay rendering with alternative injection method
 - Fixed handling of GetDepthStencilSurface
 - Fixed crash bug with Steam Big Picture Mode
