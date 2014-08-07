@@ -23,9 +23,11 @@
 
 
 FILE* g_oFile = NULL;
+HMODULE g_dll = NULL;
 bool g_active = false;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
+	if(!g_active) FreeLibrary(g_dll);
 	SDLOG(18, "GeDoSaToHook called\n");
 	return CallNextHookEx(NULL, nCode, wParam, lParam); 
 }
@@ -48,15 +50,21 @@ const char* GeDoSaToSettings() {
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
 	if(dwReason == DLL_PROCESS_ATTACH) {
 		OutputDebugString("GeDoSaTo: startup");
+		g_dll = hDll;
 
 		// read install location from registry
 		getInstallDirectory();
 		OutputDebugString("GeDoSaTo: Got install dir");
 
+		// loaded in GeDoSaToTool, stay in memory
+		if(getExeFileName() == "GeDoSaToTool") {
+			g_active = true;
+			return true;
+		}
+
 		// don't attach to processes on the blacklist / not on the whitelist
 		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist.txt") : !onList(getExeFileName(), "whitelist.txt")) {
 			OutputDebugString("GeDoSaTo: blacklisted / not whitelisted");
-			if(getExeFileName() == "GeDoSaToTool") return true;
 			return true;
 		}
 		g_active = true;
