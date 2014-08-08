@@ -288,6 +288,7 @@
     <ClCompile Include="source\imaging.cpp" />
     <ClCompile Include="source\plugins\dark_souls_2.cpp" />
     <ClCompile Include="source\plugins\generic.cpp" />
+    <ClCompile Include="source\plugins\mitsurugi.cpp" />
     <ClCompile Include="source\post.cpp" />
     <ClCompile Include="source\registry.cpp" />
     <ClCompile Include="source\rendertarget_manager.cpp" />
@@ -373,6 +374,7 @@
     <ClInclude Include="include\lua_integration.h" />
     <ClInclude Include="include\plugins\dark_souls_2.h" />
     <ClInclude Include="include\plugins\generic.h" />
+    <ClInclude Include="include\plugins\mitsurugi.h" />
     <ClInclude Include="include\post.h" />
     <ClInclude Include="include\registry.h" />
     <ClInclude Include="include\rendertarget.h" />
