@@ -23,6 +23,16 @@ public:
 	virtual void prePresent() { }
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) { }
 
+	virtual void toggleAA() { Console::get().add("AA not supported by this plugin!"); }
+	virtual void toggleAO() { Console::get().add("AO not supported by this plugin!"); }
+	virtual void toggleDOF() { Console::get().add("DoF not supported by this plugin!"); }
+	virtual void toggleBloom() { Console::get().add("Bloom not supported by this plugin!"); }
+	virtual void togglePost() { Console::get().add("Postprocessing not supported by this plugin!"); }
+	virtual void toggleHUD() { Console::get().add("HUD toggling not supported by this plugin!"); }
+
+	virtual void dumpSSAO() { Console::get().add("AO not supported by this plugin!"); }
+	virtual void dumpBloom() { Console::get().add("Bloom not supported by this plugin!"); }
+
 	virtual HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 		return d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
 	}
@@ -46,13 +56,14 @@ public:
 		return d3ddev->DrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 	}
 
-	virtual void toggleAA() { Console::get().add("AA not supported by this plugin!"); }
-	virtual void toggleAO() { Console::get().add("AO not supported by this plugin!"); }
-	virtual void toggleDOF() { Console::get().add("DoF not supported by this plugin!"); }
-	virtual void toggleBloom() { Console::get().add("Bloom not supported by this plugin!"); }
-	virtual void togglePost() { Console::get().add("Postprocessing not supported by this plugin!"); }
-	virtual void toggleHUD() { Console::get().add("HUD toggling not supported by this plugin!"); }
+	virtual HRESULT redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
+		return d3ddev->CreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+	}
 
-	virtual void dumpSSAO() { Console::get().add("AO not supported by this plugin!"); }
-	virtual void dumpBloom() { Console::get().add("Bloom not supported by this plugin!"); }
+	virtual HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
+		return d3ddev->SetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+	}
+	virtual HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
+		return d3ddev->SetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+	}
 };

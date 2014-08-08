@@ -2,6 +2,7 @@
 // PLUGIN([name string (shown to user)], [exe name (wildcards supported)], [class name])
 
 PLUGIN("Dark Souls 2", "DarkSoulsII", DS2Plugin)
+PLUGIN("Mitsurugi Kamui Hikae", "mitsurugi", MitsurugiPlugin)
 
 
 // this should always be last

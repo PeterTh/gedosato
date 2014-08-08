@@ -544,6 +544,7 @@ namespace {
 		}
 	}
 	bool isDownsamplingRequest(D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode = NULL) {
+		return true;
 		if( (pPresentationParameters->BackBufferWidth == Settings::get().getRenderWidth() && pPresentationParameters->BackBufferHeight == Settings::get().getRenderHeight())
 		 || (pFullscreenDisplayMode && pFullscreenDisplayMode->Width == Settings::get().getRenderWidth() && pFullscreenDisplayMode->Height == Settings::get().getRenderHeight()) ) {
 			SDLOG(0, "===================\n!!!!! requested downsampling resolution!\n");
@@ -776,15 +777,23 @@ HRESULT RSManager::redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Ty
 HRESULT RSManager::redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
 	return plugin->redirectDrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 }
-
 HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	return plugin->redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
-
 HRESULT RSManager::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
 	return plugin->redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 }
-
 HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void * pIndexData, D3DFORMAT IndexDataFormat, CONST void * pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	return plugin->redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
+}
+
+HRESULT RSManager::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
+	return plugin->redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+}
+
+HRESULT RSManager::redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
+	return plugin->redirectSetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+}
+HRESULT RSManager::redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
+	return plugin->redirectSetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
 }

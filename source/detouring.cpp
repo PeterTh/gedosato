@@ -402,7 +402,7 @@ GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
 // Messages /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(PeekMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax, _In_ UINT wRemoveMsg) {
-	SDLOG(2, "DetouredPeekMessageA\n");
+	SDLOG(12, "DetouredPeekMessageA\n");
 	BOOL ret = TruePeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	if(ret && RSManager::currentlyDownsampling() && Settings::get().getAdjustMessagePt()) {
 		SDLOG(2, "-> Adjusting position\n");
@@ -412,7 +412,7 @@ GENERATE_INTERCEPT_HEADER(PeekMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt
 	return ret;
 }
 GENERATE_INTERCEPT_HEADER(GetMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax) {
-	SDLOG(2, "DetouredGetMessageA\n");
+	SDLOG(12, "DetouredGetMessageA\n");
 	BOOL ret = TrueGetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
 	if(ret && RSManager::currentlyDownsampling() && Settings::get().getAdjustMessagePt()) {
 		SDLOG(2, "-> Adjusting position\n");
@@ -423,7 +423,7 @@ GENERATE_INTERCEPT_HEADER(GetMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_
 }
 
 GENERATE_INTERCEPT_HEADER(GetMessagePos, DWORD, WINAPI) {
-	SDLOG(2, "DetouredGetMessagePos\n");
+	SDLOG(12, "DetouredGetMessagePos\n");
 	DWORD ret = TrueGetMessagePos();
 	return ret;
 }

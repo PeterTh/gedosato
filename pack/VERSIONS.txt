@@ -8,7 +8,7 @@ General:
 - Fixed crash bug with Steam Big Picture Mode
 - Hook d3d9 debug dll separately (restoring third party injector compatibility)
 GeDoSaToTool:
-- Unified injection methods
+- Unified injection methods (!)
 - Stop accumulating empty lines when sorting
 
 27-07-2014 -- beta 10 - "Poltergeist"
