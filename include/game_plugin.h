@@ -42,6 +42,9 @@ public:
 	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 		return d3ddev->SetPixelShader(pShader);
 	}
+	virtual HRESULT redirectSetVertexShader(IDirect3DVertexShader9* pvShader) {
+		return d3ddev->SetVertexShader(pvShader);
+	}
 	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 		return d3ddev->SetRenderState(State, Value);
 	}
@@ -75,5 +78,4 @@ public:
 	virtual HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
 		return d3ddev->SetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
 	}
-
 };

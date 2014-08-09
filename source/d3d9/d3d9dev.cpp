@@ -42,8 +42,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetRenderTarget(DWORD RenderTargetIndex, ID
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetVertexShader: %p\n", pvShader);	
-	return m_pD3Ddev->SetVertexShader(pvShader);
+	SDLOG(3, "SetVertexShader %p, name: %s\n", pvShader, RSManager::get().getShaderManager().getName(pvShader));
+	return rsMan->redirectSetVertexShader(pvShader);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9 *pViewport) {
@@ -213,7 +213,11 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexDeclaration(CONST D3DVERTEXELEM
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexShader(CONST DWORD* pFunction,IDirect3DVertexShader9** ppShader) {
 	RSManager::setLatest(rsMan);
-	return m_pD3Ddev->CreateVertexShader(pFunction, ppShader);
+	HRESULT hr = m_pD3Ddev->CreateVertexShader(pFunction, ppShader);
+	if(SUCCEEDED(hr)) {
+		RSManager::get().getShaderManager().registerShader(pFunction, *ppShader);
+	}
+	return hr;
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9** ppVolumeTexture,HANDLE* pSharedHandle) {
@@ -576,7 +580,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPaletteEntries(UINT PaletteNumber, CONST
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShader(IDirect3DPixelShader9* pShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetPixelShader %p, %s\n", pShader, RSManager::get().getShaderManager().getName(pShader));
+	SDLOG(3, "SetPixelShader %p, name: %s\n", pShader, RSManager::get().getShaderManager().getName(pShader));
 	return RSManager::get().redirectSetPixelShader(pShader);
 }
 

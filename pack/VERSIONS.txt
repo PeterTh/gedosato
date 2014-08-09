@@ -11,9 +11,10 @@ General:
 GeDoSaToTool:
 - Unified injection methods (!)
 - Stop accumulating empty lines when sorting
+- Added event handling for unloading dll (related to Steam Big Picture Mode crash fix)
 Mitsurugi Kamui Hikae Plugin:
-- Added plugin, has all functionality of Generic plugin, plus can render game at arbitrary
-  resolution (by default limited to 1080p)
+- Added plugin, has all functionality of the generic plugin
+- Plus can render game at arbitrary resolution (vanilla game is limited to 1080p)
 
 27-07-2014 -- beta 10 - "Poltergeist"
 =====================================

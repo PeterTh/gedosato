@@ -13,11 +13,10 @@ using std::string;
 
 
 class ShaderManager {
-	std::map<IDirect3DPixelShader9*, UINT32> shaderPtrIdMap;
-	std::map<IDirect3DPixelShader9*, string> shaderPtrNameMap;
+	std::map<void*, UINT32> shaderPtrIdMap;
+	std::map<void*, string> shaderPtrNameMap;
 
-public:
-	void registerShader(CONST DWORD* pFunction, IDirect3DPixelShader9* pShader) {
+	void registerShaderInternal(CONST DWORD* pFunction, void* pShader) {
 		SDLOG(3, "ShaderManager: registering shader %p from %p.\n", pShader, pFunction);
 		LPD3DXBUFFER disassembly;
 		HRESULT hr = D3DXDisassembleShader(pFunction, true, "", &disassembly);
@@ -40,8 +39,16 @@ public:
 			shaderPtrNameMap.emplace(pShader, format("%08x", id));
 		}
 	}
+
+public:
+	void registerShader(CONST DWORD* pFunction, IDirect3DPixelShader9* pShader) {
+		registerShaderInternal(pFunction, pShader);
+	}
+	void registerShader(CONST DWORD* pFunction, IDirect3DVertexShader9* pShader) {
+		registerShaderInternal(pFunction, pShader);
+	}
 	
-	const char* getName(IDirect3DPixelShader9* pShader) {
+	const char* getName(void* pShader) {
 		auto i = shaderPtrNameMap.find(pShader);
 		if(i != shaderPtrNameMap.end()) {
 			return i->second.c_str();
