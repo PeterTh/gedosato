@@ -25,10 +25,10 @@
 
 FILE* g_oFile = NULL;
 HMODULE g_dll = NULL;
-bool g_active = false, g_tool = false;;
+bool g_active = false, g_tool = false;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
-	SDLOG(18, "GeDoSaToHook called\n");
+	if(g_active) SDLOG(18, "GeDoSaToHook called\n");
 	return CallNextHookEx(NULL, nCode, wParam, lParam); 
 }
 
@@ -47,7 +47,7 @@ const char* GeDoSaToSettings() {
 	;
 }
 
-// Eun in a thread, to unload in case we cannot return false from DLLMain (e.g. Steam big picture)
+// run in a thread, to unload in case we cannot return false from DLLMain (e.g. Steam big picture)
 DWORD WINAPI hookUnloader(LPVOID) {
 	HANDLE unloadEvent = CreateEvent(NULL, TRUE, FALSE, "Global\\GeDoSaToUnloadEvent");
 	WaitForSingleObject(unloadEvent, INFINITE);
@@ -107,11 +107,13 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		KeyActions::get().load();
 		KeyActions::get().report();
 
+		// early steam dll loading
 		if(!Settings::get().getPreventSteamOverlay() && Settings::get().getLoadSteamOverlayEarly()) {
 			SDLOG(2, "Attempting to pre-load Steam overlay dll.\n");
 			LoadLibrary("gameoverlayrenderer.dll");
 		}
 
+		// early d3d loading
 		if(Settings::get().getLoadD3DEarly()) {
 			SDLOG(2, "Early d3d loading.\n");
 			auto dllname = getSystemDllName("d3d9.dll");

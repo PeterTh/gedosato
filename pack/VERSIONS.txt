@@ -3,6 +3,7 @@
 General:
 - Added support for multisampling while downsampling
 - Made the presentInterval setting work even when not downsampling
+- Added option to force presentation resolution regardless of request
 - Fixed Steam overlay rendering with alternative injection method
 - Fixed handling of GetDepthStencilSurface
 - Fixed crash bug with Steam Big Picture Mode
@@ -10,6 +11,9 @@ General:
 GeDoSaToTool:
 - Unified injection methods (!)
 - Stop accumulating empty lines when sorting
+Mitsurugi Kamui Hikae Plugin:
+- Added plugin, has all functionality of Generic plugin, plus can render game at arbitrary
+  resolution (by default limited to 1080p)
 
 27-07-2014 -- beta 10 - "Poltergeist"
 =====================================

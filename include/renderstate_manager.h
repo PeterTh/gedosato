@@ -120,7 +120,7 @@ public:
 	bool takingScreenshot() { return takeScreenshot != SCREENSHOT_NONE; }
 
 	void dumpFrame() { dumpingFrame = true; }
-	void captureRTScreen(const std::string &stype = "normal");
+	void captureRTScreen(const std::string &stype = "normal", IDirect3DSurface9 *rtArg = NULL);
 	
 	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 	void dumpTexture(const char* name, IDirect3DTexture9* tex);
@@ -137,7 +137,7 @@ public:
 
 	void togglePerfInfo() { frameTimeText->show = !frameTimeText->show; }
 
-	Scaler* getScaler() { return scaler; }
+	Scaler* getScaler();
 	ShaderManager& getShaderManager() { return shaderMan; }
 	
 	bool downsamplingEnabled() { return downsampling; }
@@ -170,8 +170,11 @@ public:
 	HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount);
 	HRESULT redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void * pIndexData, D3DFORMAT IndexDataFormat, CONST void * pVertexStreamZeroData, UINT VertexStreamZeroStride);
 	
-	HRESULT redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle);
 	
 	HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount);
 	HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount);
+
+	HRESULT redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle);
+	HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
+	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil);
 };

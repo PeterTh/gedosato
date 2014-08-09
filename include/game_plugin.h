@@ -5,6 +5,7 @@
 #include "d3d9.h"
 #include "settings.h"
 #include "console.h"
+#include "scaling.h"
 
 class GamePlugin {
 protected:
@@ -33,6 +34,8 @@ public:
 	virtual void dumpSSAO() { Console::get().add("AO not supported by this plugin!"); }
 	virtual void dumpBloom() { Console::get().add("Bloom not supported by this plugin!"); }
 
+	virtual Scaler* getScaler() { return NULL; }
+
 	virtual HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 		return d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
 	}
@@ -59,6 +62,12 @@ public:
 	virtual HRESULT redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
 		return d3ddev->CreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 	}
+	virtual HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
+		return d3ddev->CreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
+	}
+	virtual	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) {
+		return d3ddev->SetDepthStencilSurface(pNewZStencil);
+	}
 
 	virtual HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
 		return d3ddev->SetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
@@ -66,4 +75,5 @@ public:
 	virtual HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
 		return d3ddev->SetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
 	}
+
 };
