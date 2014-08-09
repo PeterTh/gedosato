@@ -1,6 +1,7 @@
 #include <fstream>
 #include <ostream>
 #include <iostream>
+#include <thread>
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
@@ -27,10 +28,6 @@ HMODULE g_dll = NULL;
 bool g_active = false, g_tool = false;;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
-	if(!g_active && !g_tool && g_dll != NULL) {
-		//FreeLibrary(g_dll);
-		g_dll = NULL;
-	}
 	SDLOG(18, "GeDoSaToHook called\n");
 	return CallNextHookEx(NULL, nCode, wParam, lParam); 
 }
@@ -48,6 +45,13 @@ const char* GeDoSaToSettings() {
 		#include "Settings.def"
 		#undef SETTING
 	;
+}
+
+// Eun in a thread, to unload in case we cannot return false from DLLMain (e.g. Steam big picture)
+DWORD WINAPI hookUnloader(LPVOID) {
+	HANDLE unloadEvent = CreateEvent(NULL, TRUE, FALSE, "Global\\GeDoSaToUnloadEvent");
+	WaitForSingleObject(unloadEvent, INFINITE);
+	FreeLibraryAndExitThread(g_dll, 0);
 }
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
@@ -68,9 +72,15 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		// don't attach to processes on the blacklist / not on the whitelist
 		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist.txt") : !onList(getExeFileName(), "whitelist.txt")) {
 			OutputDebugString("GeDoSaTo: blacklisted / not whitelisted");
-			// TODO: investigate, steam big screen bug
-			//return true;
-			return false;
+			// Prevent steam big picture mode crash
+			if(boost::iequals(getExeFileName(), "Steam")) {
+				DWORD threadid = 0;
+				CreateThread(NULL, 0, &hookUnloader, NULL, 0, &threadid);
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 		g_active = true;
 		OutputDebugString("GeDoSaTo: Active");
