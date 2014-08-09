@@ -778,6 +778,10 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	return plugin->redirectSetPixelShader(pShader);
 }
 
+HRESULT RSManager::redirectSetVertexShader(IDirect3DVertexShader9* pvShader) {
+	return plugin->redirectSetVertexShader(pvShader);
+}
+
 HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	return plugin->redirectSetRenderState(State, Value);
 }
@@ -816,5 +820,3 @@ HRESULT RSManager::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3
 HRESULT RSManager::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil){
 	return plugin->redirectSetDepthStencilSurface(pNewZStencil);
 }
-
-

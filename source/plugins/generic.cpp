@@ -73,6 +73,7 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 }
 
 void GenericPlugin::processCurrentBB() {
+	SDLOG(8, "Generic plugin processCurrentBB\n");
 	IDirect3DSurface9* bb = NULL;
 	d3ddev->GetRenderTarget(0, &bb);
 	if(bb) {

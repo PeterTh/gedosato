@@ -18,6 +18,7 @@ void MitsurugiPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 void MitsurugiPlugin::prePresent() {
 	GenericPlugin::prePresent();
 	triggered = false;
+	shaderCount = 0;
 }
 
 HRESULT MitsurugiPlugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
@@ -103,4 +104,17 @@ HRESULT MitsurugiPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZ
 	if(desc.Width == Settings::get().getRenderWidth() && desc.Height == Settings::get().getRenderHeight()) return d3ddev->SetDepthStencilSurface(pNewZStencil);
 	HRESULT res = d3ddev->SetDepthStencilSurface(depthSurf);
 	return res;
+}
+
+HRESULT MitsurugiPlugin::redirectSetVertexShader(IDirect3DVertexShader9* pvShader) {
+	if(RSManager::get().getShaderManager().getName(pvShader) == string("a5840dcc")) {
+		shaderCount++;
+		if(shaderCount == 2) GenericPlugin::processCurrentBB();
+	}
+	return GamePlugin::redirectSetVertexShader(pvShader);
+}
+
+void MitsurugiPlugin::toggleHUD() {
+	hudEnabled = !hudEnabled;
+	Console::get().add(string("HUD rendering ") + (hudEnabled ? "enabled" : "disabled"));
 }
