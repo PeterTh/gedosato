@@ -21,10 +21,13 @@ class GenericPlugin : public GamePlugin {
 	DWORD injectRSType, injectRSValue;
 	IDirect3DSurface9* processedBB;
 
+
+	HRESULT drawingStep(std::function<HRESULT(void)> drawCall);
+
+protected:
 	void process(IDirect3DSurface9* backBuffer);
 	void processCurrentBB();
 	void performInjection();
-	HRESULT drawingStep(std::function<HRESULT(void)> drawCall);
 
 public:
 	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)

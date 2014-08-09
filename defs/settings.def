@@ -17,6 +17,8 @@ SETTING(unsigned, OverrideHeight, "overrideHeight", 720)
 SETTING(string, ScalingType, "scalingType", "linear")
 
 // Compatibility Options
+SETTING(bool, PluginHandlesDownsampling, "pluginHandlesDownsampling", false)
+SETTING(bool, ForcePresentRes, "forcePresentRes", false)
 SETTING(bool, ForceAlwaysDownsamplingRes, "forceAlwaysDownsamplingRes", false)
 SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", false)
 SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)
