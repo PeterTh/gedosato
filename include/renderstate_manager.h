@@ -32,6 +32,7 @@ private:
 
 	bool inited, downsampling;
 	IDirect3DDevice9 *d3ddev;
+	IDirect3D9 *d3d;
 	GamePlugin *plugin;
 
 	bool dumpingFrame;
@@ -85,7 +86,7 @@ public:
 	static void setLatest(RSManager *man);
 	static bool currentlyDownsampling();
 
-	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev),
+	RSManager(IDirect3DDevice9* d3ddev, IDirect3D9* d3d) : d3ddev(d3ddev), d3d(d3d),
 		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)),
 		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
 		backbufferFormat(D3DFMT_X8R8G8B8), depthStencilSurf(NULL),
@@ -139,6 +140,7 @@ public:
 
 	Scaler* getScaler() { return scaler; }
 	ShaderManager& getShaderManager() { return shaderMan; }
+	IDirect3D9* getd3d() { return d3d; }
 	
 	bool downsamplingEnabled() { return downsampling; }
 
@@ -158,7 +160,9 @@ public:
 	HRESULT redirectGetRenderTarget(DWORD renderTargetIndex, IDirect3DSurface9** ppRenderTarget);
 	HRESULT redirectGetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pMode);
 	HRESULT redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* pMode, D3DDISPLAYROTATION* pRotation);
+	HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
 	HRESULT redirectGetDepthStencilSurface(IDirect3DSurface9 ** ppZStencilSurface);
+	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* ppZStencilSurface);
 	void redirectSetCursorPosition(int X, int Y, DWORD Flags);
 
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);

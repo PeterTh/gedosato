@@ -8,7 +8,7 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur) 
+SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth)
 	: Effect(device), width(width), height(height), dumping(false), 
 	  blurPasses(blur==BLUR_SHARP ? 3 : 1) {
 	
@@ -22,6 +22,15 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
 	
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
+
+	// Setup depth reading method
+	if (readHWDepth) {
+		D3DXMACRO readHWDepthMacro  = { "USE_HWDEPTH", "1" };
+		defines.push_back(readHWDepthMacro);
+	}
+
     // Setup scale macro
 	stringstream ss;
 	ss << Settings::get().getSsaoScale() << ".0";

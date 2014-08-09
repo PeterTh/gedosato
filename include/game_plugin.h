@@ -32,7 +32,12 @@ public:
 	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 		return d3ddev->SetRenderState(State, Value);
 	}
-
+	virtual HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
+		return d3ddev->CreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
+	}
+	virtual HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) {
+		return d3ddev->SetDepthStencilSurface(pNewZStencil);
+	}
 	virtual HRESULT redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
 		return d3ddev->DrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 	}

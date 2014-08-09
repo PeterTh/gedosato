@@ -178,6 +178,8 @@ void RSManager::prePresent(bool doNotFlip) {
 	else {
 		storeRenderState();
 		d3ddev->BeginScene();
+		// restore neutral state
+		initStateBlock->Apply();
 		IDirect3DSurface9* bb = NULL;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb);
 		if(dumpingFrame) {
@@ -518,6 +520,11 @@ HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* p
 	return res;
 }
 
+HRESULT RSManager::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
+	SDLOG(4, "redirectCreateDepthStencilSurface\n");
+	return plugin->redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
+}
+
 HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface) {
 	if(downsampling && depthStencilSurf != NULL) {
 		SDLOG(4, "redirectGetDepthStencilSurface\n");
@@ -526,6 +533,11 @@ HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZStencil
 		return D3D_OK;
 	}
 	return d3ddev->GetDepthStencilSurface(ppZStencilSurface);
+}
+
+HRESULT RSManager::redirectSetDepthStencilSurface(IDirect3DSurface9 *ppZStencilSurface) {
+	SDLOG(4, "redirectSetDepthStencilSurface\n");
+	return plugin->redirectSetDepthStencilSurface(ppZStencilSurface);
 }
 
 ////////////////////////////////////////////////////////////////////////// CreateDevice/Reset helpers
