@@ -9,11 +9,10 @@ class RenderTargetManager {
 
 	// can be used by plugins to override the default buffer format
 	// e.g. in case they are applying effects to FP16 buffers
-	RenderTarget::Format overrideFormat;
+	RenderTarget::Format overrideFormat = RenderTarget::FMT_NONE;
 
 public:
-	RenderTargetManager(IDirect3DDevice9* device) : device(device) , overrideFormat(RenderTarget::FMT_NONE) {
-	}
+	RenderTargetManager(IDirect3DDevice9* device) : device(device) {}
 
 	void setOverrideFormat(RenderTarget::Format format) { overrideFormat = format; }
 

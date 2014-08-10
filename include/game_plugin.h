@@ -9,14 +9,14 @@
 
 class GamePlugin {
 protected:
-	IDirect3DDevice9 *d3ddev;
+	IDirect3DDevice9 *d3ddev = NULL;
 	RSManager &manager;
-	string name;
+	string name = "None";
 
 public:
 	static GamePlugin* getPlugin(IDirect3DDevice9 *device, RSManager &manager);
 
-	GamePlugin(IDirect3DDevice9 *device, RSManager &manager) : d3ddev(device), manager(manager), name("None") { }
+	GamePlugin(IDirect3DDevice9 *device, RSManager &manager) : d3ddev(device), manager(manager) { }
 	virtual ~GamePlugin() { }
 	string getName() { return name; }
 	virtual void reportStatus() { }
