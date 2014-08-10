@@ -28,6 +28,7 @@ protected:
 	void processCurrentBB();
 	void performInjection();
 	void setPostReady() { postReady = true; }
+	bool isPostDone() { return postDone; }
 	bool hudEnabled;
 
 public:

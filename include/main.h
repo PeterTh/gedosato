@@ -32,8 +32,10 @@ using std::string;
 
 #ifndef RELEASE_VER
 #define SDLOG(_level, _str, ...) { if(Settings::get().getLogLevel() > _level) { sdlog(_str, __VA_ARGS__); } }
+#define LOG_CHECK(_level, _code) { if(Settings::get().getLogLevel() > _level) { _code; } }
 #else
 #define SDLOG(_level, _str, ...) {}
+#define LOG_CHECK(_level, _code) {}
 #endif
 #define SAFERELEASE(_p) { if(_p) { \
 	auto __retval = (_p)->Release(); \

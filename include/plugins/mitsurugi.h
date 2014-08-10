@@ -12,7 +12,7 @@ class MitsurugiPlugin : public GenericPlugin {
 
 	Scaler* scaler = NULL;
 	bool triggered = false;
-	unsigned shaderCount = 0;
+	unsigned shaderCountA = 0, shaderCountB = 0;
 
 	IDirect3DSurface9 *depthSurf = NULL;
 
@@ -35,6 +35,7 @@ public:
 
 	virtual HRESULT redirectSetVertexShader(IDirect3DVertexShader9* pvShader) override;
 	virtual HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) override;
+	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
 	virtual HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) override;
 
 	virtual	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) override;
