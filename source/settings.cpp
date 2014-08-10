@@ -2,10 +2,44 @@
 
 #include <fstream>
 #include <string>
+#include <regex>
 #include <boost/filesystem.hpp>
 
 #include "main.h"
 #include "window_manager.h"
+
+
+void ResolutionSettings::readResolution(char* source) {
+	string sstring(source);
+
+	std::cmatch results;
+	bool success = regex_match(source, results, std::regex(R"(\s*(\d+)\s*x\s*(\d+)\s*@\s*(\d+)\s*)"));
+	if(success) {
+		resolutions.emplace_back(std::atoi(results[1].str().c_str()), std::atoi(results[2].str().c_str()), std::atoi(results[3].str().c_str()));
+	}
+	else {
+		SDLOG(-1, "ERROR: ill-formatted resolution string: %s\n", source);
+	}
+}
+
+bool ResolutionSettings::setDSRes(const unsigned width, const unsigned height) {
+	unsigned index = 0;
+	for(const auto& res : resolutions) {
+		if(res.width == width && res.height == height) {
+			activeRes = index;
+			return true;
+		}
+		index++;
+	}
+	return false;
+}
+
+const ResolutionSettings::Resolution& ResolutionSettings::getResolution(int n) const {
+	if(static_cast<unsigned>(n) >= getNumResolutions()) n = activeRes;
+	return resolutions[n];
+}
+
+// Settings --------------------------------------------------------------------
 
 Settings Settings::instance;
 
@@ -19,6 +53,10 @@ void Settings::load(const string &fn) {
 		if(buffer[0] == '#') continue;
 		if(sfile.gcount() <= 1) continue;
 		std::string bstring(buffer);
+
+		if(bstring.find("renderResolution") == 0) {
+			resSettings.readResolution(buffer + strlen("renderResolution") + 1);
+		}
 
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		if(bstring.find(_inistring) == 0) { \

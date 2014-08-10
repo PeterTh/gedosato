@@ -14,9 +14,8 @@ void MitsurugiPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 
 	scaler = new Scaler(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 
-	Console::get().add("!! NOTE: In-game settings required for this plugin: !!\n");
-	Console::get().add("!! 1920x1080, FPS display ON, in-game AA OFF        !!\n");
-	Console::get().add("!! all other settings maximized                     !!\n");
+	Console::get().add("!! NOTE: In-game settings required for this plugin:");
+	Console::get().add("!! 1920x1080, FPS display ON, in-game AA OFF, all other settings maximized");
 }
 
 void MitsurugiPlugin::prePresent() {

@@ -506,7 +506,7 @@ HRESULT RSManager::redirectGetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pMode
 		SDLOG(2, " -> faked\n");
 		pMode->Width = Settings::get().getRenderWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		pMode->RefreshRate = Settings::get().getReportedHz();
+		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
 	}
 	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode(pMode);
 	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
@@ -519,7 +519,7 @@ HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* p
 		SDLOG(2, " -> faked\n");
 		pMode->Width = Settings::get().getRenderWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		pMode->RefreshRate = Settings::get().getReportedHz();
+		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
 		pMode->ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
 	}
 	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode((D3DDISPLAYMODE*)pMode);
@@ -553,9 +553,10 @@ namespace {
 		}
 	}
 	bool isDownsamplingRequest(D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode = NULL) {
-		if( (pPresentationParameters->BackBufferWidth == Settings::get().getRenderWidth() && pPresentationParameters->BackBufferHeight == Settings::get().getRenderHeight())
-		 || (pFullscreenDisplayMode && pFullscreenDisplayMode->Width == Settings::get().getRenderWidth() && pFullscreenDisplayMode->Height == Settings::get().getRenderHeight()) ) {
+		if( Settings::getResSettings().setDSRes(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight)
+		|| (pFullscreenDisplayMode && Settings::getResSettings().setDSRes(pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height))) {
 			SDLOG(0, "===================\n!!!!! requested downsampling resolution!\n");
+
 			return true;
 		}
 		return false;
@@ -578,7 +579,7 @@ namespace {
 		if(pPresentationParameters->BackBufferFormat == D3DFMT_UNKNOWN) pPresentationParameters->BackBufferFormat = D3DFMT_A8R8G8B8;
 		pPresentationParameters->BackBufferWidth = Settings::get().getRenderWidth();
 		pPresentationParameters->BackBufferHeight = Settings::get().getRenderHeight();
-		pPresentationParameters->FullScreen_RefreshRateInHz = Settings::get().getReportedHz();
+		pPresentationParameters->FullScreen_RefreshRateInHz = Settings::getResSettings().getActiveHz();;
 		*copy = *pPresentationParameters;
 		copy->BackBufferWidth = Settings::get().getPresentWidth();
 		copy->BackBufferHeight = Settings::get().getPresentHeight();
@@ -590,7 +591,7 @@ namespace {
 	}
 	void initDisplayMode(D3DDISPLAYMODEEX* d, D3DDISPLAYMODEEX** copy) {
 		if(d) {
-			if(d->RefreshRate == 0) d->RefreshRate = Settings::get().getReportedHz();
+			if(d->RefreshRate == 0) d->RefreshRate = Settings::getResSettings().getActiveHz();;
 			*(*copy) = *d;
 			(*copy)->Width = Settings::get().getPresentWidth();
 			(*copy)->Height = Settings::get().getPresentHeight();
