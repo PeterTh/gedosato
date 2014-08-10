@@ -77,9 +77,6 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 					didAO = true;
 					// Resolve depth
 					depthTexture->resolveDepth(d3ddev);
-					// required for Borderlands 2 apparently
-					d3ddev->SetRenderState(D3DRS_ALPHABLENDENABLE, false);
-
 					ssao->go(tmp->getTex(), depthTexture->getTexture(), backBuffer);
 				}
 			}
@@ -151,6 +148,16 @@ HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	return GamePlugin::redirectSetPixelShader(pShader);
 }
 
+HRESULT GenericPlugin::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
+	if(Settings::get().getSsaoStrength() > 0 && doAO && Flags == 0x00000006) {  // D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL
+		Flags = Flags & (~D3DCLEAR_ZBUFFER); // Removing the Zbuffer clear - a bit hardcore. I think I'm going to need an option for this 'cause it breaks Borderland2
+		//zBufClearBypass = true;
+	}
+	//else zBufClearBypass = false;
+
+	return GamePlugin::redirectClear(Count, pRects, Flags, Color, Z, Stencil);
+}
+
 HRESULT GenericPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	HRESULT hr = NULL;
 	hr = GamePlugin::redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
@@ -160,19 +167,21 @@ HRESULT GenericPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height
 		// Can be equal to backbuffer dimensions or higher (ie. 2048x2048 in DMC4)
 		if(Width >= drw || Height >= drh) {
 			depthStencilTarget = *ppSurface;
+			SDLOG(8, "Generic plugin: found surface to replace (%4dx%4d), format: %s\n", Width, Height, D3DFormatToString(Format));
 		}
 	}
 	return hr;
 }
 
 HRESULT GenericPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) {
-
 	HRESULT hr = NULL;
 	if(Settings::get().getSsaoStrength() > 0 && doAO) {
 		if(pNewZStencil) {
-			if(pNewZStencil == depthTexture->getSurface() || pNewZStencil == depthStencilTarget)
+			if(pNewZStencil == depthTexture->getSurface() || pNewZStencil == depthStencilTarget) {
 				// Either the game already sets the hooked DS or the current DS is exactly the one we determined as 'replaceable' (see 'redirectCreateDepthStencilSurface')
+				SDLOG(8, "Generic plugin: Substituting original DS surface (found in CreateDepthStencilSurface) with our own.  depthTexture pointer: %p\n", depthTexture);
 				hr = GamePlugin::redirectSetDepthStencilSurface(depthTexture->getSurface());
+			}
 			else {
 				D3DSURFACE_DESC descStencilOrigin;
 				pNewZStencil->GetDesc(&descStencilOrigin);
@@ -182,13 +191,20 @@ HRESULT GenericPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZSt
 
 				// Ideally we substitute the DS matching the dimensions of our 'hooked' DS
 				// TODO: handle cases where the games throws a 1664x936 (16:9) at us (Binary Domain doesnt work right now for that reason)
-				if(descStencilOrigin.Width == descStencilHook.Width || descStencilOrigin.Height == descStencilHook.Height)
+				if(descStencilOrigin.Width == descStencilHook.Width || descStencilOrigin.Height == descStencilHook.Height) {
+					SDLOG(8, "Generic plugin: Substituting original DS surface (%4dx%4d) with our own.  pointer: %p\n", descStencilOrigin.Width, descStencilOrigin.Height, depthTexture);
 					hr = GamePlugin::redirectSetDepthStencilSurface(depthTexture->getSurface());
-				else
+				}
+				else {
+					SDLOG(8, "Generic plugin: Do nothing to the original DS surface (%4dx%4d) : not the same size. descStencilHook (%4dx%4d) depthTexture pointer: %p\n", descStencilOrigin.Width, descStencilOrigin.Height, descStencilHook.Width, descStencilHook.Height, depthTexture);
 					hr = GamePlugin::redirectSetDepthStencilSurface(pNewZStencil);
+				}
 			}
 			return hr;
 		}
+		//else if (zBufClearBypass)
+		//	// To compensate the fact we removed the D3DCLEAR_ZBUFFER flag earlier
+		//	d3ddev->Clear(0, NULL, D3DCLEAR_ZBUFFER, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 	}
 
 	return GamePlugin::redirectSetDepthStencilSurface(pNewZStencil);

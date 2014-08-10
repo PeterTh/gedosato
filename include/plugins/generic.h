@@ -23,7 +23,7 @@ class GenericPlugin : public GamePlugin {
 
 	bool doPost, doAA, doAO;
 	RenderTargetPtr tmp;
-	bool postDone, postReady, hudEnabled;
+	bool postDone, postReady, hudEnabled, zBufClearBypass;
 	DWORD injectRSType, injectRSValue;
 	IDirect3DSurface9* processedBB;
 
@@ -40,7 +40,7 @@ public:
 		, post(NULL), fxaa(NULL), smaa(NULL), ssao(NULL)
 		, depthTexture(NULL), depthStencilTarget(NULL)
 		, doPost(true), doAA(true), doAO(true)
-		, postDone(false), postReady(false), hudEnabled(true)
+		, postDone(false), postReady(false), hudEnabled(true), zBufClearBypass(false)
 		, injectRSType(0), injectRSValue(0)
 		, processedBB(NULL)
 	{ }
@@ -58,6 +58,7 @@ public:
 	virtual void toggleAO() override { if(ssao) { doAO = !doAO; Console::get().add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { Console::get().add("SSAO disabled in configuration!"); } }
 	virtual void toggleHUD() override;
 
+	virtual HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) override;
 	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
 	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) override;
 	virtual HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) override;

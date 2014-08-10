@@ -23,6 +23,9 @@ public:
 	virtual void prePresent() { }
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) { }
 
+	virtual HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
+		return d3ddev->Clear(Count, pRects, Flags, Color, Z, Stencil);
+	}
 	virtual HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
 		return d3ddev->SetRenderTarget(RenderTargetIndex, pRenderTarget);
 	}

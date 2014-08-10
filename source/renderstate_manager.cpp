@@ -774,6 +774,11 @@ void RSManager::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
 	d3ddev->SetCursorPosition(X, Y, Flags);
 }
 
+HRESULT RSManager::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
+	SDLOG(4, "redirectSetCursorPosition")
+	return plugin->redirectClear(Count, pRects, Flags, Color, Z, Stencil);
+}
+
 HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	return plugin->redirectSetPixelShader(pShader);
 }

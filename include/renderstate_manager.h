@@ -165,6 +165,7 @@ public:
 	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* ppZStencilSurface);
 	void redirectSetCursorPosition(int X, int Y, DWORD Flags);
 
+	HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
 	HRESULT redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value);
