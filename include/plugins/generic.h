@@ -12,33 +12,27 @@
 
 class GenericPlugin : public GamePlugin {
 
-	Post* post;
-	FXAA* fxaa;
-	SMAA* smaa;
-	bool doPost, doAA;
+	Post* post = NULL;
+	FXAA* fxaa = NULL;
+	SMAA* smaa = NULL;
+	bool doPost = true, doAA = true;
 	RenderTargetPtr tmp;
-	bool postDone, postReady;
-	DWORD injectRSType, injectRSValue;
-	IDirect3DSurface9* processedBB;
+	bool postDone = false, postReady = false;
+	DWORD injectRSType = 0, injectRSValue = 0;
+	IDirect3DSurface9* processedBB = NULL;
 
 	HRESULT drawingStep(std::function<HRESULT(void)> drawCall);
 
 protected:
+	bool hudEnabled = true;
 	void process(IDirect3DSurface9* backBuffer);
 	void processCurrentBB();
 	void performInjection();
 	void setPostReady() { postReady = true; }
 	bool isPostDone() { return postDone; }
-	bool hudEnabled;
 
 public:
-	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)
-		, post(NULL), fxaa(NULL), smaa(NULL)
-		, doPost(true), doAA(true)
-		, postDone(false), postReady(false), hudEnabled(true)
-		, injectRSType(0), injectRSValue(0)
-		, processedBB(NULL)
-	{ }
+	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager) {}
 
 	virtual ~GenericPlugin() override;
 

@@ -30,27 +30,27 @@ private:
 	static RSManager* latest;
 	static bool forceDSoff;
 
-	bool inited, downsampling;
-	IDirect3DDevice9 *d3ddev;
-	GamePlugin *plugin;
+	bool inited = false, downsampling = false;
+	IDirect3DDevice9 *d3ddev = NULL;
+	GamePlugin *plugin = NULL;
 
-	bool dumpingFrame;
-	Scaler* scaler;
+	bool dumpingFrame = false;
+	Scaler* scaler = NULL;
 	Console console;
 	ShaderManager shaderMan;
 	std::unique_ptr<RenderTargetManager> rtMan;
 	std::unique_ptr<ImageWriter> imgWriter;
 	
-	ScreenshotType takeScreenshot;
+	ScreenshotType takeScreenshot = SCREENSHOT_NONE;
 
-	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect;
-	unsigned numBackBuffers, renderWidth, renderHeight;
-	D3DFORMAT backbufferFormat;
+	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect = SWAP_DISCARD;
+	unsigned numBackBuffers = 0, renderWidth = 0, renderHeight = 0;
+	D3DFORMAT backbufferFormat = D3DFMT_X8R8G8B8;
 	vector<RenderTargetPtr> backBuffers;
 	RenderTargetPtr extraBuffer;
-	IDirect3DSurface9* depthStencilSurf;
+	IDirect3DSurface9* depthStencilSurf = NULL;
 	
-	unsigned dumpCaptureIndex, renderTargetSwitches;
+	unsigned dumpCaptureIndex = 0, renderTargetSwitches = 0;
 
 	#define TEXTURE(_name, _hash) \
 	private: \
@@ -62,20 +62,20 @@ private:
 	const char* getTextureName(IDirect3DBaseTexture9* pTexture);
 	
 	void registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture);
-	unsigned numKnownTextures, foundKnownTextures;
+	unsigned numKnownTextures = 0, foundKnownTextures = 0;
 
 	// Render state store/restore data
-	IDirect3DVertexDeclaration9* prevVDecl;
-	IDirect3DSurface9* prevDepthStencilSurf;
-	IDirect3DSurface9* prevRenderTarget;
-	IDirect3DStateBlock9* prevStateBlock;
-	IDirect3DStateBlock9* initStateBlock;
+	IDirect3DVertexDeclaration9* prevVDecl = NULL;
+	IDirect3DSurface9* prevDepthStencilSurf = NULL;
+	IDirect3DSurface9* prevRenderTarget = NULL;
+	IDirect3DStateBlock9* prevStateBlock = NULL;
+	IDirect3DStateBlock9* initStateBlock = NULL;
 
 	// Performance measurement
 	Timer cpuFrameTimer;
-	SlidingAverage cpuFrameTimes;
-	D3DPerfMonitor* perfMonitor;
-	StaticTextPtr frameTimeText;
+	SlidingAverage cpuFrameTimes{ 120 };
+	D3DPerfMonitor* perfMonitor = NULL;
+	StaticTextPtr frameTimeText{ new StaticText("", 20.0f, 100.0f) };
 
 	void prePresent(bool doNotFlip);
 		
@@ -85,14 +85,7 @@ public:
 	static void setLatest(RSManager *man);
 	static bool currentlyDownsampling();
 
-	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev),
-		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)),
-		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
-		backbufferFormat(D3DFMT_X8R8G8B8), depthStencilSurf(NULL),
-		dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
-		prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL), initStateBlock(NULL),
-		cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
-	{
+	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev), rtMan(new RenderTargetManager(d3ddev)) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
 		#undef TEXTURE
