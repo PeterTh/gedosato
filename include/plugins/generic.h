@@ -23,7 +23,7 @@ class GenericPlugin : public GamePlugin {
 
 	bool doPost, doAA, doAO;
 	RenderTargetPtr tmp;
-	bool postDone, postReady, hudEnabled, zBufClearBypass;
+	bool postDone, postReady, hudEnabled;
 	DWORD injectRSType, injectRSValue;
 	IDirect3DSurface9* processedBB;
 
@@ -40,7 +40,7 @@ public:
 		, post(NULL), fxaa(NULL), smaa(NULL), ssao(NULL)
 		, depthTexture(NULL), depthStencilTarget(NULL)
 		, doPost(true), doAA(true), doAO(true)
-		, postDone(false), postReady(false), hudEnabled(true), zBufClearBypass(false)
+		, postDone(false), postReady(false), hudEnabled(true)
 		, injectRSType(0), injectRSValue(0)
 		, processedBB(NULL)
 	{ }

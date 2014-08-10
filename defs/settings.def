@@ -54,6 +54,7 @@ SETTING(unsigned, AAQuality, "aaQuality", 0)
 SETTING(unsigned, SsaoStrength, "ssaoStrength", 0)
 SETTING(unsigned, SsaoScale, "ssaoScale", 0)
 SETTING(string, SsaoBlurType, "ssaoBlurType", "gaussian")
+SETTING(string, SsaoMethod, "ssaoMethod", "zbufClearOn")
 
 SETTING(bool, EnableDoF, "enableDoF", false)
 SETTING(float, DOFBaseRadius, "dofBaseRadius", 1.00)
