@@ -2,10 +2,6 @@
 // format: (type, cname, ininame, default value) 
 	
 // Graphics options
-SETTING(unsigned, RenderWidth, "renderWidth", 2560)
-SETTING(unsigned, RenderHeight, "renderHeight", 1440)
-SETTING(unsigned, ReportedHz, "reportedHz", 60)
-
 SETTING(unsigned, PresentWidth, "presentWidth", 1920)
 SETTING(unsigned, PresentHeight, "presentHeight", 1080)
 SETTING(unsigned, PresentHz, "presentHz", 60)

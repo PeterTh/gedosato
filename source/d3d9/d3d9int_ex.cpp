@@ -10,17 +10,20 @@
 UINT APIENTRY hkIDirect3D9Ex::GetAdapterModeCountEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter) {
 	SDLOG(2, "GetAdapterModeCountEx Adapter %u | %s ------\n", Adapter, D3DFormatToString(pFilter->Format));
 	UINT ret = m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter);
-	SDLOG(2, " -> %u (reporting %u)\n", ret, ret==0?0:ret+1);
-	return ret==0?0:ret+1;
+	UINT reported = ret == 0 ? 0 : ret + Settings::getResSettings().getNumResolutions();
+	SDLOG(2, " -> %u (reporting %u)\n", ret, reported);
+	return reported;
 }
 
 HRESULT APIENTRY hkIDirect3D9Ex::EnumAdapterModesEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter, UINT Mode, D3DDISPLAYMODEEX* pMode) {
 	SDLOG(2, "EnumAdapterModesEx ------ Adapter %u | %s : %u\n", Adapter, D3DFormatToString(pFilter->Format), Mode);
-	if(m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter) == Mode) {
+	unsigned baseModes = m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter);
+	if(baseModes >= Mode) {
 		SDLOG(0, "Injecting downsampling mode!\n");
-		pMode->RefreshRate = Settings::get().getReportedHz();
-		pMode->Width = Settings::get().getRenderWidth();
-		pMode->Height = Settings::get().getRenderHeight();
+		const auto& res = Settings::getResSettings().getResolution(Mode - baseModes);
+		pMode->RefreshRate = res.hz;
+		pMode->Width = res.width;
+		pMode->Height = res.height;
 		pMode->ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
 		pMode->Format = pFilter->Format;
 		return D3D_OK;
