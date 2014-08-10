@@ -13,6 +13,10 @@ void MitsurugiPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 	d3ddev->CreateDepthStencilSurface(Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthSurf, NULL);
 
 	scaler = new Scaler(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
+
+	Console::get().add("!! NOTE: In-game settings required for this plugin: !!\n");
+	Console::get().add("!! 1920x1080, FPS display ON, in-game AA OFF        !!\n");
+	Console::get().add("!! all other settings maximized                     !!\n");
 }
 
 void MitsurugiPlugin::prePresent() {
