@@ -176,14 +176,19 @@ string getConfigFileName(string filename) {
 	return getInstallDirectory() + "config\\" + filename;
 }
 
-string getTimeString() {
-	char timebuf[26];
+string getTimeString(bool forDisplay) {
+	char timebuf[64];
     time_t ltime;
     struct tm gmt;
 	time(&ltime);
     _localtime64_s(&gmt, &ltime);
-    asctime_s(timebuf, 26, &gmt);
-	timebuf[24] = '\0'; // remove newline
+	if(!forDisplay) {
+		asctime_s(timebuf, 64, &gmt);
+		timebuf[24] = '\0'; // remove newline
+	}
+	else {
+		strftime(timebuf, 64, "%Y-%d-%m %H:%M:%S", &gmt);
+	}
 	return string(timebuf);
 }
 

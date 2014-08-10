@@ -77,7 +77,7 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh,
 
 	// performance measurement
 	console.add(frameTimeText);
-	perfMonitor = new D3DPerfMonitor(d3ddev, 120);
+	perfMonitor = new D3DPerfMonitor(d3ddev, 60);
 	
 	// create state block for state save/restore
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
@@ -224,8 +224,9 @@ void RSManager::prePresent(bool doNotFlip) {
 	// Frame time measurements
 	cpuFrameTimes.add(cpuFrameTimer.elapsed() / 1000.0);
 	perfMonitor->end();
-	frameTimeText->text = format("Frame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nVid mem. avail.: %4u MB", 
-		cpuFrameTimes.get(), cpuFrameTimes.maximum(), perfMonitor->getCurrent(), perfMonitor->getMax(), d3ddev->GetAvailableTextureMem()/1024/1024);
+	double cpuTime = cpuFrameTimes.get(), gpuTime = perfMonitor->getCurrent();
+	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf", 
+		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0/max(cpuTime, gpuTime));
 
 	// Draw console
 	if(console.needsDrawing()) {

@@ -61,7 +61,7 @@ const string& getExeFileName();
 string getInstalledFileName(string filename);
 string getAssetFileName(string filename);
 string getConfigFileName(string filename);
-string getTimeString();
+string getTimeString(bool forDisplay = false);
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
 const char* GeDoSaToVersion();
