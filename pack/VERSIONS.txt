@@ -4,6 +4,7 @@ General:
 - Allow multiple downsampling resolutions to be available at the same time
 - Added support for multisampling while downsampling
 - Made the presentInterval setting work even when not downsampling
+- Can now bind Xinput buttons to actions
 - Added option to force presentation resolution regardless of request
 - Fixed Steam overlay rendering with alternative injection method
 - Fixed handling of GetDepthStencilSurface

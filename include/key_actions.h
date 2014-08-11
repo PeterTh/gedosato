@@ -6,9 +6,10 @@
 
 class KeyActions {
 	static KeyActions instance;
-	
-	typedef std::map<int, std::string> IntStrMap;
+
+	using IntStrMap = std::map<int, std::string>;
 	IntStrMap keyBindingMap;
+	IntStrMap buttonBindingMap[4];
 
 	#define ACTION(_name, _action) \
 	void _name();
