@@ -407,6 +407,7 @@
     <None Include="defs\plugins.def" />
     <None Include="defs\settings.def" />
     <None Include="defs\shaders.def" />
+    <None Include="defs\xinput.def" />
     <None Include="version.rb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
