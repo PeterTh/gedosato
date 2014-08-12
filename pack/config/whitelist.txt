@@ -6,6 +6,7 @@
 # Exe File Name (or pattern) || Readable Name (optional)
 
 AlanWake                     || Alan Wake
+BatmanOrigins                || Batman: Arkham Origins (Single Player)
 bionic_commando              || Bionic Commando
 Blackguards                  || Blackguards (The Dark Eye)
 Borderlands                  || Borderlands
