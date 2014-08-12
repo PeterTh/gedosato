@@ -766,7 +766,7 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 }
 
 void RSManager::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
-	SDLOG(2, "redirectSetCursorPosition")
+	SDLOG(2, "redirectSetCursorPosition\n")
 	if(downsampling) {
 		X = X * Settings::get().getPresentWidth() / Settings::get().getRenderWidth();
 		Y = Y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
@@ -775,7 +775,7 @@ void RSManager::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
 }
 
 HRESULT RSManager::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
-	SDLOG(4, "redirectSetCursorPosition")
+	SDLOG(4, "redirectClear\n")
 	return plugin->redirectClear(Count, pRects, Flags, Color, Z, Stencil);
 }
 

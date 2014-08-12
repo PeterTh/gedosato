@@ -29,9 +29,6 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 	if(Settings::get().getSsaoStrength() > 0) {
 		depthTexture = new DepthTexture(RSManager::get().getd3d());
 		if(depthTexture->isSupported()) {
-			//if (rh > 1 && rw > 1 && rh * 16 > rw * 9) { // 16:10 or 4:3 seems to be useful for Dark Souls 2 otherwise the AO surface has a weird vertical offset :/
-			//	drh = rw * 9 / 16;
-			//}
 			depthTexture->createTexture(d3ddev, drw, drh);
 			HRESULT hr = d3ddev->SetDepthStencilSurface(depthTexture->getSurface()); // somes games never call 'SetDepthStencilSurface()'
 		}
@@ -150,22 +147,10 @@ HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 
 HRESULT GenericPlugin::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
 	if(Settings::get().getSsaoStrength() > 0 && doAO
-		&& (Flags == 0x00000006 || Flags == 0x00000002 || Flags == 0x00000003)
-		//&& (Flags == 0x00000007)
-		&& Settings::get().getSsaoMethod() == "zbufClearOff") {
-			Flags = Flags & (~D3DCLEAR_ZBUFFER);     // Removing the Zbuffer clear -necessary for Deus EX HR / Half Life 2 etc...
-			//IDirect3DSurface9 *ds = NULL;
-			//d3ddev->GetDepthStencilSurface(&ds);
-			//if(ds) {
-			//	D3DSURFACE_DESC desc;
-			//	ds->GetDesc(&desc);
-			//	if(desc.Format == ((D3DFORMAT)(MAKEFOURCC('I', 'N', 'T', 'Z'))) || desc.Format == ((D3DFORMAT)(MAKEFOURCC('R', 'E', 'S', 'Z'))) || ((D3DFORMAT)(MAKEFOURCC('R', 'A', 'W', 'Z')))) {
-					Flags = Flags & (~D3DCLEAR_ZBUFFER);
-			//	}
-			//}
-			//SAFERELEASE(ds);
+    && Flags == Settings::get().getZbufCompatibilityFlag()) {
+		SDLOG(8, "Generic plugin: [depth access] removing the D3DCLEAR_ZBUFFER flag from Flag %d\n", Flags);
+		Flags = Flags & (~D3DCLEAR_ZBUFFER);
 	}
-
 	return GamePlugin::redirectClear(Count, pRects, Flags, Color, Z, Stencil);
 }
 
@@ -177,9 +162,8 @@ HRESULT GenericPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height
 		// We have to find and store the most suitable DS surface to replace (in redirectSetDepthStencilSurface)
 		// Can be equal to backbuffer dimensions or higher (ie. 2048x2048 in DMC4)
 		if(Width >= drw || Height >= drh) {
-
 			depthStencilTarget = *ppSurface;
-			SDLOG(8, "Generic plugin: found surface to replace (%4dx%4d), format: %s\n", Width, Height, D3DFormatToString(Format));
+			SDLOG(8, "Generic plugin: [depth access] found surface to replace (%4dx%4d), format: %s\n", Width, Height, D3DFormatToString(Format));
 		}
 	}
 	return hr;
@@ -191,7 +175,7 @@ HRESULT GenericPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZSt
 		if(pNewZStencil) {
 			if(pNewZStencil == depthTexture->getSurface() || pNewZStencil == depthStencilTarget) {
 				// Either the game already sets the hooked DS for us OR the current DS is exactly the one we determined as 'replaceable' (see 'redirectCreateDepthStencilSurface')
-				SDLOG(8, "Generic plugin: Substituting original DS surface (found in CreateDepthStencilSurface) with our own.  depthTexture pointer: %p\n", depthTexture);
+				SDLOG(8, "Generic plugin: [depth access] substituting original DS surface (found in CreateDepthStencilSurface) with our own.  depthTexture pointer: %p\n", depthTexture);
 				hr = GamePlugin::redirectSetDepthStencilSurface(depthTexture->getSurface());
 			}
 			else {
@@ -204,11 +188,11 @@ HRESULT GenericPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZSt
 				// Ideally we substitute the DS matching the dimensions of our 'hooked' DS
 				// TODO: handle cases where the games throws a 1664x936 (16:9) at us (Binary Domain doesnt work right now for that reason)
 				if(descStencilOrigin.Width == descStencilHook.Width || descStencilOrigin.Height == descStencilHook.Height) {
-					SDLOG(8, "Generic plugin: Substituting original DS surface (%4dx%4d) with our own.  pointer: %p\n", descStencilOrigin.Width, descStencilOrigin.Height, depthTexture);
+					SDLOG(8, "Generic plugin: [depth access] substituting original DS surface (%4dx%4d) with our own.  pointer: %p\n", descStencilOrigin.Width, descStencilOrigin.Height, depthTexture);
 					hr = GamePlugin::redirectSetDepthStencilSurface(depthTexture->getSurface());
 				}
 				else {
-					SDLOG(8, "Generic plugin: Do nothing to the original DS surface (%4dx%4d) : not the same size. descStencilHook (%4dx%4d) depthTexture pointer: %p\n", descStencilOrigin.Width, descStencilOrigin.Height, descStencilHook.Width, descStencilHook.Height, depthTexture);
+					SDLOG(8, "Generic plugin: [depth access] Do nothing to the original DS surface (%4dx%4d) : not the same size. descStencilHook (%4dx%4d) depthTexture pointer: %p\n", descStencilOrigin.Width, descStencilOrigin.Height, descStencilHook.Width, descStencilHook.Height, depthTexture);
 					hr = GamePlugin::redirectSetDepthStencilSurface(pNewZStencil);
 				}
 			}
