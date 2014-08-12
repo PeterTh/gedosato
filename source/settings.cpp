@@ -9,7 +9,7 @@
 #include "window_manager.h"
 
 
-void ResolutionSettings::readResolution(char* source) {
+void ResolutionSettings::readResolution(const char* source) {
 	string sstring(source);
 
 	std::cmatch results;
@@ -79,6 +79,10 @@ void Settings::load() {
 	SDLOG(1, "Loading game-specific settings.\n");
 	load(getConfigFileName(getExeFileName() + "\\" + SETTINGS_FILE_NAME));
 	SDLOG(1, "All settings loaded.\n");
+	if(resSettings.getNumResolutions() == 0) {
+		resSettings.readResolution("3840x2160@60");
+		SDLOG(-1, "WARNING: no rendering resolutions specified in ini\n")
+	}
 }
 
 void Settings::report() {
