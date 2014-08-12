@@ -65,11 +65,13 @@ HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 
 HRESULT APIENTRY hkIDirect3D9::EnumAdapterModes(UINT Adapter, D3DFORMAT Format, UINT Mode, D3DDISPLAYMODE* pMode) {
 	SDLOG(2, "EnumAdapterModes ------ Adapter %u | %s : %u\n", Adapter, D3DFormatToString(Format), Mode);
-	if(m_pD3Dint->GetAdapterModeCount(Adapter, Format) == Mode) {
+	unsigned baseModes = m_pD3Dint->GetAdapterModeCount(Adapter, Format);
+	if(Mode >= baseModes) {
 		SDLOG(0, "Injecting downsampling mode!\n");
-		pMode->RefreshRate = Settings::get().getReportedHz();
-		pMode->Width = Settings::get().getRenderWidth();
-		pMode->Height = Settings::get().getRenderHeight();
+		const auto& res = Settings::getResSettings().getResolution(Mode - baseModes);
+		pMode->RefreshRate = res.hz;
+		pMode->Width = res.width;
+		pMode->Height = res.height;
 		pMode->Format = Format;
 		return D3D_OK;
 	}
@@ -92,7 +94,7 @@ HRESULT APIENTRY hkIDirect3D9::GetAdapterDisplayMode(UINT Adapter, D3DDISPLAYMOD
 	if(Settings::get().getForceBorderlessFullscreen()) {
 		pMode->Width = Settings::get().getPresentWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		pMode->RefreshRate = Settings::get().getReportedHz();
+		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
 		pMode->Format = D3DFMT_A8R8G8B8;
 		return D3D_OK;
 	}
@@ -107,8 +109,9 @@ HRESULT APIENTRY hkIDirect3D9::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D
 UINT APIENTRY hkIDirect3D9::GetAdapterModeCount(UINT Adapter, D3DFORMAT Format) {
 	SDLOG(2, "GetAdapterModeCount Adapter %u | %s ------\n", Adapter, D3DFormatToString(Format));
 	UINT ret = m_pD3Dint->GetAdapterModeCount(Adapter, Format);
-	SDLOG(2, " -> %u (reporting %u)\n", ret, ret==0?0:ret+1);
-	return ret==0?0:ret+1;
+	UINT reported = ret == 0 ? 0 : ret + Settings::getResSettings().getNumResolutions();
+	SDLOG(2, " -> %u (reporting %u)\n", ret, reported);
+	return reported;
 }
 
 HMONITOR APIENTRY hkIDirect3D9::GetAdapterMonitor(UINT Adapter) {

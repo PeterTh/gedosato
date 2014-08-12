@@ -1,15 +1,22 @@
 ??-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================
 General:
+- Allow multiple downsampling resolutions to be available at the same time
 - Added support for multisampling while downsampling
 - Made the presentInterval setting work even when not downsampling
+- Can now bind Xinput buttons to actions
+- Added option to force presentation resolution regardless of request
 - Fixed Steam overlay rendering with alternative injection method
 - Fixed handling of GetDepthStencilSurface
 - Fixed crash bug with Steam Big Picture Mode
 - Hook d3d9 debug dll separately (restoring third party injector compatibility)
 GeDoSaToTool:
-- Unified injection methods
+- Unified injection methods (!)
 - Stop accumulating empty lines when sorting
+- Added event handling for unloading dll (related to Steam Big Picture Mode crash fix)
+Mitsurugi Kamui Hikae Plugin:
+- Added plugin, has all functionality of the generic plugin
+- Plus can render game at arbitrary resolution (vanilla game is limited to 1080p)
 
 27-07-2014 -- beta 10 - "Poltergeist"
 =====================================

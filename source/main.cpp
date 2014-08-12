@@ -1,6 +1,7 @@
 #include <fstream>
 #include <ostream>
 #include <iostream>
+#include <thread>
 #include <fstream>
 #include <stdio.h>
 #include <time.h>
@@ -24,11 +25,10 @@
 
 FILE* g_oFile = NULL;
 HMODULE g_dll = NULL;
-bool g_active = false;
+bool g_active = false, g_tool = false;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
-	if(!g_active) FreeLibrary(g_dll);
-	SDLOG(18, "GeDoSaToHook called\n");
+	if(g_active) SDLOG(18, "GeDoSaToHook called\n");
 	return CallNextHookEx(NULL, nCode, wParam, lParam); 
 }
 
@@ -47,6 +47,13 @@ const char* GeDoSaToSettings() {
 	;
 }
 
+// run in a thread, to unload in case we cannot return false from DLLMain (e.g. Steam big picture)
+DWORD WINAPI hookUnloader(LPVOID) {
+	HANDLE unloadEvent = CreateEvent(NULL, TRUE, FALSE, "Global\\GeDoSaToUnloadEvent");
+	WaitForSingleObject(unloadEvent, INFINITE);
+	FreeLibraryAndExitThread(g_dll, 0);
+}
+
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
 	if(dwReason == DLL_PROCESS_ATTACH) {
 		OutputDebugString("GeDoSaTo: startup");
@@ -58,14 +65,22 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 
 		// loaded in GeDoSaToTool, stay in memory
 		if(getExeFileName() == "GeDoSaToTool") {
-			g_active = true;
+			g_tool = true;
 			return true;
 		}
 
 		// don't attach to processes on the blacklist / not on the whitelist
 		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist.txt") : !onList(getExeFileName(), "whitelist.txt")) {
 			OutputDebugString("GeDoSaTo: blacklisted / not whitelisted");
-			return true;
+			// Prevent steam big picture mode crash
+			if(boost::iequals(getExeFileName(), "Steam")) {
+				DWORD threadid = 0;
+				CreateThread(NULL, 0, &hookUnloader, NULL, 0, &threadid);
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 		g_active = true;
 		OutputDebugString("GeDoSaTo: Active");
@@ -92,11 +107,13 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		KeyActions::get().load();
 		KeyActions::get().report();
 
+		// early steam dll loading
 		if(!Settings::get().getPreventSteamOverlay() && Settings::get().getLoadSteamOverlayEarly()) {
 			SDLOG(2, "Attempting to pre-load Steam overlay dll.\n");
 			LoadLibrary("gameoverlayrenderer.dll");
 		}
 
+		// early d3d loading
 		if(Settings::get().getLoadD3DEarly()) {
 			SDLOG(2, "Early d3d loading.\n");
 			auto dllname = getSystemDllName("d3d9.dll");
@@ -159,14 +176,19 @@ string getConfigFileName(string filename) {
 	return getInstallDirectory() + "config\\" + filename;
 }
 
-string getTimeString() {
-	char timebuf[26];
+string getTimeString(bool forDisplay) {
+	char timebuf[64];
     time_t ltime;
     struct tm gmt;
 	time(&ltime);
     _localtime64_s(&gmt, &ltime);
-    asctime_s(timebuf, 26, &gmt);
-	timebuf[24] = '\0'; // remove newline
+	if(!forDisplay) {
+		asctime_s(timebuf, 64, &gmt);
+		timebuf[24] = '\0'; // remove newline
+	}
+	else {
+		strftime(timebuf, 64, "%Y-%d-%m %H:%M:%S", &gmt);
+	}
 	return string(timebuf);
 }
 

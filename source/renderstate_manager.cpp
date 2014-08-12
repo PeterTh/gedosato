@@ -36,6 +36,14 @@ RenderTargetManager& RSManager::getRTMan() {
 	return *latest->rtMan;
 }
 
+Scaler* RSManager::getScaler() {
+	if(Settings::get().getPluginHandlesDownsampling()) {
+		return plugin->getScaler();
+	}
+	return scaler;
+}
+
+
 bool RSManager::currentlyDownsampling() {
 	if(forceDSoff) return false;
 	return Settings::get().getForceAlwaysDownsamplingRes() || (latest && latest->downsampling);
@@ -44,7 +52,7 @@ bool RSManager::currentlyDownsampling() {
 
 void RSManager::showStatus() {
 	console.add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
-	if(scaler) scaler->showStatus();
+	if(getScaler()) getScaler()->showStatus();
 	else console.add("Not downsampling");
 	console.add(format("Plugin loaded: %s", plugin->getName().c_str()));
 	plugin->reportStatus();
@@ -65,11 +73,11 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh,
 	
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
-	imgWriter = std::unique_ptr<ImageWriter>(new ImageWriter(d3ddev, rw, rh));
+	imgWriter = std::unique_ptr<ImageWriter>(new ImageWriter(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight()));
 
 	// performance measurement
 	console.add(frameTimeText);
-	perfMonitor = new D3DPerfMonitor(d3ddev, 120);
+	perfMonitor = new D3DPerfMonitor(d3ddev, 60);
 	
 	// create state block for state save/restore
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
@@ -218,8 +226,9 @@ void RSManager::prePresent(bool doNotFlip) {
 	// Frame time measurements
 	cpuFrameTimes.add(cpuFrameTimer.elapsed() / 1000.0);
 	perfMonitor->end();
-	frameTimeText->text = format("Frame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nVid mem. avail.: %4u MB", 
-		cpuFrameTimes.get(), cpuFrameTimes.maximum(), perfMonitor->getCurrent(), perfMonitor->getMax(), d3ddev->GetAvailableTextureMem()/1024/1024);
+	double cpuTime = cpuFrameTimes.get(), gpuTime = perfMonitor->getCurrent();
+	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf", 
+		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0/max(cpuTime, gpuTime));
 
 	// Draw console
 	if(console.needsDrawing()) {
@@ -289,7 +298,7 @@ HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestR
 	return hr;	
 }
 
-void RSManager::captureRTScreen(const string& stype) {
+void RSManager::captureRTScreen(const string& stype, IDirect3DSurface9 *rtArg) {
 	SDLOG(0, "Capturing screenshot\n");
 	char timebuf[128], dirbuff[512], buffer[512];
 	time_t ltime;
@@ -302,13 +311,13 @@ void RSManager::captureRTScreen(const string& stype) {
 	sprintf(buffer, "%s\\%s", dirbuff, timebuf);
 	SDLOG(0, " - to %s\n", buffer);
 		
-	IDirect3DSurface9 *render = NULL;
-	d3ddev->GetRenderTarget(0, &render);
+	IDirect3DSurface9 *render = rtArg;
+	if(rtArg == NULL) d3ddev->GetRenderTarget(0, &render);
 	if(render) {
 		imgWriter->writeSurface(buffer, render);
 		Console::get().add(format("Captured %s screenshot to %s", stype.c_str(), buffer));
 	}
-	SAFERELEASE(render);
+	if(rtArg == NULL) SAFERELEASE(render);
 }
 
 void RSManager::dumpSurface(const char* name, IDirect3DSurface9* surface) {
@@ -499,7 +508,7 @@ HRESULT RSManager::redirectGetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pMode
 		SDLOG(2, " -> faked\n");
 		pMode->Width = Settings::get().getRenderWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		pMode->RefreshRate = Settings::get().getReportedHz();
+		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
 	}
 	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode(pMode);
 	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
@@ -512,17 +521,12 @@ HRESULT RSManager::redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* p
 		SDLOG(2, " -> faked\n");
 		pMode->Width = Settings::get().getRenderWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		pMode->RefreshRate = Settings::get().getReportedHz();
+		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
 		pMode->ScanLineOrdering = D3DSCANLINEORDERING_PROGRESSIVE;
 	}
 	if(Settings::get().getForceBorderlessFullscreen()) WindowManager::get().interceptGetDisplayMode((D3DDISPLAYMODE*)pMode);
 	if(!SUCCEEDED(res)) SDLOG(0, " -> redirectGetDisplayMode NOT SUCCEEDED - %x", res);
 	return res;
-}
-
-HRESULT RSManager::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
-	SDLOG(4, "redirectCreateDepthStencilSurface\n");
-	return plugin->redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
 }
 
 HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface) {
@@ -533,11 +537,6 @@ HRESULT RSManager::redirectGetDepthStencilSurface(IDirect3DSurface9 **ppZStencil
 		return D3D_OK;
 	}
 	return d3ddev->GetDepthStencilSurface(ppZStencilSurface);
-}
-
-HRESULT RSManager::redirectSetDepthStencilSurface(IDirect3DSurface9 *ppZStencilSurface) {
-	SDLOG(4, "redirectSetDepthStencilSurface\n");
-	return plugin->redirectSetDepthStencilSurface(ppZStencilSurface);
 }
 
 ////////////////////////////////////////////////////////////////////////// CreateDevice/Reset helpers
@@ -556,9 +555,10 @@ namespace {
 		}
 	}
 	bool isDownsamplingRequest(D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode = NULL) {
-		if( (pPresentationParameters->BackBufferWidth == Settings::get().getRenderWidth() && pPresentationParameters->BackBufferHeight == Settings::get().getRenderHeight())
-		 || (pFullscreenDisplayMode && pFullscreenDisplayMode->Width == Settings::get().getRenderWidth() && pFullscreenDisplayMode->Height == Settings::get().getRenderHeight()) ) {
+		if( Settings::getResSettings().setDSRes(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight)
+		|| (pFullscreenDisplayMode && Settings::getResSettings().setDSRes(pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height))) {
 			SDLOG(0, "===================\n!!!!! requested downsampling resolution!\n");
+
 			return true;
 		}
 		return false;
@@ -571,13 +571,17 @@ namespace {
 		case 3: pPresentationParameters->PresentationInterval = D3DPRESENT_INTERVAL_THREE; break;
 		case 4: pPresentationParameters->PresentationInterval = D3DPRESENT_INTERVAL_FOUR; break;
 		}
+		if(Settings::get().getForcePresentRes()) {
+			pPresentationParameters->BackBufferWidth = Settings::get().getPresentWidth();
+			pPresentationParameters->BackBufferHeight = Settings::get().getPresentHeight();
+		}
 	}
 	void initPresentationParams(D3DPRESENT_PARAMETERS* pPresentationParameters, D3DPRESENT_PARAMETERS* copy) {
 		if(pPresentationParameters->BackBufferCount == 0) pPresentationParameters->BackBufferCount = 1;
 		if(pPresentationParameters->BackBufferFormat == D3DFMT_UNKNOWN) pPresentationParameters->BackBufferFormat = D3DFMT_A8R8G8B8;
 		pPresentationParameters->BackBufferWidth = Settings::get().getRenderWidth();
 		pPresentationParameters->BackBufferHeight = Settings::get().getRenderHeight();
-		pPresentationParameters->FullScreen_RefreshRateInHz = Settings::get().getReportedHz();
+		pPresentationParameters->FullScreen_RefreshRateInHz = Settings::getResSettings().getActiveHz();;
 		*copy = *pPresentationParameters;
 		copy->BackBufferWidth = Settings::get().getPresentWidth();
 		copy->BackBufferHeight = Settings::get().getPresentHeight();
@@ -589,7 +593,7 @@ namespace {
 	}
 	void initDisplayMode(D3DDISPLAYMODEEX* d, D3DDISPLAYMODEEX** copy) {
 		if(d) {
-			if(d->RefreshRate == 0) d->RefreshRate = Settings::get().getReportedHz();
+			if(d->RefreshRate == 0) d->RefreshRate = Settings::getResSettings().getActiveHz();;
 			*(*copy) = *d;
 			(*copy)->Width = Settings::get().getPresentWidth();
 			(*copy)->Height = Settings::get().getPresentHeight();
@@ -783,6 +787,10 @@ HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	return plugin->redirectSetPixelShader(pShader);
 }
 
+HRESULT RSManager::redirectSetVertexShader(IDirect3DVertexShader9* pvShader) {
+	return plugin->redirectSetVertexShader(pvShader);
+}
+
 HRESULT RSManager::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	return plugin->redirectSetRenderState(State, Value);
 }
@@ -793,15 +801,31 @@ HRESULT RSManager::redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Ty
 HRESULT RSManager::redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
 	return plugin->redirectDrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 }
-
 HRESULT RSManager::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	return plugin->redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
-
 HRESULT RSManager::redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
 	return plugin->redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 }
-
 HRESULT RSManager::redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void * pIndexData, D3DFORMAT IndexDataFormat, CONST void * pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	return plugin->redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
+}
+
+HRESULT RSManager::redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
+	return plugin->redirectSetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+}
+HRESULT RSManager::redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
+	return plugin->redirectSetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+}
+
+HRESULT RSManager::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
+	return plugin->redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+}
+
+HRESULT RSManager::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
+	return plugin->redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
+}
+
+HRESULT RSManager::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil){
+	return plugin->redirectSetDepthStencilSurface(pNewZStencil);
 }

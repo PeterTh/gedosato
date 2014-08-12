@@ -30,28 +30,28 @@ private:
 	static RSManager* latest;
 	static bool forceDSoff;
 
-	bool inited, downsampling;
-	IDirect3DDevice9 *d3ddev;
-	IDirect3D9 *d3d;
-	GamePlugin *plugin;
+	bool inited = false, downsampling = false;
+	IDirect3DDevice9 *d3ddev = NULL;
+	IDirect3D9 *d3d = NULL;
+	GamePlugin *plugin = NULL;
 
-	bool dumpingFrame;
-	Scaler* scaler;
+	bool dumpingFrame = false;
+	Scaler* scaler = NULL;
 	Console console;
 	ShaderManager shaderMan;
 	std::unique_ptr<RenderTargetManager> rtMan;
 	std::unique_ptr<ImageWriter> imgWriter;
 	
-	ScreenshotType takeScreenshot;
+	ScreenshotType takeScreenshot = SCREENSHOT_NONE;
 
-	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect;
-	unsigned numBackBuffers, renderWidth, renderHeight;
-	D3DFORMAT backbufferFormat;
+	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect = SWAP_DISCARD;
+	unsigned numBackBuffers = 0, renderWidth = 0, renderHeight = 0;
+	D3DFORMAT backbufferFormat = D3DFMT_X8R8G8B8;
 	vector<RenderTargetPtr> backBuffers;
 	RenderTargetPtr extraBuffer;
-	IDirect3DSurface9* depthStencilSurf;
+	IDirect3DSurface9* depthStencilSurf = NULL;
 	
-	unsigned dumpCaptureIndex, renderTargetSwitches;
+	unsigned dumpCaptureIndex = 0, renderTargetSwitches = 0;
 
 	#define TEXTURE(_name, _hash) \
 	private: \
@@ -63,20 +63,20 @@ private:
 	const char* getTextureName(IDirect3DBaseTexture9* pTexture);
 	
 	void registerKnowTexture(LPCVOID pSrcData, UINT SrcDataSize, LPDIRECT3DTEXTURE9 pTexture);
-	unsigned numKnownTextures, foundKnownTextures;
+	unsigned numKnownTextures = 0, foundKnownTextures = 0;
 
 	// Render state store/restore data
-	IDirect3DVertexDeclaration9* prevVDecl;
-	IDirect3DSurface9* prevDepthStencilSurf;
-	IDirect3DSurface9* prevRenderTarget;
-	IDirect3DStateBlock9* prevStateBlock;
-	IDirect3DStateBlock9* initStateBlock;
+	IDirect3DVertexDeclaration9* prevVDecl = NULL;
+	IDirect3DSurface9* prevDepthStencilSurf = NULL;
+	IDirect3DSurface9* prevRenderTarget = NULL;
+	IDirect3DStateBlock9* prevStateBlock = NULL;
+	IDirect3DStateBlock9* initStateBlock = NULL;
 
 	// Performance measurement
 	Timer cpuFrameTimer;
-	SlidingAverage cpuFrameTimes;
-	D3DPerfMonitor* perfMonitor;
-	StaticTextPtr frameTimeText;
+	SlidingAverage cpuFrameTimes{ 120 };
+	D3DPerfMonitor* perfMonitor = NULL;
+	StaticTextPtr frameTimeText{ new StaticText("", 20.0f, 100.0f) };
 
 	void prePresent(bool doNotFlip);
 		
@@ -86,14 +86,7 @@ public:
 	static void setLatest(RSManager *man);
 	static bool currentlyDownsampling();
 
-	RSManager(IDirect3DDevice9* d3ddev, IDirect3D9* d3d) : d3ddev(d3ddev), d3d(d3d),
-		inited(false), downsampling(false), dumpingFrame(false), scaler(NULL), rtMan(new RenderTargetManager(d3ddev)),
-		takeScreenshot(SCREENSHOT_NONE), swapEffect(SWAP_DISCARD), numBackBuffers(0), renderWidth(0), renderHeight(0),
-		backbufferFormat(D3DFMT_X8R8G8B8), depthStencilSurf(NULL),
-		dumpCaptureIndex(0), renderTargetSwitches(0), numKnownTextures(0), foundKnownTextures(0),
-		prevVDecl(NULL), prevDepthStencilSurf(NULL), prevRenderTarget(NULL), prevStateBlock(NULL), initStateBlock(NULL),
-		cpuFrameTimes(120), perfMonitor(NULL), frameTimeText(std::make_shared<StaticText>("", 20.0f, 100.0f))
-	{
+	RSManager(IDirect3DDevice9* d3ddev, IDirect3D9 *d3d) : d3ddev(d3ddev), d3d(d3d), rtMan(new RenderTargetManager(d3ddev)) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
 		#undef TEXTURE
@@ -121,7 +114,7 @@ public:
 	bool takingScreenshot() { return takeScreenshot != SCREENSHOT_NONE; }
 
 	void dumpFrame() { dumpingFrame = true; }
-	void captureRTScreen(const std::string &stype = "normal");
+	void captureRTScreen(const std::string &stype = "normal", IDirect3DSurface9 *rtArg = NULL);
 	
 	void dumpSurface(const char* name, IDirect3DSurface9* surface);
 	void dumpTexture(const char* name, IDirect3DTexture9* tex);
@@ -138,7 +131,7 @@ public:
 
 	void togglePerfInfo() { frameTimeText->show = !frameTimeText->show; }
 
-	Scaler* getScaler() { return scaler; }
+	Scaler* getScaler();
 	ShaderManager& getShaderManager() { return shaderMan; }
 	IDirect3D9* getd3d() { return d3d; }
 	
@@ -160,13 +153,11 @@ public:
 	HRESULT redirectGetRenderTarget(DWORD renderTargetIndex, IDirect3DSurface9** ppRenderTarget);
 	HRESULT redirectGetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE* pMode);
 	HRESULT redirectGetDisplayModeEx(UINT iSwapChain, D3DDISPLAYMODEEX* pMode, D3DDISPLAYROTATION* pRotation);
-	HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
 	HRESULT redirectGetDepthStencilSurface(IDirect3DSurface9 ** ppZStencilSurface);
-	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* ppZStencilSurface);
 	void redirectSetCursorPosition(int X, int Y, DWORD Flags);
 
-	HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
+	HRESULT redirectSetVertexShader(IDirect3DVertexShader9* pvShader);
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
 	HRESULT redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value);
 
@@ -174,4 +165,12 @@ public:
 	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
 	HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount);
 	HRESULT redirectDrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void * pIndexData, D3DFORMAT IndexDataFormat, CONST void * pVertexStreamZeroData, UINT VertexStreamZeroStride);
+	
+	HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount);
+	HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount);
+
+	HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
+	HRESULT redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle);
+	HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
+	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil);
 };

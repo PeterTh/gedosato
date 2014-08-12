@@ -44,7 +44,8 @@ MassEffect3                  || Mass Effect 3
 MassEffect3Config            || Mass Effect 3 Configurator
 MazeGame-Win32-Shipping      || Lili: Child of Geos
 Might and Magic X Legacy     || Might and Magic X Legacy
-Paranautical Activity        || Paranautical Activity 
+mitsurugi                    || Mitsurugi Kamui Hikae
+Paranautical Activity        || Paranautical Activity
 Reckoning                    || Kingdom's of Amalur: Reckoning
 RememberMe                   || Remember Me
 RoA                          || Rock of Ages

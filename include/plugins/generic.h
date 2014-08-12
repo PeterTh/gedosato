@@ -14,36 +14,31 @@
 
 class GenericPlugin : public GamePlugin {
 
-	Post* post;
-	FXAA* fxaa;
-	SMAA* smaa;
-	SSAO *ssao;
-
-	unsigned drw, drh;
-
-	bool doPost, doAA, doAO;
+	Post* post = NULL;
+	FXAA* fxaa = NULL;
+	SMAA* smaa = NULL;
+	SSAO* ssao = NULL;
+	bool doPost = true, doAA = true, doAO = true;
 	RenderTargetPtr tmp;
-	bool postDone, postReady, hudEnabled;
-	DWORD injectRSType, injectRSValue;
-	IDirect3DSurface9* processedBB;
+	bool postDone = false, postReady = false;
+	DWORD injectRSType = 0, injectRSValue = 0;
+	IDirect3DSurface9* processedBB = NULL;
 
-	DepthTexture* depthTexture;
-	IDirect3DSurface9* depthStencilTarget;
+	HRESULT drawingStep(std::function<HRESULT(void)> drawCall);
 
+protected:
+	bool hudEnabled = true;
+	unsigned drw, drh;
+	DepthTexture* depthTexture = NULL;
+	IDirect3DSurface9* depthStencilTarget = NULL;
 	void process(IDirect3DSurface9* backBuffer);
 	void processCurrentBB();
 	void performInjection();
-	HRESULT drawingStep(std::function<HRESULT(void)> drawCall);
+	void setPostReady() { postReady = true; }
+	bool isPostDone() { return postDone; }
 
 public:
-	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)
-		, post(NULL), fxaa(NULL), smaa(NULL), ssao(NULL)
-		, depthTexture(NULL), depthStencilTarget(NULL)
-		, doPost(true), doAA(true), doAO(true)
-		, postDone(false), postReady(false), hudEnabled(true)
-		, injectRSType(0), injectRSValue(0)
-		, processedBB(NULL)
-	{ }
+	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager) {}
 
 	virtual ~GenericPlugin() override;
 
@@ -55,14 +50,15 @@ public:
 
 	virtual void toggleAA() override { if(smaa || fxaa) { doAA = !doAA; Console::get().add(doAA ? "AA enabled" : "AA disabled"); } else { Console::get().add("AA disabled in configuration!"); } }
 	virtual void togglePost() override { if(post) { doPost = !doPost; Console::get().add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { Console::get().add("Post-processing disabled in configuration!"); } }
-	virtual void toggleAO() override { if(ssao) { doAO = !doAO; Console::get().add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { Console::get().add("SSAO disabled in configuration!"); } }
+	virtual void toggleAO() override { if (ssao) { doAO = !doAO; Console::get().add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { Console::get().add("SSAO disabled in configuration!"); } }
 	virtual void toggleHUD() override;
 
 	virtual HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) override;
-	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
-	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) override;
 	virtual HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) override;
 	virtual HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) override;
+
+	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
+	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) override;
 
 	virtual HRESULT redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) override;
 	virtual HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) override;

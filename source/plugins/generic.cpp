@@ -11,7 +11,7 @@ GenericPlugin::~GenericPlugin() {
 	SAFEDELETE(post);
 	SAFEDELETE(ssao);
 	SAFEDELETE(depthTexture);
-	//SAFERELEASE(depthStencilTarget); // crashes if uncommented. Weird. I'll check that out
+	SAFERELEASE(depthStencilTarget);
 }
 
 void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
@@ -21,18 +21,17 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 		else fxaa = new FXAA(d3ddev, drw, drh, (FXAA::Quality)(Settings::get().getAAQuality() - 1), false);
 	}
 	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh, false);
-	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, drw, drh, Settings::get().getSsaoStrength() - 1, SSAO::VSSAO2, (Settings::get().getSsaoBlurType() == "sharp") ? SSAO::BLUR_SHARP : SSAO::BLUR_GAUSSIAN, false, true);
 
-	tmp = RSManager::getRTMan().createTexture(rw, rh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
-
-	// Depth texture creation
-	if(Settings::get().getSsaoStrength() > 0) {
+	if (Settings::get().getSsaoStrength() > 0) {
+		ssao = new SSAO(d3ddev, drw, drh, Settings::get().getSsaoStrength() - 1, SSAO::VSSAO2, (Settings::get().getSsaoBlurType() == "sharp") ? SSAO::BLUR_SHARP : SSAO::BLUR_GAUSSIAN, false, true);
 		depthTexture = new DepthTexture(RSManager::get().getd3d());
-		if(depthTexture->isSupported()) {
+		if (depthTexture->isSupported()) {
 			depthTexture->createTexture(d3ddev, drw, drh);
 			HRESULT hr = d3ddev->SetDepthStencilSurface(depthTexture->getSurface()); // somes games never call 'SetDepthStencilSurface()'
 		}
 	}
+
+	tmp = RSManager::getRTMan().createTexture(rw, rh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
 
 	if(!Settings::get().getInjectRenderstate().empty()) {
 		auto str = Settings::get().getInjectRenderstate();
@@ -72,8 +71,7 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 			if(doAO && ssao) {
 				if(depthTexture->isSupported()) {
 					didAO = true;
-					// Resolve depth
-					depthTexture->resolveDepth(d3ddev);
+					//depthTexture->resolveDepth(d3ddev); // only necessary when multisampling is enabled (doh)
 					ssao->go(tmp->getTex(), depthTexture->getTexture(), backBuffer);
 				}
 			}
@@ -98,6 +96,7 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 }
 
 void GenericPlugin::processCurrentBB() {
+	SDLOG(8, "Generic plugin processCurrentBB\n");
 	IDirect3DSurface9* bb = NULL;
 	d3ddev->GetRenderTarget(0, &bb);
 	if(bb) {
@@ -146,7 +145,7 @@ HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 }
 
 HRESULT GenericPlugin::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
-	if(Settings::get().getSsaoStrength() > 0 && doAO
+	if((doAO && ssao)
     && Flags == Settings::get().getZbufCompatibilityFlag()) {
 		SDLOG(8, "Generic plugin: [depth access] removing the D3DCLEAR_ZBUFFER flag from Flag %d\n", Flags);
 		Flags = Flags & (~D3DCLEAR_ZBUFFER);
@@ -158,7 +157,7 @@ HRESULT GenericPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height
 	HRESULT hr = NULL;
 	hr = GamePlugin::redirectCreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
 
-	if(Settings::get().getSsaoStrength() > 0) {
+	if(doAO && ssao) {
 		// We have to find and store the most suitable DS surface to replace (in redirectSetDepthStencilSurface)
 		// Can be equal to backbuffer dimensions or higher (ie. 2048x2048 in DMC4)
 		if(Width >= drw || Height >= drh) {
@@ -171,7 +170,7 @@ HRESULT GenericPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height
 
 HRESULT GenericPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) {
 	HRESULT hr = NULL;
-	if(Settings::get().getSsaoStrength() > 0 && doAO) {
+	if(doAO && ssao) {
 		if(pNewZStencil) {
 			if(pNewZStencil == depthTexture->getSurface() || pNewZStencil == depthStencilTarget) {
 				// Either the game already sets the hooked DS for us OR the current DS is exactly the one we determined as 'replaceable' (see 'redirectCreateDepthStencilSurface')

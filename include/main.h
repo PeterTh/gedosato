@@ -32,8 +32,10 @@ using std::string;
 
 #ifndef RELEASE_VER
 #define SDLOG(_level, _str, ...) { if(Settings::get().getLogLevel() > _level) { sdlog(_str, __VA_ARGS__); } }
+#define LOG_CHECK(_level, _code) { if(Settings::get().getLogLevel() > _level) { _code; } }
 #else
 #define SDLOG(_level, _str, ...) {}
+#define LOG_CHECK(_level, _code) {}
 #endif
 #define SAFERELEASE(_p) { if(_p) { \
 	auto __retval = (_p)->Release(); \
@@ -44,6 +46,7 @@ using std::string;
 
 #define EPSILON (std::numeric_limits<float>::epsilon()*10)
 #define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON * (std::max)(1.0f, (std::max)(std::abs(__a), std::abs(__b))))
+#define FLT_EPS(__a, __b, __eps) (std::abs((__a) - (__b)) <= __eps)
 
 #include "d3d9/d3d9.h"
 
@@ -58,7 +61,7 @@ const string& getExeFileName();
 string getInstalledFileName(string filename);
 string getAssetFileName(string filename);
 string getConfigFileName(string filename);
-string getTimeString();
+string getTimeString(bool forDisplay = false);
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
 const char* GeDoSaToVersion();

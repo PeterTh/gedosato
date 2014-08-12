@@ -2,10 +2,6 @@
 // format: (type, cname, ininame, default value) 
 	
 // Graphics options
-SETTING(unsigned, RenderWidth, "renderWidth", 2560)
-SETTING(unsigned, RenderHeight, "renderHeight", 1440)
-SETTING(unsigned, ReportedHz, "reportedHz", 60)
-
 SETTING(unsigned, PresentWidth, "presentWidth", 1920)
 SETTING(unsigned, PresentHeight, "presentHeight", 1080)
 SETTING(unsigned, PresentHz, "presentHz", 60)
@@ -17,6 +13,8 @@ SETTING(unsigned, OverrideHeight, "overrideHeight", 720)
 SETTING(string, ScalingType, "scalingType", "linear")
 
 // Compatibility Options
+SETTING(bool, PluginHandlesDownsampling, "pluginHandlesDownsampling", false)
+SETTING(bool, ForcePresentRes, "forcePresentRes", false)
 SETTING(bool, ForceAlwaysDownsamplingRes, "forceAlwaysDownsamplingRes", false)
 SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", false)
 SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)

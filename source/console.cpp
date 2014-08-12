@@ -19,8 +19,8 @@ float ConsoleLine::draw(float y) {
 	if(ypos<0.0f) ypos = y;
 	else ypos += (y-ypos)*0.2f; 
 	//cout << "Printed: " << msg << " at " << (10.0f + ypos) << "\n";
-	Console::get().print(25.0f, (46.0f + ypos), msg.c_str());
-	return t.elapsed() > 10000000.0 ? 0.0f : 45.0f + ypos;
+	Console::get().print(25.0f, (39.0f + ypos), msg.c_str());
+	return t.elapsed() > 20000000.0 ? 0.0f : 38.0f + ypos;
 }
 
 void Console::initialize(IDirect3DDevice9* device, int w, int h) {
@@ -37,7 +37,7 @@ void Console::initialize(IDirect3DDevice9* device, int w, int h) {
 	unsigned char* temp_bitmap = new unsigned char[BMPSIZE*BMPSIZE];
 	fread(ttf_buffer, 1, 1<<20, ff);
 	fclose(ff);
-	stbtt_BakeFontBitmap(ttf_buffer, 0, 40.0, temp_bitmap, BMPSIZE, BMPSIZE, 32, 96, cdata); // no guarantee this fits!
+	stbtt_BakeFontBitmap(ttf_buffer, 0, 34.0, temp_bitmap, BMPSIZE, BMPSIZE, 32, 96, cdata); // no guarantee this fits!
 	device->CreateTexture(BMPSIZE, BMPSIZE, 0, D3DUSAGE_AUTOGENMIPMAP, D3DFMT_A8, D3DPOOL_DEFAULT, &fontTex, NULL);
 	IDirect3DTexture9 *tempTex;
 	device->CreateTexture(BMPSIZE, BMPSIZE, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8, D3DPOOL_SYSTEMMEM, &tempTex, NULL);
@@ -151,7 +151,7 @@ Console::Position Console::print(float x, float y, const char *text, bool measur
 			ret.second = min(ret.second, -q.y0/height + 1.0f);
 		}
 		if(*text == '\n') {
-			y += 38.0f;
+			y += 36.0f;
 			x = xstart;
 		}
 		++text;

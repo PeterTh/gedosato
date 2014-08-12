@@ -185,7 +185,7 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lps
 		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
 		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
 		lpDevMode->dmDisplayFlags = 0;
-		lpDevMode->dmDisplayFrequency = Settings::get().getReportedHz();
+		lpDevMode->dmDisplayFrequency = Settings::getResSettings().getActiveHz();
 		SDLOG(2, "-> Fake\n");
 		return TRUE;
 	}
@@ -205,23 +205,24 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lps
 		while(TrueEnumDisplaySettingsExA(lpszDeviceName, emptyMode, &mode, dwFlags) != NULL) ++emptyMode;
 		SDLOG(2, "*** Found Emptymode: %u\n", emptyMode);
 	}
-	// enter our mode, either if its number is requested
-	if((emptyMode != 0 && iModeNum == emptyMode && ret == NULL)
+	// enter our modes, either if its number is requested
+	if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
 	// or if we are downsampling and need to fake it as current
 	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
 	 || g_FakeChangedDisplaySettings) {
+		const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
 		lpDevMode->dmBitsPerPel = 32;
-		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
-		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
+		lpDevMode->dmPelsWidth = res.width;
+		lpDevMode->dmPelsHeight = res.height;
 		lpDevMode->dmDisplayFlags = 0;
-		lpDevMode->dmDisplayFrequency = Settings::get().getReportedHz();
+		lpDevMode->dmDisplayFrequency = res.hz;
 		SDLOG(2, "-> Fake\n");
 		return TRUE;
 	}
 	if(ret && lpDevMode->dmPelsWidth == Settings::get().getOverrideWidth() && lpDevMode->dmPelsHeight == Settings::get().getOverrideHeight()) {
 		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
 		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
-		SDLOG(2, "-> Overrride\n");
+		SDLOG(2, "-> Override\n");
 	}
 	return ret;
 }
@@ -244,15 +245,16 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lps
 		SDLOG(2, "*** Found Emptymode: %u\n", emptyMode);
 	}
 	// enter our mode, either if its number is requested
-	if((emptyMode != 0 && iModeNum == emptyMode && ret == NULL)
+	if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
 	// or if we are downsampling and need to fake it as current
 	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
 	 || g_FakeChangedDisplaySettings) {
+		const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
 		lpDevMode->dmBitsPerPel = 32;
-		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
-		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
+		lpDevMode->dmPelsWidth = res.width;
+		lpDevMode->dmPelsHeight = res.height;
 		lpDevMode->dmDisplayFlags = 0;
-		lpDevMode->dmDisplayFrequency = Settings::get().getReportedHz();
+		lpDevMode->dmDisplayFrequency = res.hz;
 		SDLOG(2, "-> Fake\n");
 		return TRUE;
 	}
@@ -402,7 +404,7 @@ GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
 // Messages /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(PeekMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax, _In_ UINT wRemoveMsg) {
-	SDLOG(2, "DetouredPeekMessageA\n");
+	SDLOG(12, "DetouredPeekMessageA\n");
 	BOOL ret = TruePeekMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg);
 	if(ret && RSManager::currentlyDownsampling() && Settings::get().getAdjustMessagePt()) {
 		SDLOG(2, "-> Adjusting position\n");
@@ -412,7 +414,7 @@ GENERATE_INTERCEPT_HEADER(PeekMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt
 	return ret;
 }
 GENERATE_INTERCEPT_HEADER(GetMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_ HWND hWnd, _In_ UINT wMsgFilterMin, _In_ UINT wMsgFilterMax) {
-	SDLOG(2, "DetouredGetMessageA\n");
+	SDLOG(12, "DetouredGetMessageA\n");
 	BOOL ret = TrueGetMessageA(lpMsg, hWnd, wMsgFilterMin, wMsgFilterMax);
 	if(ret && RSManager::currentlyDownsampling() && Settings::get().getAdjustMessagePt()) {
 		SDLOG(2, "-> Adjusting position\n");
@@ -423,7 +425,7 @@ GENERATE_INTERCEPT_HEADER(GetMessageA, BOOL, WINAPI, _Out_ LPMSG lpMsg, _In_opt_
 }
 
 GENERATE_INTERCEPT_HEADER(GetMessagePos, DWORD, WINAPI) {
-	SDLOG(2, "DetouredGetMessagePos\n");
+	SDLOG(12, "DetouredGetMessagePos\n");
 	DWORD ret = TrueGetMessagePos();
 	return ret;
 }

@@ -31,7 +31,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShaderConstantF(UINT StartRegister
 			SDLOG(0, " - %16.10f %16.10f %16.10f %16.10f\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
 		}
 	}
-	return m_pD3Ddev->SetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+	return rsMan->redirectSetVertexShaderConstantF(StartRegister, pConstantData, Vector4fCount);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
@@ -42,8 +42,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetRenderTarget(DWORD RenderTargetIndex, ID
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetVertexShader: %p\n", pvShader);	
-	return m_pD3Ddev->SetVertexShader(pvShader);
+	SDLOG(3, "SetVertexShader %p, name: %s\n", pvShader, RSManager::get().getShaderManager().getName(pvShader));
+	return rsMan->redirectSetVertexShader(pvShader);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9 *pViewport) {
@@ -194,9 +194,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDi
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
-	SDLOG(1, "CreateTexture w/h: %4u/%4u  usage: %d    format: %s    RENDERTARGET=%d\n", Width, Height, Usage & D3DUSAGE_DEPTHSTENCIL, D3DFormatToString(Format), Usage & D3DUSAGE_RENDERTARGET);
-	HRESULT res = m_pD3Ddev->CreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
-	return res;
+	SDLOG(1, "CreateTexture w/h: %4u/%4u    format: %s    RENDERTARGET=%d\n", Width, Height, D3DFormatToString(Format), Usage & D3DUSAGE_RENDERTARGET);
+	return RSManager::get().redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer9** VERTexBuffer, HANDLE* pSharedHandle) {
@@ -214,7 +213,11 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexDeclaration(CONST D3DVERTEXELEM
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexShader(CONST DWORD* pFunction,IDirect3DVertexShader9** ppShader) {
 	RSManager::setLatest(rsMan);
-	return m_pD3Ddev->CreateVertexShader(pFunction, ppShader);
+	HRESULT hr = m_pD3Ddev->CreateVertexShader(pFunction, ppShader);
+	if(SUCCEEDED(hr)) {
+		RSManager::get().getShaderManager().registerShader(pFunction, *ppShader);
+	}
+	return hr;
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,UINT Levels,DWORD Usage,D3DFORMAT Format,D3DPOOL Pool,IDirect3DVolumeTexture9** ppVolumeTexture,HANDLE* pSharedHandle) {
@@ -577,7 +580,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPaletteEntries(UINT PaletteNumber, CONST
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShader(IDirect3DPixelShader9* pShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetPixelShader %p, %s\n", pShader, RSManager::get().getShaderManager().getName(pShader));
+	SDLOG(3, "SetPixelShader %p, name: %s\n", pShader, RSManager::get().getShaderManager().getName(pShader));
 	return RSManager::get().redirectSetPixelShader(pShader);
 }
 
@@ -600,7 +603,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantF(UINT StartRegister,
 			SDLOG(0, " - %16.10f %16.10f %16.10f %16.10f\n", pConstantData[i*4+0], pConstantData[i*4+1], pConstantData[i*4+2], pConstantData[i*4+3]);
 		}
 	}
-	return m_pD3Ddev->SetPixelShaderConstantF(StartRegister,pConstantData,Vector4fCount);
+	return rsMan->redirectSetPixelShaderConstantF(StartRegister,pConstantData,Vector4fCount);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,CONST int* pConstantData,UINT Vector4iCount) {

@@ -1,4 +1,8 @@
-#include "Registry.h"
+#include "registry.h"
+
+#include <algorithm>
+#include <array>
+#include <boost/algorithm/string.hpp>
 
 string getRegString(const string& location, const string& name) {
 	static const unsigned CHARS = 2048;
@@ -14,4 +18,14 @@ string getRegString(const string& location, const string& name) {
     if((ret != ERROR_SUCCESS) || (bufLen+1 > CHARS*sizeof(TCHAR))) return string();
 	if(value[bufLen] != '\0') value[bufLen+1] = '\0';
     return std::string(value);
+}
+
+bool getRegBool(const string& location, const string& name, const bool fallback) {
+	bool ret = fallback;
+	string val = getRegString(location, name);
+	if(val.size() > 0) {
+		const std::array<const string,4> trueValues = { "on", "true", "enabled", "1" };
+		ret = std::any_of(trueValues.cbegin(), trueValues.cend(), [&val](const string& v){ return boost::algorithm::iequals(val, v); });
+	}
+	return ret;
 }

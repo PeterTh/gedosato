@@ -1,8 +1,9 @@
 
 #include "game_plugin.h"
 
-#include "plugins/dark_souls_2.h"
 #include "plugins/generic.h"
+#include "plugins/dark_souls_2.h"
+#include "plugins/mitsurugi.h"
 
 #include "string_utils.h"
 
