@@ -1,4 +1,4 @@
-??-08-2014 -- beta 11 - "At Sixes and Sevens"
+13-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================
 General:
 - Allow multiple downsampling resolutions to be available at the same time
@@ -14,6 +14,9 @@ GeDoSaToTool:
 - Unified injection methods (!)
 - Stop accumulating empty lines when sorting
 - Added event handling for unloading dll (related to Steam Big Picture Mode crash fix)
+- Added update detection and download
+GeDoSaToUpdater:
+- Created
 Mitsurugi Kamui Hikae Plugin:
 - Added plugin, has all functionality of the generic plugin
 - Plus can render game at arbitrary resolution (vanilla game is limited to 1080p)
