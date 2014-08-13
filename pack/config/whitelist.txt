@@ -20,6 +20,7 @@ Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 daorigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
+Darksiders2                  || Darksiders 2
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 dota                         || Dota 2
