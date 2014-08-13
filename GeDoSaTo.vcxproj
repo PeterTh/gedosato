@@ -410,9 +410,6 @@
     <None Include="defs\xinput.def" />
     <None Include="version.rb" />
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="pack\logs\mitsurugi_Sat_Aug_09_17-28-42_2014.log" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
