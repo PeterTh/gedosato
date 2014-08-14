@@ -1,3 +1,8 @@
+??-09-2014 -- beta 12 - "Sepia Recollections"
+=============================================
+General:
+- Fixed controller keybindings when no controller is connected
+
 13-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================
 General:

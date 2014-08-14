@@ -113,7 +113,7 @@ void KeyActions::processIO() {
 	static XINPUT_STATE oldStates[4];
 	for(int i = 0; i < 4; ++i) {
 		XINPUT_STATE state;
-		if(SUCCEEDED(XInputGetState(i, &state))) {
+		if(XInputGetState(i, &state) == ERROR_SUCCESS) {
 			if(state.dwPacketNumber != oldStates[i].dwPacketNumber) {				
 				#define BUTTON(_name) { \
 				auto curState = state.Gamepad.wButtons & XINPUT_GAMEPAD_##_name; \
