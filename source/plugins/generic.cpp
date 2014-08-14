@@ -94,8 +94,8 @@ void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
 	if(postDone && !hudEnabled && processedBB != NULL && backBuffer != processedBB) {
 		d3ddev->StretchRect(processedBB, NULL, backBuffer, NULL, D3DTEXF_NONE);
 	}
-	processedBB = NULL;
 	process(backBuffer);
+	processedBB = NULL;
 }
 
 void GenericPlugin::prePresent() {

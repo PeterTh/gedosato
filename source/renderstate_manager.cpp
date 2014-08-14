@@ -122,6 +122,8 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh,
 	plugin = GamePlugin::getPlugin(d3ddev, *this);
 	plugin->initialize(rw, rh, bbFormat);
 	
+	// restore initial state
+	prevStateBlock->Apply();
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
 	inited = true;
 }
