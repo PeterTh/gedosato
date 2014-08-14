@@ -3,6 +3,8 @@
 General:
 - Fixed controller keybindings when no controller is connected
 - Restore initial state device after setup (fixes e.g. Risen 3)
+GeDoSaToTool:
+- Gracefully handle errors when checking for updates
 
 13-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================
