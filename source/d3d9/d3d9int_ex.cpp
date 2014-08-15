@@ -18,7 +18,7 @@ UINT APIENTRY hkIDirect3D9Ex::GetAdapterModeCountEx(UINT Adapter, CONST D3DDISPL
 HRESULT APIENTRY hkIDirect3D9Ex::EnumAdapterModesEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter, UINT Mode, D3DDISPLAYMODEEX* pMode) {
 	SDLOG(2, "EnumAdapterModesEx ------ Adapter %u | %s : %u\n", Adapter, D3DFormatToString(pFilter->Format), Mode);
 	unsigned baseModes = m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter);
-	if(baseModes >= Mode) {
+	if(Mode >= baseModes) {
 		SDLOG(0, "Injecting downsampling mode!\n");
 		const auto& res = Settings::getResSettings().getResolution(Mode - baseModes);
 		pMode->RefreshRate = res.hz;
@@ -46,7 +46,6 @@ HRESULT APIENTRY hkIDirect3D9Ex::CreateDeviceEx(UINT Adapter, D3DDEVTYPE DeviceT
 												D3DDISPLAYMODEEX* pFullscreenDisplayMode, IDirect3DDevice9Ex** ppReturnedDeviceInterface) {
 	SDLOG(0, "CreateDeviceEx ------ Adapter %u Thread %u\n", Adapter, GetCurrentThreadId());
 	return RSManager::redirectCreateDeviceEx(m_pD3Dint, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
-	//return m_pD3Dint->CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
 }
 
 HRESULT APIENTRY hkIDirect3D9Ex::GetAdapterLUID(UINT Adapter, LUID* pLUID) {
