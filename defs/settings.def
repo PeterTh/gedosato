@@ -32,6 +32,8 @@ SETTING(bool, ModifyGetCursorPos, "modifyGetCursorPos", true)
 SETTING(bool, ModifySetCursorPos, "modifySetCursorPos", true)
 SETTING(bool, InterceptWindowProc, "interceptWindowProc", true)
 SETTING(bool, AdjustMessagePt, "adjustMessagePt", false)
+SETTING(bool, ModifyGetClientRect, "modifyGetClientRect", true)
+SETTING(bool, ModifyGetWindowRect, "modifyGetWindowRect", true)
 
 // Internal options
 SETTING(int, LogLevel, "logLevel", 0)
