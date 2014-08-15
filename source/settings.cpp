@@ -67,8 +67,8 @@ void Settings::load(const string &fn) {
 	}
 	sfile.close();
 
-	if(getPresentWidth() == 0) PresentWidth = getRenderWidth();
-	if(getPresentHeight() == 0) PresentHeight = getRenderHeight();
+	if(getPresentWidth() == 0) PresentWidth = GetSystemMetrics(SM_CXSCREEN);
+	if(getPresentHeight() == 0) PresentHeight = GetSystemMetrics(SM_CYSCREEN);
 
 	baseLogLevel = LogLevel;
 }
