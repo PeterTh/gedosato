@@ -27,6 +27,7 @@ dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 EoCApp                       || Divinity: Original Sin
+FEAR2                        || FEAR 2
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 grimrock                     || Legend of Grimrock
