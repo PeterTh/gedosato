@@ -2,8 +2,8 @@
 // format: (type, cname, ininame, default value) 
 	
 // Graphics options
-SETTING(unsigned, PresentWidth, "presentWidth", 1920)
-SETTING(unsigned, PresentHeight, "presentHeight", 1080)
+SETTING(unsigned, PresentWidth, "presentWidth", 0)
+SETTING(unsigned, PresentHeight, "presentHeight", 0)
 SETTING(unsigned, PresentHz, "presentHz", 60)
 SETTING(int, PresentInterval, "presentInterval", -1)
 
