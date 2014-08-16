@@ -10,11 +10,20 @@
 
 GamePlugin* GamePlugin::getPlugin(IDirect3DDevice9 *device, RSManager &manager) {
 	#define PLUGIN(_name, _exename, _class) \
+	if(Settings::get().getPluginOverride() == #_class) { \
+		_class* ret = new _class(device, manager); \
+		ret->name = _name; \
+		return ret; \
+	}
+	#include "plugins.def"
+	#undef PLUGIN
+	#define PLUGIN(_name, _exename, _class) \
 	if(matchWildcard(getExeFileName(), _exename)) { \
 		_class* ret = new _class(device, manager); \
 		ret->name = _name; \
 		return ret; \
 	}
 	#include "plugins.def"
+	#undef PLUGIN
 	return new GamePlugin(device, manager);
 }

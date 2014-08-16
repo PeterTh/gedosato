@@ -2,6 +2,7 @@
 =============================================
 General:
 - PresentWidth/Height now defaults to the primary monitor resolution
+- Added setting to force specific plugin
 - Added modifyGetClientRect and modifyGetWindowRect settings
 - Prevent keybindings from triggering for background games
 - Fixed controller keybindings when no controller is connected
@@ -9,6 +10,8 @@ General:
 - Fix DX9Ex crash introduced with multi-resolution options
 GeDoSaToTool:
 - Gracefully handle errors when checking for updates
+GenericDepth Plugin:
+- Created - generic plugin + depth buffer handling
 
 13-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================
