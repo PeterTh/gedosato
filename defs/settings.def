@@ -65,3 +65,6 @@ SETTING(bool, EnableBloom, "enableBloom", false)
 
 SETTING(bool, EnablePostprocessing, "enablePostprocessing", false)
 SETTING(string, PostProcessingType, "postProcessingType", "durante")
+
+// Screenshot options
+SETTING(unsigned, MaxScreenshotParallelism, "maxScreenshotParallelism", 8)

@@ -6,7 +6,11 @@
 
 void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool discardAlpha) {
 	// wait for processing if maximum degree of parallelism reached
-	if(futures.size() > MAX_PARALLEL) futures.clear();
+	if(futures.size() > Settings::get().getMaxScreenshotParallelism()) {
+		auto& f = futures.front();
+		f.wait();
+		futures.pop();
+	}
 
 	// get image data into buffer
 	D3DSURFACE_DESC desc;
@@ -24,8 +28,8 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	INT pitch = lockedR.Pitch;
 	tempSurf->UnlockRect();
 	
-	// perform image encoding and writing in parallel
-	futures.push_back(std::async([buffer, desc, pitch, fn, discardAlpha] {
+	// lambda performing image encoding and writing
+	auto writer = [buffer, desc, pitch, fn, discardAlpha] {
 		for(unsigned i = 0; i < pitch*desc.Height; i += 4) {
 			// A8R8G8B8 --> (A)BGR
 			BYTE tmp = buffer[i + 0];
@@ -36,5 +40,13 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 		}
 		stbi_write_png(fn.c_str(), desc.Width, desc.Height, 4, buffer, pitch);
 		delete[] buffer;
-	}));
+	};
+
+	if(Settings::get().getMaxScreenshotParallelism() > 0) {
+		// perform image encoding and writing in parallel
+		futures.push(std::async(writer));
+	}
+	else {
+		writer();
+	}
 }

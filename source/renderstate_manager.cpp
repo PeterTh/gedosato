@@ -314,15 +314,16 @@ HRESULT RSManager::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDestR
 
 void RSManager::captureRTScreen(const string& stype, IDirect3DSurface9 *rtArg) {
 	SDLOG(0, "Capturing screenshot\n");
+	static unsigned index = 0;
 	char timebuf[128], dirbuff[512], buffer[512];
 	time_t ltime;
 	time(&ltime);
 	struct tm *timeinfo;
 	timeinfo = localtime(&ltime);
-	strftime(timebuf, 128, "screenshot_%Y-%m-%d_%H-%M-%S.png", timeinfo);
+	strftime(timebuf, 128, "screenshot_%Y-%m-%d_%H-%M-%S", timeinfo);
 	sprintf(dirbuff, "%sscreens\\%s", getInstallDirectory().c_str(), getExeFileName().c_str());
 	CreateDirectory(dirbuff, NULL);
-	sprintf(buffer, "%s\\%s", dirbuff, timebuf);
+	sprintf(buffer, "%s\\%s_%u.png", dirbuff, timebuf, index++);
 	SDLOG(0, " - to %s\n", buffer);
 		
 	IDirect3DSurface9 *render = rtArg;
