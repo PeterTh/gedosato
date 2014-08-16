@@ -12,7 +12,7 @@ public:
 		Resolution(unsigned w, unsigned h, unsigned z) : width(w), height(h), hz(z) {}
 	};
 
-	void readResolution(char* source);
+	void readResolution(const char* source);
 
 	size_t getNumResolutions() const { return resolutions.size(); }
 	const Resolution& getResolution(int n) const;

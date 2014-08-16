@@ -39,7 +39,7 @@ const char* GeDoSaToVersion() {
 }
 
 const char* GeDoSaToSettings() {
-	return
+	return "renderResolution,"
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		_inistring ","
 		#include "Settings.def"
