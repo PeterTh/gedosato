@@ -118,7 +118,7 @@
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalLibraryDirectories>E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
-      <AdditionalDependencies>libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Xinput.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
@@ -288,6 +288,7 @@
     <ClCompile Include="source\imaging.cpp" />
     <ClCompile Include="source\plugins\dark_souls_2.cpp" />
     <ClCompile Include="source\plugins\generic.cpp" />
+    <ClCompile Include="source\plugins\mitsurugi.cpp" />
     <ClCompile Include="source\post.cpp" />
     <ClCompile Include="source\registry.cpp" />
     <ClCompile Include="source\rendertarget_manager.cpp" />
@@ -373,6 +374,7 @@
     <ClInclude Include="include\lua_integration.h" />
     <ClInclude Include="include\plugins\dark_souls_2.h" />
     <ClInclude Include="include\plugins\generic.h" />
+    <ClInclude Include="include\plugins\mitsurugi.h" />
     <ClInclude Include="include\post.h" />
     <ClInclude Include="include\registry.h" />
     <ClInclude Include="include\rendertarget.h" />
@@ -405,6 +407,7 @@
     <None Include="defs\plugins.def" />
     <None Include="defs\settings.def" />
     <None Include="defs\shaders.def" />
+    <None Include="defs\xinput.def" />
     <None Include="version.rb" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
