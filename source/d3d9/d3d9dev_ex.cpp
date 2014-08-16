@@ -12,7 +12,7 @@ hkIDirect3DDevice9Ex::hkIDirect3DDevice9Ex(IDirect3DDevice9Ex **ppReturnedDevice
 	m_pD3Ddev = *ppReturnedDeviceInterface;
 	*ppReturnedDeviceInterface = this;
 	m_pD3Dint = pIDirect3D9Ex;
-	rsMan = new RSManager(m_pD3Ddev);
+	rsMan = new RSManager(m_pD3Ddev, m_pD3Dint);
 	RSManager::setLatest(rsMan);
 }
 

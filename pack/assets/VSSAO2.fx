@@ -14,6 +14,10 @@ extern float ThicknessModel = 6; //units in space the AO assumes objects' thickn
 extern float FOV = 75; //Field of View in Degrees
 extern float luminosity_threshold = 0.5;
 
+#ifndef USE_SRGB
+#define USE_SRGB true
+#endif
+
 #ifndef SCALE
 #define SCALE 1.0
 #endif
@@ -98,7 +102,7 @@ sampler frameSampler = sampler_state
 	MipFilter = LINEAR;
 	AddressU  = Clamp;
 	AddressV  = Clamp;
-	SRGBTexture=TRUE;
+	SRGBTexture=USE_SRGB;
 };
 
 texture2D prevPassTex2D;
@@ -208,12 +212,24 @@ float2 rand(in float2 uv : TEXCOORD0) {
 	return float2(noiseX, noiseY);
 }
 
+#ifdef USE_HWDEPTH
+float2 readDepth(in float2 coord : TEXCOORD0)
+{
+	float z = tex2D(depthSampler, coord).r; // Depth is stored in the red component
+	return (2.0 * nearZ) / (farZ + nearZ - z * (farZ - nearZ));
+
+	// float z = tex2D( depthSampler, coord ).r;
+	// float result = z/(max(1.0-z, 0.000000001));
+	// return result;	
+}
+#else
 float2 readDepth(in float2 coord : TEXCOORD0)
 {
 	float4 col = tex2D(depthSampler, coord);
 	float posZ = ((1-col.x) + (1-col.y)*255.0 + (1-col.z)*(255.0*255.0));
 	return float2(pow(posZ / (5*256.0*256.0) + 1.0, 8.0)-1.0, col.w);
 }
+#endif
 
 float3 getPosition(in float2 uv : TEXCOORD0, in float eye_z : POSITION0) {
    uv = (uv * float2(2.0, -2.0) - float2(1.0, -1.0));

@@ -6,6 +6,8 @@
 #include "smaa.h"
 #include "fxaa.h"
 #include "post.h"
+#include "ssao.h"
+#include "depthTexture.h"
 #include "rendertarget.h"
 
 #include <functional>
@@ -15,7 +17,8 @@ class GenericPlugin : public GamePlugin {
 	Post* post = NULL;
 	FXAA* fxaa = NULL;
 	SMAA* smaa = NULL;
-	bool doPost = true, doAA = true;
+	SSAO* ssao = NULL;
+	bool doPost = true, doAA = true, doAO = true;
 	RenderTargetPtr tmp;
 	bool postDone = false, postReady = false;
 	DWORD injectRSType = 0, injectRSValue = 0;
@@ -25,6 +28,9 @@ class GenericPlugin : public GamePlugin {
 
 protected:
 	bool hudEnabled = true;
+	unsigned drw, drh;
+	DepthTexture* depthTexture = NULL;
+	IDirect3DSurface9* depthStencilTarget = NULL;
 	void process(IDirect3DSurface9* backBuffer);
 	void processCurrentBB();
 	void performInjection();
@@ -44,7 +50,12 @@ public:
 
 	virtual void toggleAA() override { if(smaa || fxaa) { doAA = !doAA; Console::get().add(doAA ? "AA enabled" : "AA disabled"); } else { Console::get().add("AA disabled in configuration!"); } }
 	virtual void togglePost() override { if(post) { doPost = !doPost; Console::get().add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { Console::get().add("Post-processing disabled in configuration!"); } }
+	virtual void toggleAO() override { if (ssao) { doAO = !doAO; Console::get().add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { Console::get().add("SSAO disabled in configuration!"); } }
 	virtual void toggleHUD() override;
+
+	virtual HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) override;
+	virtual HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) override;
+	virtual HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) override;
 
 	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
 	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) override;

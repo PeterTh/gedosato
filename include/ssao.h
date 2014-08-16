@@ -13,7 +13,7 @@ public:
 	enum Type { VSSAO, HBAO, SCAO, VSSAO2 };
 	enum Blur { BLUR_GAUSSIAN, BLUR_SHARP };
 
-    SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur);
+	SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth);
     virtual ~SSAO();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);

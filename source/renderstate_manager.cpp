@@ -195,6 +195,8 @@ void RSManager::prePresent(bool doNotFlip) {
 	else {
 		storeRenderState();
 		d3ddev->BeginScene();
+		// restore neutral state
+		initStateBlock->Apply();
 		IDirect3DSurface9* bb = NULL;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb);
 		if(dumpingFrame) {
@@ -777,12 +779,17 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 }
 
 void RSManager::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
-	SDLOG(2, "redirectSetCursorPosition")
+	SDLOG(2, "redirectSetCursorPosition\n")
 	if(downsampling) {
 		X = X * Settings::get().getPresentWidth() / Settings::get().getRenderWidth();
 		Y = Y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
 	}
 	d3ddev->SetCursorPosition(X, Y, Flags);
+}
+
+HRESULT RSManager::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
+	SDLOG(4, "redirectClear\n")
+	return plugin->redirectClear(Count, pRects, Flags, Color, Z, Stencil);
 }
 
 HRESULT RSManager::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {

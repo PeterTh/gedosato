@@ -32,6 +32,7 @@ private:
 
 	bool inited = false, downsampling = false;
 	IDirect3DDevice9 *d3ddev = NULL;
+	IDirect3D9 *d3d = NULL;
 	GamePlugin *plugin = NULL;
 
 	bool dumpingFrame = false;
@@ -85,7 +86,7 @@ public:
 	static void setLatest(RSManager *man);
 	static bool currentlyDownsampling();
 
-	RSManager(IDirect3DDevice9* d3ddev) : d3ddev(d3ddev), rtMan(new RenderTargetManager(d3ddev)) {
+	RSManager(IDirect3DDevice9* d3ddev, IDirect3D9 *d3d) : d3ddev(d3ddev), d3d(d3d), rtMan(new RenderTargetManager(d3ddev)) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
 		#undef TEXTURE
@@ -132,6 +133,7 @@ public:
 
 	Scaler* getScaler();
 	ShaderManager& getShaderManager() { return shaderMan; }
+	IDirect3D9* getd3d() { return d3d; }
 	
 	bool downsamplingEnabled() { return downsampling; }
 
@@ -167,6 +169,7 @@ public:
 	HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount);
 	HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount);
 
+	HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 	HRESULT redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle);
 	HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
 	HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil);
