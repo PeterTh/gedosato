@@ -17,11 +17,14 @@ Post::Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB)
     vector<D3DXMACRO> defines;
 
     // Setup pixel size macro
-	stringstream sp;
-	sp << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
-	string pixelSizeText = sp.str();
+	string pixelSizeText = format("float2(1.0/%d, 1.0/%d)", width, height);
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
+
+	// Setup screen size macro
+	string screenSizeText = format("float2(%d,%d)", width, height);
+	D3DXMACRO screenSizeMacro = { "SCREEN_SIZE", screenSizeText.c_str() };
+	defines.push_back(screenSizeMacro);
 
 	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
 	defines.push_back(srgbMacro);

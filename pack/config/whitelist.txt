@@ -20,12 +20,14 @@ Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 daorigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
+Darksiders2                  || Darksiders 2
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 EoCApp                       || Divinity: Original Sin
+FEAR2                        || FEAR 2
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 grimrock                     || Legend of Grimrock
@@ -47,8 +49,12 @@ MazeGame-Win32-Shipping      || Lili: Child of Geos
 Might and Magic X Legacy     || Might and Magic X Legacy
 mitsurugi                    || Mitsurugi Kamui Hikae
 Paranautical Activity        || Paranautical Activity
+Rayman Legends               || Rayman Legends
+RE5DX10                      || Resident Evil 5 (DX10)
+RE5DX9                       || Resident Evil 5 (DX9)
 Reckoning                    || Kingdom's of Amalur: Reckoning
 RememberMe                   || Remember Me
+Risen3                       || Risen 3
 RoA                          || Rock of Ages
 runner2                      || BIT:TRIP Runner 2
 ShippingPC-SkyGame           || Dark Void

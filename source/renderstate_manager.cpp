@@ -61,8 +61,10 @@ void RSManager::showStatus() {
 void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh, 
 		unsigned numBBs, D3DFORMAT bbFormat, D3DMULTISAMPLE_TYPE multiSampleType, unsigned multiSampleQuality, 
 		D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat) {
+	
 	if(inited) releaseResources();
 	SDLOG(0, "RenderstateManager resource initialization started\n");
+
 	this->downsampling = downsampling;
 	renderWidth = rw;
 	renderHeight = rh;
@@ -92,14 +94,9 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh,
 	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
 
+
 	if(downsampling) {
-		// if required, determine depth/stencil surf type and create
-		if(autoDepthStencil) {
-			d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, multiSampleType, multiSampleQuality, false, &depthStencilSurf, NULL);
-			SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(depthStencilFormat));
-			// set our depth stencil surface
-			d3ddev->SetDepthStencilSurface(depthStencilSurf);
-		}
+		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 
 		// generate backbuffers
 		SDLOG(2, "Generating backbuffers:\n")
@@ -116,11 +113,23 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh,
 			SDLOG(2, "Extra backbuffer: %p\n", extraBuffer);
 		}
 
-		scaler = new Scaler(d3ddev, rw, rh, Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
+		// if required, determine depth/stencil surf type and create
+		if(autoDepthStencil) {
+			d3ddev->CreateDepthStencilSurface(rw, rh, depthStencilFormat, multiSampleType, multiSampleQuality, FALSE, &depthStencilSurf, NULL);
+			SDLOG(2, "Generated depth stencil surface - format: %s\n", D3DFormatToString(depthStencilFormat));
+			// set our depth stencil surface
+			d3ddev->SetDepthStencilSurface(depthStencilSurf);
+		}
 	}
 
 	plugin = GamePlugin::getPlugin(d3ddev, *this);
 	plugin->initialize(rw, rh, bbFormat);
+
+	// restore initial state
+	d3ddev->SetRenderState(D3DRS_ZENABLE, autoDepthStencil ? D3DZB_TRUE : D3DZB_FALSE);
+	d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
+	d3ddev->SetRenderState(D3DRS_LIGHTING, TRUE);
+	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0000000F);
 	
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
 	inited = true;

@@ -102,18 +102,29 @@ void KeyActions::performAction(const char* name) {
 }
 
 void KeyActions::processIO() {
-	// Keyboard
+	// check if top level window owned by this process
+	auto activeHandle = GetForegroundWindow();
+	if(activeHandle == NULL) {
+		return;
+	}
+	auto procId = GetCurrentProcessId();
+	DWORD activeProcId;
+	GetWindowThreadProcessId(activeHandle, &activeProcId);
+	if(activeProcId != procId) return;
+
+	// keyboard
 	for(IntStrMap::const_iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
 		if(GetAsyncKeyState(i->first)&1) {
 			SDLOG(0, "Action triggered: %s\n", i->second.c_str());
 			performAction(i->second.c_str());
 		}
 	}
-	// Xinput
+
+	// xinput
 	static XINPUT_STATE oldStates[4];
 	for(int i = 0; i < 4; ++i) {
 		XINPUT_STATE state;
-		if(SUCCEEDED(XInputGetState(i, &state))) {
+		if(XInputGetState(i, &state) == ERROR_SUCCESS) {
 			if(state.dwPacketNumber != oldStates[i].dwPacketNumber) {				
 				#define BUTTON(_name) { \
 				auto curState = state.Gamepad.wButtons & XINPUT_GAMEPAD_##_name; \
