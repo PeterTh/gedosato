@@ -12,6 +12,7 @@
 
 class GenericPlugin : public GamePlugin {
 
+protected:
 	Post* post = NULL;
 	FXAA* fxaa = NULL;
 	SMAA* smaa = NULL;
@@ -23,9 +24,8 @@ class GenericPlugin : public GamePlugin {
 
 	HRESULT drawingStep(std::function<HRESULT(void)> drawCall);
 
-protected:
 	bool hudEnabled = true;
-	void process(IDirect3DSurface9* backBuffer);
+	virtual void process(IDirect3DSurface9* backBuffer);
 	void processCurrentBB();
 	void performInjection();
 	void setPostReady() { postReady = true; }

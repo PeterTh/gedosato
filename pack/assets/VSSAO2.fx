@@ -14,6 +14,10 @@ extern float ThicknessModel = 6; //units in space the AO assumes objects' thickn
 extern float FOV = 75; //Field of View in Degrees
 extern float luminosity_threshold = 0.5;
 
+#ifndef USE_SRGB
+#define USE_SRGB true
+#endif
+
 #ifndef SCALE
 #define SCALE 1.0
 #endif
@@ -62,7 +66,7 @@ sampler sampleSampler = sampler_state
 	MipFilter = LINEAR;
 	AddressU  = Clamp;
 	AddressV  = Clamp;
-	SRGBTexture=FALSE;
+	SRGBTexture = USE_SRGB;
 };
 
 texture2D depthTex2D;
@@ -98,7 +102,7 @@ sampler frameSampler = sampler_state
 	MipFilter = LINEAR;
 	AddressU  = Clamp;
 	AddressV  = Clamp;
-	SRGBTexture=TRUE;
+	SRGBTexture = USE_SRGB;
 };
 
 texture2D prevPassTex2D;
@@ -208,12 +212,20 @@ float2 rand(in float2 uv : TEXCOORD0) {
 	return float2(noiseX, noiseY);
 }
 
+#ifdef USE_HWDEPTH
+float2 readDepth(in float2 coord : TEXCOORD0)
+{
+	float z = tex2D(depthSampler, coord).r; // Depth is stored in the red component
+	return (2.0 * nearZ) / (farZ + nearZ - z * (farZ - nearZ));
+}
+#else
 float2 readDepth(in float2 coord : TEXCOORD0)
 {
 	float4 col = tex2D(depthSampler, coord);
 	float posZ = ((1-col.x) + (1-col.y)*255.0 + (1-col.z)*(255.0*255.0));
 	return float2(pow(posZ / (5*256.0*256.0) + 1.0, 8.0)-1.0, col.w);
 }
+#endif
 
 float3 getPosition(in float2 uv : TEXCOORD0, in float eye_z : POSITION0) {
    uv = (uv * float2(2.0, -2.0) - float2(1.0, -1.0));
@@ -266,7 +278,8 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	if(depth<0.065f) ao = lerp(ao, 0.0f, (0.065f-depth)*13.3);
 
 	ao = 1.0f-ao*aoStrengthMultiplier;
-	
+
+	//return float4(depth, depth, depth, depth);
 	return float4(ao,ao,ao,depth);
 }
 
@@ -287,7 +300,7 @@ float4 HBlur( VSOUT IN ) : COLOR0 {
 	blurred += rpower*left.r;
 	divide += rpower;
 
-	return blurred/divide;
+	return float4(blurred/divide, 0, 0, depth);
 }
 float4 VBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
@@ -305,11 +318,12 @@ float4 VBlur( VSOUT IN ) : COLOR0 {
 	blurred += bpower*bottom.r;
 	divide += bpower;
 
-	return blurred/divide;
+	return float4(blurred / divide, 0, 0, depth);
 }
 #else // BLUR_GAUSSIAN
-float4 HBlur(VSOUT IN) : COLOR0 {
-	float color = tex2D(passSampler, IN.UVCoord).r;
+float4 HBlur(VSOUT IN) : COLOR0{
+	float4 sample = tex2D(passSampler, IN.UVCoord);
+	float color = sample.r;
 
 	float blurred = color*0.2270270270;
 	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*1.3846153846, 0)).r * 0.3162162162;
@@ -317,11 +331,12 @@ float4 HBlur(VSOUT IN) : COLOR0 {
 	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
 	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
 
-	return blurred;
+	return float4(blurred, 0, 0, sample.a);
 }
 
-float4 VBlur(VSOUT IN) : COLOR0 {
-	float color = tex2D(passSampler, IN.UVCoord).r;
+float4 VBlur(VSOUT IN) : COLOR0{
+	float4 sample = tex2D(passSampler, IN.UVCoord);
+	float color = sample.r;
 
 	float blurred = color*0.2270270270;
 	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*1.3846153846)).r * 0.3162162162;
@@ -329,14 +344,14 @@ float4 VBlur(VSOUT IN) : COLOR0 {
 	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
 	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
 
-	return blurred;
+	return float4(blurred, 0, 0, sample.a);
 }
 #endif // blur type
 
 float4 Combine( VSOUT IN ) : COLOR0 {
 	float4 color = tex2D(frameSampler, IN.UVCoord);
-	float ao = tex2D(passSampler, IN.UVCoord/SCALE).r;
-	ao = clamp(ao, aoClamp, 1.0);
+	float4 aoSample = tex2D(passSampler, IN.UVCoord/SCALE);
+	float ao = clamp(aoSample.r, aoClamp, 1.0);
 
 	#ifdef LUMINANCE_CONSIDERATION
 	float luminance = (color.r*0.2125f)+(color.g*0.7154f)+(color.b*0.0721f);
@@ -350,7 +365,9 @@ float4 Combine( VSOUT IN ) : COLOR0 {
 	color.rgb *= ao;
 	
 	return color;
-	//return float4(ao,ao,ao,color.a);
+	//return aoSample;
+	//aoSample.a /= 100000;
+	//return float4(aoSample.a, aoSample.a, aoSample.a, color.a);
 }
 
 technique t0

@@ -43,6 +43,13 @@ Scaler* RSManager::getScaler() {
 	return scaler;
 }
 
+IDirect3D9* RSManager::getD3D() {
+	IDirect3D9* d3d = NULL;
+	d3ddev->GetDirect3D(&d3d);
+	d3d->Release();
+	return d3d;
+}
+
 
 bool RSManager::currentlyDownsampling() {
 	if(forceDSoff) return false;
@@ -777,7 +784,7 @@ HRESULT RSManager::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParameter
 }
 
 void RSManager::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
-	SDLOG(2, "redirectSetCursorPosition")
+	SDLOG(2, "redirectSetCursorPosition\n");
 	if(downsampling) {
 		X = X * Settings::get().getPresentWidth() / Settings::get().getRenderWidth();
 		Y = Y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
@@ -800,6 +807,9 @@ HRESULT RSManager::redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Ty
 	return d3ddev->SetSamplerState(Sampler, Type, Value);
 }
 
+HRESULT RSManager::redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
+	return plugin->redirectClear(Count, pRects, Flags, Color, Z, Stencil);
+}
 HRESULT RSManager::redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
 	return plugin->redirectDrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 }

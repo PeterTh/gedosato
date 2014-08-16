@@ -49,6 +49,9 @@ public:
 		return d3ddev->SetRenderState(State, Value);
 	}
 
+	virtual HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
+		return d3ddev->Clear(Count, pRects, Flags, Color, Z, Stencil);
+	}
 	virtual HRESULT redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
 		return d3ddev->DrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 	}

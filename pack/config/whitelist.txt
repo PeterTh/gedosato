@@ -30,6 +30,7 @@ EoCApp                       || Divinity: Original Sin
 FEAR2                        || FEAR 2
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
+fr-041_debris                || ""Debris" by Farbrausch
 grimrock                     || Legend of Grimrock
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher

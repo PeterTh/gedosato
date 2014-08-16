@@ -8,7 +8,7 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur) 
+SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth)
 	: Effect(device), width(width), height(height), dumping(false), 
 	  blurPasses(blur==BLUR_SHARP ? 3 : 1) {
 	
@@ -21,6 +21,14 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	string pixelSizeText = sp.str();
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
+
+	// Setup SRGB macro
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
+	
+	// Setup depth reading method
+	D3DXMACRO readHWDepthMacro = { "USE_HWDEPTH", "true" };
+	if(readHWDepth) defines.push_back(readHWDepthMacro);
 	
     // Setup scale macro
 	stringstream ss;
@@ -60,7 +68,7 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	SDLOG(0, "%s load, scale %s, strength %s\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);	
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+	if(hr != D3D_OK) SDLOG(-1, "ERRORS:\n %s\n", errors->GetBufferPointer());
 	
 	// Create buffers
 	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);

@@ -6,5 +6,6 @@ PLUGIN("Mitsurugi Kamui Hikae", "mitsurugi", MitsurugiPlugin)
 
 
 // this should always be last
-PLUGIN("Generic", "*", GenericPlugin)
+PLUGIN("Generic Depth", "*", GenericDepthPlugin)
+//PLUGIN("Generic", "*", GenericPlugin)
 //PLUGIN("Game", "*", GamePlugin)

@@ -30,7 +30,7 @@ private:
 	static RSManager* latest;
 	static bool forceDSoff;
 
-	bool inited = false, downsampling = false;
+	bool inited = false, downsampling = false, multisampling = false;
 	IDirect3DDevice9 *d3ddev = NULL;
 	GamePlugin *plugin = NULL;
 
@@ -101,10 +101,12 @@ public:
 	unsigned getRenderHeight() { return renderHeight; }
 	ScreenshotType getTakeScreenshot() { return takeScreenshot; }
 	D3DFORMAT getBackBufferFormat() { return backbufferFormat; }
+	bool usingMultisampling() { return multisampling; }
 	void tookScreenshot() { takeScreenshot = SCREENSHOT_NONE; }
 
 	void storeRenderState();
 	void restoreRenderState();
+	void setNeutralRenderState() { initStateBlock->Apply(); }
 	
 	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DMULTISAMPLE_TYPE multiSampleType, unsigned multiSampleQuality, D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat);
 	void releaseResources();
@@ -132,6 +134,7 @@ public:
 
 	Scaler* getScaler();
 	ShaderManager& getShaderManager() { return shaderMan; }
+	IDirect3D9* getD3D();
 	
 	bool downsamplingEnabled() { return downsampling; }
 
@@ -159,6 +162,7 @@ public:
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);
 	HRESULT redirectSetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value);
 
+	HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil);
 	HRESULT redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount);
 	HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride);
 	HRESULT redirectDrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount);
