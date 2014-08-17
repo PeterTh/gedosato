@@ -6,9 +6,9 @@ const char* VER_NAME = "Sepia Recollections";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 12;
-const unsigned VER_BUILD = 1232;
+const unsigned VER_BUILD = 1234;
 
-const char* VER_STRING = "version 0.12.1232 built on 2014/08/16 23:13:18";
+const char* VER_STRING = "version 0.12.1234 built on 2014/08/17 13:12:41";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

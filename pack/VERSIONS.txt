@@ -11,6 +11,7 @@ General:
 - Fix DX9Ex crash introduced with multi-resolution options
 GeDoSaToTool:
 - Gracefully handle errors when checking for updates
+- Change security permissions for unloading event
 GenericDepth Plugin:
 - Created - generic plugin + depth buffer handling
 
