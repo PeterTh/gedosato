@@ -21,6 +21,7 @@ SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)
 SETTING(bool, PreventSteamOverlay, "preventSteamOverlay", false)
 SETTING(bool, LoadSteamOverlayEarly, "loadSteamOverlayEarly", true)
 SETTING(bool, LoadD3DEarly, "loadD3DEarly", false)
+SETTING(bool, DelayDetouring, "delayDetouring", false)
 SETTING(unsigned, ZBufCompatibilityFlag, "zbufCompatibilityFlag", 0)
 SETTING(string, PluginOverride, "pluginOverride", "")
 

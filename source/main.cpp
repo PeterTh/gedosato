@@ -25,10 +25,16 @@
 
 FILE* g_oFile = NULL;
 HMODULE g_dll = NULL;
-bool g_active = false, g_tool = false;
+bool g_active = false, g_tool = false, g_detoured = false;
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam) {
-	if(g_active) SDLOG(18, "GeDoSaToHook called\n");
+	if(g_active) {
+		SDLOG(18, "GeDoSaToHook called\n");
+		if(Settings::get().getDelayDetouring() && !g_detoured) {
+			g_detoured = true;
+			startDetour();
+		}
+	}
 	return CallNextHookEx(NULL, nCode, wParam, lParam); 
 }
 
@@ -121,7 +127,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		}
 
 		// detour
-		startDetour();
+		if(!Settings::get().getDelayDetouring()) startDetour();
 		return true;
 	}
 	if(dwReason == DLL_PROCESS_DETACH && g_active) {
