@@ -66,7 +66,7 @@ namespace {
 }
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName) {
-	SDLOG(2, "DetouredLoadLibraryA %s\n", lpLibFileName);
+	SDLOG(22, "DetouredLoadLibraryA %s\n", lpLibFileName);
 
 	if(preventDllLoading(std::string(lpLibFileName))) return NULL;
 
@@ -76,7 +76,7 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileNa
 	return mod;
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName) {
-	SDLOG(2, "DetouredLoadLibraryW %s\n", CW2A(lpLibFileName));
+	SDLOG(22, "DetouredLoadLibraryW %s\n", CW2A(lpLibFileName));
 
 	if(preventDllLoading(std::wstring(lpLibFileName), true)) return NULL;
 
@@ -87,7 +87,7 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileN
 }
 
 GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
-	SDLOG(2, "DetouredLoadLibraryExA %s\n", lpLibFileName);
+	SDLOG(22, "DetouredLoadLibraryExA %s\n", lpLibFileName);
 
 	string fn(lpLibFileName);
 	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
@@ -100,7 +100,7 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryExA, HMODULE, WINAPI, _In_ LPCSTR lpLibFile
 	return mod;
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryExW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName, _Reserved_ HANDLE hFile, _In_ DWORD dwFlags) {
-	SDLOG(2, "DetouredLoadLibraryExW %s\n", CW2A(lpLibFileName));
+	SDLOG(22, "DetouredLoadLibraryExW %s\n", CW2A(lpLibFileName));
 
 	string fn((CW2A(lpLibFileName)));
 	if(fn.find("GeDoSaTo") != fn.npos) return GetCurrentModule(); // find out why we need this
@@ -600,20 +600,20 @@ string getSystemDllName(const string& name) {
 	char sysdir[MAX_PATH];
 	GetSystemDirectory(sysdir, MAX_PATH);
 	string fullPath = string(sysdir) + "\\" + name;
-	SDLOG(18, "Full dll path: %s\n", fullPath.c_str());
+	SDLOG(28, "Full dll path: %s\n", fullPath.c_str());
 	return fullPath;
 }
 
 HMODULE findDll(const string& name) {
 	if(name.find("*") != name.npos) {
-		SDLOG(16, "Dll pattern search...\n");
+		SDLOG(46, "Dll pattern search...\n");
 		HMODULE modules[1024];
 		DWORD needed;
 		if(EnumProcessModules(GetCurrentProcess(), modules, 1024*sizeof(HMODULE), &needed)) {
 			for(unsigned i=0; i < (needed / sizeof(HMODULE)); i++) {
 				TCHAR modname[MAX_PATH];
 				if(GetModuleFileNameEx(GetCurrentProcess(), modules[i], modname, sizeof(modname)/sizeof(TCHAR))) {
-					SDLOG(16, " - checking against module %s\n", modname);
+					SDLOG(46, " - checking against module %s\n", modname);
 					if(matchWildcard(modname, name)) {
 						SDLOG(1, "Found dll matching pattern %s in %s\n", name.c_str(), modname);
 						return modules[i];
@@ -631,7 +631,7 @@ HMODULE findDll(const string& name) {
 
 void hookFunction(const char* name, const char* dllname, void **ppTarget, void* const pDetour, void** ppOriginal, bool& flag) {
 	if(!flag) {
-		SDLOG(6, "Trying to hook %s in %s\n", name, dllname);
+		SDLOG(36, "Trying to hook %s in %s\n", name, dllname);
 		HMODULE dllhandle = findDll(dllname);
 		if(dllhandle) {
 			*ppTarget = GetProcAddress(dllhandle, name);
@@ -644,7 +644,7 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 				flag = true;
 			} 
 			else { SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); } 
-		} else SDLOG(6, " -> DLL not found!\n")
+		} else SDLOG(36, " -> DLL not found!\n")
 	}
 }
 
