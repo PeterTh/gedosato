@@ -180,15 +180,6 @@ void setDisplayFaking(bool fake) { g_FakeChangedDisplaySettings = fake; }
 // TODO: Refactor these 2
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODE *lpDevMode, _In_ DWORD dwFlags) {
 	SDLOG(2, "EnumDisplaySettingsExA %s -- %u\n", lpszDeviceName?lpszDeviceName:"NULL", iModeNum);
-	if(g_FakeChangedDisplaySettings) {
-		lpDevMode->dmBitsPerPel = 32;
-		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
-		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
-		lpDevMode->dmDisplayFlags = 0;
-		lpDevMode->dmDisplayFrequency = Settings::getResSettings().getActiveHz();
-		SDLOG(2, "-> Fake\n");
-		return TRUE;
-	}
 	BOOL ret = TrueEnumDisplaySettingsExA(lpszDeviceName, iModeNum, lpDevMode, dwFlags);
 	if(ret) {
 		SDLOG(2, "-> %ux%u %ubpp @ %u Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
@@ -209,7 +200,7 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lps
 	if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
 	// or if we are downsampling and need to fake it as current
 	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
-	 || g_FakeChangedDisplaySettings) {
+	 || (iModeNum == ENUM_CURRENT_SETTINGS && g_FakeChangedDisplaySettings)) {
 		const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
 		lpDevMode->dmBitsPerPel = 32;
 		lpDevMode->dmPelsWidth = res.width;
@@ -248,7 +239,7 @@ GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lps
 	if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
 	// or if we are downsampling and need to fake it as current
 	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
-	 || g_FakeChangedDisplaySettings) {
+	 || (iModeNum == ENUM_CURRENT_SETTINGS && g_FakeChangedDisplaySettings)) {
 		const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
 		lpDevMode->dmBitsPerPel = 32;
 		lpDevMode->dmPelsWidth = res.width;
