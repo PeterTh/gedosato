@@ -67,8 +67,22 @@ void Settings::load(const string &fn) {
 	}
 	sfile.close();
 
-	if(getPresentWidth() == 0) PresentWidth = GetSystemMetrics(SM_CXSCREEN);
-	if(getPresentHeight() == 0) PresentHeight = GetSystemMetrics(SM_CYSCREEN);
+	// find native monitor resolution
+	int width = 1920, height = 1080;
+	const POINT ptZero = { 0, 0 };
+	auto monitor = MonitorFromPoint(ptZero, MONITOR_DEFAULTTOPRIMARY);
+	MONITORINFO info;
+	info.cbSize = sizeof(MONITORINFO);
+	auto success = GetMonitorInfo(monitor, &info);
+	if(!success) {
+		SDLOG(-1, "ERROR: GetMonitorInfo failed!\n");
+	}
+	else {
+		width = info.rcMonitor.right - info.rcMonitor.left;
+		height = info.rcMonitor.bottom - info.rcMonitor.top;
+	}
+	if(getPresentWidth() == 0) PresentWidth = width;
+	if(getPresentHeight() == 0) PresentHeight = height;
 
 	baseLogLevel = LogLevel;
 }
