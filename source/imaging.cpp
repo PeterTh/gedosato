@@ -1,14 +1,25 @@
 #include "imaging.h"
 
+#include "console.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "external/stb_image_write.h"
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
+#include <boost/algorithm/string/replace.hpp>
+
 void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool discardAlpha) {
+	// Octagon screenshot mode
+	if(Settings::get().getMaxScreenshotParallelism() == -1) {
+		string fnc = fn;
+		boost::algorithm::replace_first(fnc, ".png", ".bmp");
+		D3DXSaveSurfaceToFile(fnc.c_str(), D3DXIFF_BMP, surf, NULL, NULL);
+		return;
+	}
+
 	// wait for processing if maximum degree of parallelism reached
-	if(futures.size() > Settings::get().getMaxScreenshotParallelism()) {
+	if(static_cast<int>(futures.size()) > Settings::get().getMaxScreenshotParallelism()) {
 		auto& f = futures.front();
-		f.wait();
+		if(f.valid()) f.wait();
 		futures.pop();
 	}
 
@@ -22,31 +33,35 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	r.bottom = desc.Height;
 	device9->StretchRect(surf, &r, tempSurf, &r, D3DTEXF_NONE);
 	D3DLOCKED_RECT lockedR;
-	tempSurf->LockRect(&lockedR, &r, D3DLOCK_READONLY);
-	BYTE* buffer = new BYTE[lockedR.Pitch*desc.Height];
-	memcpy(buffer, lockedR.pBits, lockedR.Pitch*desc.Height);
-	INT pitch = lockedR.Pitch;
-	tempSurf->UnlockRect();
-	
-	// lambda performing image encoding and writing
-	auto writer = [buffer, desc, pitch, fn, discardAlpha] {
-		for(unsigned i = 0; i < pitch*desc.Height; i += 4) {
-			// A8R8G8B8 --> (A)BGR
-			BYTE tmp = buffer[i + 0];
-			buffer[i + 0] = buffer[i + 2];
-			buffer[i + 1] = buffer[i + 1];
-			buffer[i + 2] = tmp;
-			if(discardAlpha) buffer[i + 3] = 255;
-		}
-		stbi_write_png(fn.c_str(), desc.Width, desc.Height, 4, buffer, pitch);
-		delete[] buffer;
-	};
+	if(tempSurf->LockRect(&lockedR, &r, D3DLOCK_READONLY) == D3D_OK) {
+		BYTE* buffer = new BYTE[lockedR.Pitch*desc.Height];
+		memcpy(buffer, lockedR.pBits, lockedR.Pitch*desc.Height);
+		INT pitch = lockedR.Pitch;
+		tempSurf->UnlockRect();
 
-	if(Settings::get().getMaxScreenshotParallelism() > 0) {
-		// perform image encoding and writing in parallel
-		futures.push(std::async(writer));
+		// lambda performing image encoding and writing
+		auto writer = [buffer, desc, pitch, fn, discardAlpha] {
+			for(unsigned i = 0; i < pitch*desc.Height; i += 4) {
+				// A8R8G8B8 --> (A)BGR
+				BYTE tmp = buffer[i + 0];
+				buffer[i + 0] = buffer[i + 2];
+				buffer[i + 1] = buffer[i + 1];
+				buffer[i + 2] = tmp;
+				if(discardAlpha) buffer[i + 3] = 255;
+			}
+			stbi_write_png(fn.c_str(), desc.Width, desc.Height, 4, buffer, pitch);
+			delete[] buffer;
+		};
+
+		if(Settings::get().getMaxScreenshotParallelism() > 0) {
+			// perform image encoding and writing in parallel
+			futures.push(std::async(writer));
+		}
+		else {
+			writer();
+		}
 	}
 	else {
-		writer();
+		Console::get().add("Failed taking screenshot! (LockRect)");
 	}
 }

@@ -68,4 +68,4 @@ SETTING(bool, EnablePostprocessing, "enablePostprocessing", false)
 SETTING(string, PostProcessingType, "postProcessingType", "durante")
 
 // Screenshot options
-SETTING(unsigned, MaxScreenshotParallelism, "maxScreenshotParallelism", 8)
+SETTING(int, MaxScreenshotParallelism, "maxScreenshotParallelism", 8)
