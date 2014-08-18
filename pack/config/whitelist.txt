@@ -6,6 +6,9 @@
 # Exe File Name (or pattern) || Readable Name (optional)
 
 AlanWake                     || Alan Wake
+AoW3                         || Age of Wonders 3
+AssassinsCreed_Dx9           || Assassins Creed
+AvP                          || Aliens vs Predator 2010
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
 bionic_commando              || Bionic Commando
 Blackguards                  || Blackguards (The Dark Eye)
@@ -23,6 +26,7 @@ DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
+Dead Space                   || Dead Space
 dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
@@ -49,7 +53,9 @@ MassEffect3Config            || Mass Effect 3 Configurator
 MazeGame-Win32-Shipping      || Lili: Child of Geos
 Might and Magic X Legacy     || Might and Magic X Legacy
 mitsurugi                    || Mitsurugi Kamui Hikae
+OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
+PathOfExileSteam             || Path of Exile
 Rayman Legends               || Rayman Legends
 RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
@@ -58,7 +64,10 @@ RememberMe                   || Remember Me
 Risen3                       || Risen 3
 RoA                          || Rock of Ages
 runner2                      || BIT:TRIP Runner 2
+Shadowrun                    || Shadowrun Returns
+ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
+SpaceMarine                  || SpaceMarine
 StateOfDecay                 || State Of Decay
 Tropico4                     || Tropico 4
 tru                          || Tomb Raider: Underworld
