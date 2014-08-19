@@ -24,8 +24,6 @@ using std::string;
 
 #define INTERCEPTOR_NAME "GeDoSaTo"
 
-#define SETTINGS_FILE_NAME (INTERCEPTOR_NAME".ini")
-#define KEY_FILE_NAME (INTERCEPTOR_NAME"Keys.ini")
 #define REG_KEY_PATH ("Software\\Durante\\" INTERCEPTOR_NAME)
 
 //#define RELEASE_VER

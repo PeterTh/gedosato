@@ -5,6 +5,7 @@ General:
 - Added setting to force specific plugin
 - Added modifyGetClientRect and modifyGetWindowRect settings
 - Added "delayDetouring" setting to make unified injection work like previous default
+- Added support for user profiles for both keybindings and settings
 - Made the degree of parallelism for screenshot taking configurable
 - Prevent keybindings from triggering for background games
 - Fixed controller keybindings when no controller is connected
@@ -14,8 +15,11 @@ General:
 GeDoSaToTool:
 - Gracefully handle errors when checking for updates
 - Change security permissions for unloading event
+- Add user profile handling UI
+- Add game profile handling and filtering UI
+- Add buttons for showing screenshot/config folders
 GenericDepth Plugin:
-- Created - generic plugin + depth buffer handling
+- Created: generic plugin + depth buffer handling
 
 13-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================

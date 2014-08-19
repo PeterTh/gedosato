@@ -16,6 +16,9 @@ using namespace std;
 #include "renderstate_manager.h"
 #include "scaling.h"
 
+#define KEY_FILE_NAME (INTERCEPTOR_NAME"Keys.ini")
+#define USER_KEY_FILE_NAME (INTERCEPTOR_NAME"Keys_user.ini")
+
 KeyActions KeyActions::instance;
 
 void KeyActions::load(const string &fn) {
@@ -61,8 +64,12 @@ void KeyActions::load(const string &fn) {
 void KeyActions::load() {
 	SDLOG(1, "Loading general keybindings.\n");
 	load(getConfigFileName(KEY_FILE_NAME));
+	SDLOG(1, "Loading user keybindings.\n");
+	load(getConfigFileName(USER_KEY_FILE_NAME));
 	SDLOG(1, "Loading game-specific keybindings.\n");
 	load(getConfigFileName(getExeFileName() + "\\" + KEY_FILE_NAME));
+	SDLOG(1, "Loading game-specific user keybindings.\n");
+	load(getConfigFileName(getExeFileName() + "\\" + USER_KEY_FILE_NAME));
 	SDLOG(1, "All keybindings loaded.\n");
 }
 

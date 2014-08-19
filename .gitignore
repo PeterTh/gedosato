@@ -12,5 +12,6 @@ Debug
 stuff
 *SyncToy*
 *.lnk
+*_user.ini
 !GeDoSaTo.dll
 !GeDoSaToTool.exe

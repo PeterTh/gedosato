@@ -8,6 +8,8 @@
 #include "main.h"
 #include "window_manager.h"
 
+#define SETTINGS_FILE_NAME (INTERCEPTOR_NAME".ini")
+#define USER_SETTINGS_FILE_NAME (INTERCEPTOR_NAME"_user.ini")
 
 void ResolutionSettings::readResolution(const char* source) {
 	string sstring(source);
@@ -90,8 +92,12 @@ void Settings::load(const string &fn) {
 void Settings::load() {
 	SDLOG(1, "Loading general settings.\n");
 	load(getConfigFileName(SETTINGS_FILE_NAME));
+	SDLOG(1, "Loading user settings.\n");
+	load(getConfigFileName(USER_SETTINGS_FILE_NAME));
 	SDLOG(1, "Loading game-specific settings.\n");
 	load(getConfigFileName(getExeFileName() + "\\" + SETTINGS_FILE_NAME));
+	SDLOG(1, "Loading game-specific user settings.\n");
+	load(getConfigFileName(getExeFileName() + "\\" + USER_SETTINGS_FILE_NAME));
 	SDLOG(1, "All settings loaded.\n");
 	if(resSettings.getNumResolutions() == 0) {
 		resSettings.readResolution("3840x2160@60");
