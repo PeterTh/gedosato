@@ -177,84 +177,56 @@ bool g_FakeChangedDisplaySettings = false;
 
 void setDisplayFaking(bool fake) { g_FakeChangedDisplaySettings = fake; }
 
-// TODO: Refactor these 2
+namespace {
+	template<typename DevModeType, typename StringType, typename TrueFnType>
+	BOOL DetouredEnumDisplaySettingsTemplate(StringType lpszDeviceName, DWORD iModeNum, DevModeType *lpDevMode, DWORD dwFlags, TrueFnType trueFunction) {
+		BOOL ret = trueFunction(lpszDeviceName, iModeNum, lpDevMode, dwFlags);
+		if(ret) {
+			SDLOG(2, "-> %ux%u %ubpp @ %u Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
+		}
+		else {
+			SDLOG(2, "-> NULL\n");
+		}
+		// find initial count of modes when Windows caches the list (at id 0 call)
+		static unsigned emptyMode = 0;
+		if(iModeNum == 0) {
+			emptyMode = 1;
+			DevModeType mode;
+			mode.dmSize = sizeof(DevModeType);
+			mode.dmDriverExtra = 0;
+			while(trueFunction(lpszDeviceName, emptyMode, &mode, dwFlags) != NULL) ++emptyMode;
+			SDLOG(2, "*** Found Emptymode: %u\n", emptyMode);
+		}
+		// enter our modes, either if its number is requested
+		if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
+			// or if we are downsampling and need to fake it as current
+			|| (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/))
+			|| (iModeNum == ENUM_CURRENT_SETTINGS && g_FakeChangedDisplaySettings)) {
+			const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
+			lpDevMode->dmBitsPerPel = 32;
+			lpDevMode->dmPelsWidth = res.width;
+			lpDevMode->dmPelsHeight = res.height;
+			lpDevMode->dmDisplayFlags = 0;
+			lpDevMode->dmDisplayFrequency = res.hz;
+			SDLOG(2, "-> Fake\n");
+			return TRUE;
+		}
+		if(ret && lpDevMode->dmPelsWidth == Settings::get().getOverrideWidth() && lpDevMode->dmPelsHeight == Settings::get().getOverrideHeight()) {
+			lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
+			lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
+			SDLOG(2, "-> Override\n");
+		}
+		return ret;
+	}
+}
+
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExA, BOOL, WINAPI, _In_ LPCTSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODE *lpDevMode, _In_ DWORD dwFlags) {
-	SDLOG(2, "EnumDisplaySettingsExA %s -- %u\n", lpszDeviceName?lpszDeviceName:"NULL", iModeNum);
-	BOOL ret = TrueEnumDisplaySettingsExA(lpszDeviceName, iModeNum, lpDevMode, dwFlags);
-	if(ret) {
-		SDLOG(2, "-> %ux%u %ubpp @ %u Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
-	} else {
-		SDLOG(2, "-> NULL\n");
-	}
-	// find initial count of modes when Windows caches the list (at id 0 call)
-	static unsigned emptyMode = 0;
-	if(iModeNum == 0) {
-		emptyMode = 1;
-		DEVMODEA mode;
-		mode.dmSize = sizeof(DEVMODEA);
-		mode.dmDriverExtra = 0;
-		while(TrueEnumDisplaySettingsExA(lpszDeviceName, emptyMode, &mode, dwFlags) != NULL) ++emptyMode;
-		SDLOG(2, "*** Found Emptymode: %u\n", emptyMode);
-	}
-	// enter our modes, either if its number is requested
-	if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
-	// or if we are downsampling and need to fake it as current
-	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
-	 || (iModeNum == ENUM_CURRENT_SETTINGS && g_FakeChangedDisplaySettings)) {
-		const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
-		lpDevMode->dmBitsPerPel = 32;
-		lpDevMode->dmPelsWidth = res.width;
-		lpDevMode->dmPelsHeight = res.height;
-		lpDevMode->dmDisplayFlags = 0;
-		lpDevMode->dmDisplayFrequency = res.hz;
-		SDLOG(2, "-> Fake\n");
-		return TRUE;
-	}
-	if(ret && lpDevMode->dmPelsWidth == Settings::get().getOverrideWidth() && lpDevMode->dmPelsHeight == Settings::get().getOverrideHeight()) {
-		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
-		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
-		SDLOG(2, "-> Override\n");
-	}
-	return ret;
+	SDLOG(2, "EnumDisplaySettingsExA %s -- %u\n", lpszDeviceName ? lpszDeviceName : "NULL", iModeNum);
+	return DetouredEnumDisplaySettingsTemplate(lpszDeviceName, iModeNum, lpDevMode, dwFlags, TrueEnumDisplaySettingsExA);
 }
 GENERATE_INTERCEPT_HEADER(EnumDisplaySettingsExW, BOOL, WINAPI, _In_ LPCWSTR lpszDeviceName, _In_ DWORD iModeNum, _Out_ DEVMODEW *lpDevMode, _In_ DWORD dwFlags) {
-	SDLOG(2, "EnumDisplaySettingsExW %s -- %u\n", lpszDeviceName?CW2A(lpszDeviceName):"NULL", iModeNum);
-	BOOL ret = TrueEnumDisplaySettingsExW(lpszDeviceName, iModeNum, lpDevMode, dwFlags);
-	if(ret) {
-		SDLOG(2, "-> %ux%u %ubpp @ %u Hz\n", lpDevMode->dmPelsWidth, lpDevMode->dmPelsHeight, lpDevMode->dmBitsPerPel, lpDevMode->dmDisplayFrequency);
-	} else {
-		SDLOG(2, "-> NULL\n");
-	}
-	// find initial count of modes when Windows caches the list (at id 0 call)
-	static unsigned emptyMode = 0;
-	if(iModeNum == 0) {
-		emptyMode = 1;
-		DEVMODEW mode;
-		mode.dmSize = sizeof(DEVMODEW);
-		mode.dmDriverExtra = 0;
-		while(TrueEnumDisplaySettingsExW(lpszDeviceName, emptyMode, &mode, dwFlags) != NULL) ++emptyMode;
-		SDLOG(2, "*** Found Emptymode: %u\n", emptyMode);
-	}
-	// enter our mode, either if its number is requested
-	if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
-	// or if we are downsampling and need to fake it as current
-	 || (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/)) 
-	 || (iModeNum == ENUM_CURRENT_SETTINGS && g_FakeChangedDisplaySettings)) {
-		const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
-		lpDevMode->dmBitsPerPel = 32;
-		lpDevMode->dmPelsWidth = res.width;
-		lpDevMode->dmPelsHeight = res.height;
-		lpDevMode->dmDisplayFlags = 0;
-		lpDevMode->dmDisplayFrequency = res.hz;
-		SDLOG(2, "-> Fake\n");
-		return TRUE;
-	}
-	if(ret && lpDevMode->dmPelsWidth == Settings::get().getOverrideWidth() && lpDevMode->dmPelsHeight == Settings::get().getOverrideHeight()) {
-		lpDevMode->dmPelsWidth = Settings::get().getRenderWidth();
-		lpDevMode->dmPelsHeight = Settings::get().getRenderHeight();
-		SDLOG(2, "-> Overrride\n");
-	}
-	return ret;
+	SDLOG(2, "EnumDisplaySettingsExW %s -- %u\n", lpszDeviceName ? CW2A(lpszDeviceName) : "NULL", iModeNum);
+	return DetouredEnumDisplaySettingsTemplate(lpszDeviceName, iModeNum, lpDevMode, dwFlags, TrueEnumDisplaySettingsExW);
 }
 
 // Display Changing /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
