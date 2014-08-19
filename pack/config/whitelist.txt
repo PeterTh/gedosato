@@ -74,3 +74,6 @@ tru                          || Tomb Raider: Underworld
 witcher2                     || The Witcher 2
 WL2                          || Wastelands 2
 yso_win                      || Ys Origin
+Astebreed                    || Astebreed
+Valiant Hearts               || Valiant Hearts
+KidGame                      || Killer is Dead
