@@ -8,6 +8,7 @@
 AlanWake                     || Alan Wake
 AoW3                         || Age of Wonders 3
 AssassinsCreed_Dx9           || Assassins Creed
+Astebreed                    || Astebreed
 AvP                          || Aliens vs Predator 2010
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
 bionic_commando              || Bionic Commando
@@ -17,6 +18,7 @@ Borderlands2                 || Borderlands 2
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
+Cognition Episode*           || Cognition: An Erica Reed Thriller
 Condemned                    || Condemned: Criminal Origins
 config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
@@ -44,6 +46,7 @@ hl2                          || Half-Life 2, Portal
 Injustice                    || Injustice: Gods Among Us
 kb                           || King's Bounty (All Versions)
 kick_win                     || Marlow Briggs
+KidGame                      || Killer is Dead
 Launcher                     || Launcher (multiple)
 lcgol                        || Lara Croft and the Guardian of Light
 LEGOMARVEL                   || LEGO Marvel Superheroes
@@ -72,9 +75,7 @@ SpaceMarine                  || SpaceMarine
 StateOfDecay                 || State Of Decay
 Tropico4                     || Tropico 4
 tru                          || Tomb Raider: Underworld
+Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
 WL2                          || Wastelands 2
 yso_win                      || Ys Origin
-Astebreed                    || Astebreed
-Valiant Hearts               || Valiant Hearts
-KidGame                      || Killer is Dead
