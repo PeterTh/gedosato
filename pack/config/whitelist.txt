@@ -38,13 +38,17 @@ dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 EoCApp                       || Divinity: Original Sin
-FEAR2                        || FEAR 2
+fear                         || F.E.A.R.
+FEAR2                        || F.E.A.R. 2
+FEARXP                       || F.E.A.R. Extraction Point
+FEARXP2                      || F.E.A.R. Perseus Mandate
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 fr-041_debris                || "Debris" by Farbrausch
 grimrock                     || Legend of Grimrock
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
+hardreset                    || Hard Reset
 HawkenGame-Win32-Shipping    || Hawken
 HitmanBloodMoney             || Hitman: Blood Money
 hl2                          || Half-Life 2, Portal
@@ -78,6 +82,7 @@ Shadowrun                    || Shadowrun Returns
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
 SpaceMarine                  || SpaceMarine
+SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
@@ -87,4 +92,3 @@ Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
 WL2                          || Wastelands 2
 yso_win                      || Ys Origin
-SpecOpsTheLine               || Spec Ops: The Line
