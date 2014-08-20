@@ -9,18 +9,22 @@ AlanWake                     || Alan Wake
 AoW3                         || Age of Wonders 3
 AssassinsCreed_Dx9           || Assassins Creed
 AvP                          || Aliens vs Predator 2010
+BatmanAC                     || Batman: Arkham City GOTY
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
 bionic_commando              || Bionic Commando
+Bioshock                     || Bioshock
+Bioshock2                    || Bioshock 2
 Blackguards                  || Blackguards (The Dark Eye)
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
-CastlevaniaLoSUE             || Castlevania: Lords of Shadow
+CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
 Condemned                    || Condemned: Criminal Origins
 config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
 consortium                   || Consortium
+Crysis                       || Crysis & Crysis Warhead
 daorigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
