@@ -27,7 +27,7 @@ config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 Crysis                       || Crysis & Crysis Warhead
-daorigins                    || Dragon Age: Origins
+DAOrigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
 DarksidersPC                 || Darksiders
@@ -86,7 +86,6 @@ SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
-Tropico4                     || Tropico 4
 tru                          || Tomb Raider: Underworld
 Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
