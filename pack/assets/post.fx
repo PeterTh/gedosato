@@ -13,6 +13,9 @@
 #define USE_CURVES            0 //[0 or 1] Curves : Contrast adjustments using S-curves.
 #define USE_DITHER            0 //[0 or 1] Dither : Applies dithering to simulate more colors than your monitor can display. This lessens banding artifacts (mostly caused by Vignette)
 #define USE_ADVANCED_CRT      0 //[0 or 1] Advanced CRT : Simulates an old CRT TV display. Set gaussian blur along with it to get a halation effect
+#define USE_TECHNICOLOR       0 //[0 or 1] TECHNICOLOR : Attempts to mimic the look of an old movie using the Technicolor three-strip color process (Techicolor Process 4)
+#define USE_DPX               0 //[0 or 1] Cineon DPX : Should make the image look like it's been converted to DXP Cineon - basically it's another movie-like look similar to technicolor.
+#define USE_BORDER            0 //[0 or 1] Border : Makes the screenedge black as a workaround for the bright edge that forcing some AA modes sometimes causes.
 #define USE_SPLITSCREEN       0 //[0 or 1] Splitscreen : Enables the before-and-after splitscreen comparison mode.
 
 // Bloom settings
@@ -88,6 +91,31 @@
 	#define R2 			0.7		//[0.0 to 1.0]   Amount of red color for odd scanlines
 	#define G2 			1.0		//[0.0 to 1.0]   Amount of green color for odd scanlines
 	#define B2 			0.7		//[0.0 to 1.0]   Amount of blue color for odd scanlines
+	
+// Technicolor settings
+	#define TechniAmount 0.46         //[0.00 to 1.00]
+	#define TechniPower  4.0         //[0.00 to 8.00]
+	#define redNegativeAmount   0.74 //[0.00 to 1.00]
+	#define greenNegativeAmount 0.83 //[0.00 to 1.00]
+	#define blueNegativeAmount  0.9 //[0.00 to 1.00]
+	
+// Cineon DPX settings
+	#define Red   9.0  //[1.0 to 15.0]
+	#define Green 9.0  //[1.0 to 15.0]
+	#define Blue  9.0  //[1.0 to 15.0]
+
+	#define ColorGamma    1.0  //[0.1 to 2.5] Adjusts the colorfulness of the effect in a manner similar to Vibrance. 1.0 is neutral.
+	#define DPXSaturation 1.0  //[0.0 to 8.0] Adjust saturation of the effect. 1.0 is neutral.
+
+	#define RedC   0.33  //[0.60 to 0.20]
+	#define GreenC 0.36  //[0.60 to 0.20]
+	#define BlueC  0.35  //[0.60 to 0.20]
+
+	#define Blend 0.23    //[0.00 to 1.00] How strong the effect should be
+	
+// Border settings
+	#define border_width float2(0,100)     //[0 to 2048, 0 to 2048] (X,Y)-width of the border. Measured in pixels.
+	#define border_color float3(0, 0, 0)  //[0 to 255, 0 to 255, 0 to 255] What color the border should be. In integer RGB colors, meaning 0,0,0 is black and 255,255,255 is full white.
 
 // Splitscreen settings
 	#define splitscreen_mode   1  //[1|2|3|4|5|6]  1 = Vertical 50/50 split, 2 = Vertical 25/50/25 split, 3 = Vertical 50/50 angled split, 
@@ -1148,6 +1176,122 @@ float4 AdvancedCRTPass( float4 colorInput, float2 tex )
 	return saturate(colorInput);
 }
 
+// ------------------------- Technicolor --------------------------------------------
+
+#define cyanfilter float3(0.0, 1.30, 1.0)
+#define magentafilter float3(1.0, 0.0, 1.05) 
+#define yellowfilter float3(1.6, 1.6, 0.05)
+
+#define redorangefilter float2(1.05, 0.620) //RG_
+#define greenfilter float2(0.30, 1.0)       //RG_
+#define magentafilter2 magentafilter.rb     //R_B
+
+float4 TechnicolorPass( float4 colorInput )
+{
+	float3 tcol = colorInput.rgb;
+	
+  float2 rednegative_mul   = tcol.rg * (1.0 / (redNegativeAmount * TechniPower));
+	float2 greennegative_mul = tcol.rg * (1.0 / (greenNegativeAmount * TechniPower));
+	float2 bluenegative_mul  = tcol.rb * (1.0 / (blueNegativeAmount * TechniPower));
+	
+  float rednegative   = dot( redorangefilter, rednegative_mul );
+	float greennegative = dot( greenfilter, greennegative_mul );
+	float bluenegative  = dot( magentafilter2, bluenegative_mul );
+	
+	float3 redoutput   = rednegative.rrr + cyanfilter;
+	float3 greenoutput = greennegative.rrr + magentafilter;
+	float3 blueoutput  = bluenegative.rrr + yellowfilter;
+	
+	float3 result = redoutput * greenoutput * blueoutput;
+	colorInput.rgb = lerp(tcol, result, TechniAmount);
+	return colorInput;
+}
+
+// ------------------------- DPX/Cineon --------------------------------------------
+
+static float3x3 RGB =
+{
+2.67147117265996,-1.26723605786241,-0.410995602172227,
+-1.02510702934664,1.98409116241089,0.0439502493584124,
+0.0610009456429445,-0.223670750812863,1.15902104167061
+};
+
+static float3x3 XYZ =
+{
+0.500303383543316,0.338097573222739,0.164589779545857,
+0.257968894274758,0.676195259144706,0.0658358459823868,
+0.0234517888692628,0.1126992737203,0.866839673124201
+};
+
+float4 DPXPass(float4 InputColor) : COLOR0 {
+
+	float DPXContrast = 0.1;
+
+	float DPXGamma = 1.0;
+
+	float RedCurve = Red;
+	float GreenCurve = Green;
+	float BlueCurve = Blue;
+
+	float3 B = InputColor.rgb;
+	//float3 Bn = B; // I used InputColor.rgb instead.
+
+	B = pow(B, 1.0/DPXGamma);
+
+	B.r = pow(B.r, 1.00);
+	B.g = pow(B.g, 1.00);
+	B.b = pow(B.b, 1.00);
+
+        B = (B * (1.0 - DPXContrast)) + DPXContrast / 2.0;
+ 	
+ 	B.r = (1.0 /(1.0 + exp(- RedCurve * (B.r - RedC))) - (1.0 / (1.0 + exp(RedCurve / 2.0))))/(1.0 - 2.0 * (1.0 / (1.0 + exp(RedCurve / 2.0))));				
+	B.g = (1.0 /(1.0 + exp(- GreenCurve * (B.g - GreenC))) - (1.0 / (1.0 + exp(GreenCurve / 2.0))))/(1.0 - 2.0 * (1.0 / (1.0 + exp(GreenCurve / 2.0))));				
+	B.b = (1.0 /(1.0 + exp(- BlueCurve * (B.b - BlueC))) - (1.0 / (1.0 + exp(BlueCurve / 2.0))))/(1.0 - 2.0 * (1.0 / (1.0 + exp(BlueCurve / 2.0))));					
+
+        //TODO use faster code for conversion between RGB/HSV  -  see http://www.chilliant.com/rgb2hsv.html
+	   float value = max(max(B.r, B.g), B.b);
+	   float3 color = B / value;
+	
+	   color = pow(color, 1.0/ColorGamma);
+	
+	   float3 c0 = color * value;
+
+	   c0 = mul(XYZ, c0);
+
+	   float luma = dot(c0, float3(0.30, 0.59, 0.11)); //Use BT 709 instead?
+	   float3 chroma = c0 - luma;
+
+	   c0 = luma + chroma * DPXSaturation;
+	   c0 = mul(RGB, c0);
+	
+	InputColor.rgb = lerp(InputColor.rgb, c0, Blend); //as long as Blend is always 0 we don't really need to lerp. The compiler *should* be smart enough to optimize this though (check to be sure)
+
+	return InputColor;
+}
+
+// ------------------------- Border --------------------------------------------
+
+#ifndef border_width
+  #define border_width float2(1,0)
+#endif
+#ifndef border_color
+  #define border_color float3(0, 0, 0)
+#endif
+
+float4 BorderPass( float4 colorInput, float2 tex )
+{
+float3 border_color_float = border_color / 255.0;
+
+float2 border = (PIXEL_SIZE * border_width); //Translate integer pixel width to floating point
+float2 within_border = saturate((-tex * tex + tex) - (-border * border + border)); //becomes positive when inside the border and 0 when outside
+
+colorInput.rgb = all(within_border) ?  colorInput.rgb : border_color_float ; //
+
+return colorInput; //return the pixel
+
+} 
+
+
 // ------------------------- Splitscreen --------------------------------------------
 
 float4 SplitscreenPass( float4 colorInput, float2 tex )
@@ -1250,6 +1394,18 @@ float4 postProcessing(VSOUT IN) : COLOR0
 
 #if (USE_DITHER == 1)
     c0 = DitherPass(c0, tex);
+#endif
+
+#if (USE_TECHNICOLOR == 1)
+    c0 = TechnicolorPass(c0);
+#endif
+
+#if (USE_DPX == 1)
+    c0 = DPXPass(c0);
+#endif
+
+#if (USE_BORDER == 1)
+    c0 = BorderPass(c0, tex);
 #endif
 
 #if (USE_SPLITSCREEN == 1)
