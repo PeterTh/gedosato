@@ -27,9 +27,10 @@ config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 Crysis                       || Crysis & Crysis Warhead
-daorigins                    || Dragon Age: Origins
+DAOrigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
+DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
@@ -37,13 +38,17 @@ dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 EoCApp                       || Divinity: Original Sin
-FEAR2                        || FEAR 2
+fear                         || F.E.A.R.
+FEAR2                        || F.E.A.R. 2
+FEARXP                       || F.E.A.R. Extraction Point
+FEARXP2                      || F.E.A.R. Perseus Mandate
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 fr-041_debris                || "Debris" by Farbrausch
 grimrock                     || Legend of Grimrock
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
+hardreset                    || Hard Reset
 HawkenGame-Win32-Shipping    || Hawken
 HitmanBloodMoney             || Hitman: Blood Money
 hl2                          || Half-Life 2, Portal
@@ -60,6 +65,7 @@ MassEffect3Config            || Mass Effect 3 Configurator
 MazeGame-Win32-Shipping      || Lili: Child of Geos
 Might and Magic X Legacy     || Might and Magic X Legacy
 mitsurugi                    || Mitsurugi Kamui Hikae
+mm                           || Dark Messiah of Might and Magic Single Player
 OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
@@ -76,8 +82,10 @@ Shadowrun                    || Shadowrun Returns
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
 SpaceMarine                  || SpaceMarine
+SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
-Tropico4                     || Tropico 4
+trine1_32bit                 || Trine 1 Enchanted Edition
+trine1_launcher              || Trine 1 Enchanted Configurator
 tru                          || Tomb Raider: Underworld
 Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
