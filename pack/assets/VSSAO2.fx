@@ -45,7 +45,6 @@ extern float aoClamp = 0.1;
 extern float aoStrengthMultiplier = 2.0;
 #endif
 
-
 #define LUMINANCE_CONSIDERATION //comment this line to not take pixel brightness into account
 
 /***End Of User-controlled Variables***/
@@ -56,19 +55,6 @@ static const float farZ = 3500;
 static const float2 g_InvFocalLen = { tan(0.5f*radians(FOV)) / rcpres.y * rcpres.x, tan(0.5f*radians(FOV)) };
 static const float depthRange = nearZ-farZ;
 
-
-texture2D sampleTex2D;
-sampler sampleSampler = sampler_state
-{
-	Texture   = <sampleTex2D>;
-	MinFilter = LINEAR;
-	MagFilter = LINEAR;
-	MipFilter = LINEAR;
-	AddressU  = Clamp;
-	AddressV  = Clamp;
-	SRGBTexture = USE_SRGB;
-};
-
 texture2D depthTex2D;
 sampler depthSampler = sampler_state
 {
@@ -78,18 +64,6 @@ sampler depthSampler = sampler_state
 	MipFilter = POINT;
 	AddressU  = Mirror;
 	AddressV  = Mirror;
-	SRGBTexture=FALSE;
-};
-
-texture2D AOTex2D;
-sampler AOSampler = sampler_state
-{
-	texture = <AOTex2D>;
-	MinFilter = POINT;
-	MagFilter = POINT;
-	MipFilter = POINT;
-	AddressU  = Clamp;
-	AddressV  = Clamp;
 	SRGBTexture=FALSE;
 };
 
@@ -212,6 +186,9 @@ float2 rand(in float2 uv : TEXCOORD0) {
 	return float2(noiseX, noiseY);
 }
 
+//#define NEW_SSAO
+//#define SHOW_SSAO
+
 #ifdef USE_HWDEPTH
 float2 readDepth(in float2 coord : TEXCOORD0)
 {
@@ -222,8 +199,16 @@ float2 readDepth(in float2 coord : TEXCOORD0)
 float2 readDepth(in float2 coord : TEXCOORD0)
 {
 	float4 col = tex2D(depthSampler, coord);
-	float posZ = ((1-col.x) + (1-col.y)*255.0 + (1-col.z)*(255.0*255.0));
-	return float2(pow(posZ / (5*256.0*256.0) + 1.0, 8.0)-1.0, col.w);
+	#ifdef NEW_SSAO
+	float posZ = ((col.x) + (col.y)*255.0 + (col.z)*(255.0*255.0));
+	// (2.0f * nearZ) / (sumZ - depth * rangeZ);
+	float depth = abs(posZ)/(256.0);
+	return float2(depth, col.w);
+	//return float2((2.0 * nearZ) / (farZ + nearZ - depth * (farZ - nearZ)), col.w);
+	#else
+	float posZ = ((1 - col.x) + (1 - col.y)*255.0 + (1 - col.z)*(255.0*255.0));
+	return float2(pow(posZ / (5 * 256.0*256.0) + 1.0, 8.0) - 1.0, col.w);
+	#endif
 }
 #endif
 
@@ -233,6 +218,21 @@ float3 getPosition(in float2 uv : TEXCOORD0, in float eye_z : POSITION0) {
    return pos;
 }
 
+float3 normalFromDepth(float depth, float2 texcoords) {
+	const float2 offset1 = float2(0.0, PIXEL_SIZE.y);
+	const float2 offset2 = float2(PIXEL_SIZE.x, 0.0);
+
+	float depth1 = readDepth(texcoords + offset1).x;
+	float depth2 = readDepth(texcoords + offset2).x;
+
+	float3 p1 = float3(offset1, depth1 - depth);
+	float3 p2 = float3(offset2, depth2 - depth);
+
+	float3 normal = cross(p1, p2);
+	return normalize(normal);
+}
+
+#ifndef NEW_SSAO
 float4 ssao_Main(VSOUT IN) : COLOR0
 {
 	clip(1/SCALE-IN.UVCoord.x);
@@ -242,16 +242,21 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	float2 d2 = readDepth(IN.UVCoord);
 	if(d2.y < 0.1) return float4(1.0,1.0,1.0,1.0);
 	float depth = d2.x;
+
+	#ifdef NORM_WITHOUT_DD
+	float3 norm = normalFromDepth(depth, IN.UVCoord);
+	#else
 	float3 pos = getPosition(IN.UVCoord, depth);
 	float3 dx = ddx(pos);
 	float3 dy = ddy(pos);
-	float3 norm = normalize(cross(dx,dy));
+	float3 norm = normalize(cross(dx, dy));
 	norm.y *= -1;
+	#endif
 
 	float sample_depth;
 
-	float ao=tex2D(AOSampler, IN.UVCoord);
-	float s=tex2D(sampleSampler, IN.UVCoord);
+	float ao = 0.0;
+	float s = 0.0;
 
 	float2 rand_vec = rand(IN.UVCoord);
 	float2 sample_vec_divisor = g_InvFocalLen*depth*depthRange/(aoRadiusMultiplier*5000*rcpres);
@@ -279,9 +284,65 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 
 	ao = 1.0f-ao*aoStrengthMultiplier;
 
+	return float4(ao, ao, ao, depth);
 	//return float4(depth, depth, depth, depth);
-	return float4(ao,ao,ao,depth);
+	//return float4(norm.x,norm.y,norm.z,depth);
 }
+#else
+float4 ssao_Main(VSOUT IN) : COLOR0
+{
+	const float total_strength = 1.0;
+	const float base = 1.2;
+
+	const float area = 3.0;
+	const float falloff = 0.001;
+
+	const float radius = 25.0;
+
+	const int samples = 16;
+	float3 sample_sphere[samples] = {
+		float3(0.5381, 0.1856, -0.4319), float3(0.1379, 0.2486, 0.4430),
+		float3(0.3371, 0.5679, -0.0057), float3(-0.6999, -0.0451, -0.0019),
+		float3(0.0689, -0.1598, -0.8547), float3(0.0560, 0.0069, -0.1843),
+		float3(-0.0146, 0.1402, 0.0762), float3(0.0100, -0.1924, -0.0344),
+		float3(-0.3577, -0.5301, -0.4358), float3(-0.3169, 0.1063, 0.0158),
+		float3(0.0103, -0.5869, 0.0046), float3(-0.0897, -0.4940, 0.3287),
+		float3(0.7119, -0.0154, -0.0918), float3(-0.0533, 0.0596, -0.5411),
+		float3(0.0352, -0.0631, 0.5460), float3(-0.4776, 0.2847, -0.0271)
+	};
+
+	float noise = sin(dot(IN.UVCoord, float2(12.9898, 78.233)*2.0)) * 43758.5453;
+	float3 random;
+	random.x = frac(noise)*2.0 - 1.0;
+	random.y = frac(noise*1.2154)*2.0 - 1.0;
+	random.z = frac(noise*1.3453)*2.0 - 1.0;
+
+	float2 d2 = readDepth(IN.UVCoord);
+	if(d2.y < 0.1) return float4(1.0, 1.0, 1.0, 1.0);
+	float depth = d2.x;
+
+	float3 position = float3(IN.UVCoord, depth);
+	float3 normal = normalFromDepth(depth, IN.UVCoord);
+	normal.z = -normal.z;
+
+	float radius_depth = radius / pow(depth,1.3);
+	float occlusion = 0.0;
+	for(int i = 0; i < samples; i++) {
+		float3 ray = radius_depth * reflect(sample_sphere[i], random);
+		float3 hemi_ray = position + sign(dot(ray, normal)) * ray;
+
+		float occ_depth = readDepth(saturate(hemi_ray.xy)).r;
+		float difference = depth - occ_depth;
+
+		occlusion += step(falloff, difference) * (1.0 - smoothstep(falloff, area, difference));
+	}
+
+	float ao = saturate(base - total_strength * occlusion * (1.0 / samples));
+
+	//return float4(normal.x, normal.y, normal.z, depth);
+	return float4(ao, ao, ao, depth);
+}
+#endif
 
 #ifdef BLUR_SHARP
 float4 HBlur( VSOUT IN ) : COLOR0 {
@@ -323,6 +384,9 @@ float4 VBlur( VSOUT IN ) : COLOR0 {
 #else // BLUR_GAUSSIAN
 float4 HBlur(VSOUT IN) : COLOR0{
 	float4 sample = tex2D(passSampler, IN.UVCoord);
+	#ifdef SHOW_SSAO
+	return sample;
+	#endif
 	float color = sample.r;
 
 	float blurred = color*0.2270270270;
@@ -336,6 +400,9 @@ float4 HBlur(VSOUT IN) : COLOR0{
 
 float4 VBlur(VSOUT IN) : COLOR0{
 	float4 sample = tex2D(passSampler, IN.UVCoord);
+	#ifdef SHOW_SSAO
+	return sample;
+	#endif
 	float color = sample.r;
 
 	float blurred = color*0.2270270270;
@@ -363,11 +430,11 @@ float4 Combine( VSOUT IN ) : COLOR0 {
 	#endif
 
 	color.rgb *= ao;
-	
+
+	#ifdef SHOW_SSAO
+	return aoSample;
+	#endif
 	return color;
-	//return aoSample;
-	//aoSample.a /= 100000;
-	//return float4(aoSample.a, aoSample.a, aoSample.a, color.a);
 }
 
 technique t0

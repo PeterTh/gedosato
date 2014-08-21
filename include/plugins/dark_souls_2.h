@@ -12,7 +12,7 @@
 class DS2Plugin : public GamePlugin {
 
 	IDirect3DStateBlock9* defaultState;
-	IDirect3DSurface9 *zBufferSurf, *hdrRT;
+	IDirect3DSurface9 *zBufferSurf, *normalSurf, *hdrRT;
 	bool aaStepStarted, aoDone;
 	DOF* dof;
 	SSAO* ssao;
@@ -24,7 +24,7 @@ class DS2Plugin : public GamePlugin {
 
 public:
 	DS2Plugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)
-		, defaultState(NULL), zBufferSurf(NULL), hdrRT(NULL)
+		, defaultState(NULL), zBufferSurf(NULL), normalSurf(NULL), hdrRT(NULL)
 		, aaStepStarted(false), aoDone(false)
 		, dof(NULL), ssao(NULL), post(NULL)
 		, fxaa(NULL), smaa(NULL), bloom(NULL)
@@ -48,4 +48,6 @@ public:
 	virtual void toggleDOF() override { if(dof) { doDof = !doDof; Console::get().add(doDof ? "DoF enabled" : "DoF disabled"); } else { Console::get().add("DoF disabled in configuration!"); } }
 	virtual void toggleBloom() override { if(bloom) { doBloom = !doBloom; Console::get().add(doBloom ? "Bloom enabled" : "Bloom disabled"); } else { Console::get().add("Bloom disabled in configuration!"); } }
 	virtual void togglePost() override { if(post) { doPost = !doPost; Console::get().add(doPost ? "Post-processing enabled" : "Post-processing disabled"); } else { Console::get().add("Post-processing disabled in configuration!"); } }
+	
+	virtual void dumpSSAO() override { if(ssao) { ssao->dumpFrame(); Console::get().add("AO dumped"); } else { Console::get().add("SSAO disabled in configuration!"); } }
 };

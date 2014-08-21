@@ -7,6 +7,7 @@
 DS2Plugin::~DS2Plugin() {
 	SAFERELEASE(defaultState);
 	SAFERELEASE(zBufferSurf);
+	SAFERELEASE(normalSurf);
 	SAFERELEASE(hdrRT);
 	SAFEDELETE(dof);
 	SAFEDELETE(fxaa);
@@ -52,6 +53,7 @@ void DS2Plugin::reportStatus() {
 
 void DS2Plugin::prePresent() {
 	SAFERELEASE(zBufferSurf);
+	SAFERELEASE(normalSurf);
 	SAFERELEASE(hdrRT);
 	aaStepStarted = false;
 	aoDone = false;
@@ -61,7 +63,9 @@ HRESULT DS2Plugin::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSur
 	// At this point, we can grab the z (RT1) and normal (RT0) RTs
 	if(RenderTargetIndex == 1 && pRenderTarget == NULL && zBufferSurf == NULL) {
 		SAFERELEASE(zBufferSurf);
+		SAFERELEASE(normalSurf);
 		d3ddev->GetRenderTarget(1, &zBufferSurf);
+		d3ddev->GetRenderTarget(0, &normalSurf);
 	}
 	// If previous RT was D3DFMT_A16B16G16R16F, store RT
 	else if(((doAO && ssao) || (doBloom && bloom)) && !aoDone && !hdrRT && RenderTargetIndex == 0 && zBufferSurf != NULL && defaultState != NULL) {
@@ -156,7 +160,7 @@ HRESULT DS2Plugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 		frameTex = D3DGetSurfTexture(hdrRT);
 		if(depth && frameTex) {
 			SDLOG(2, "- AO ready to go\n")
-				ssao->goHDR(frameTex, depth, hdrRT);
+			ssao->goHDR(frameTex, depth, hdrRT);
 			SDLOG(2, "- AO done\n")
 		}
 		else {
