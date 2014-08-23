@@ -6,6 +6,7 @@ General:
 - Added modifyGetClientRect and modifyGetWindowRect settings
 - Added "delayDetouring" setting to make unified injection work like previous default
 - Added support for user profiles for both keybindings and settings
+- Added setting to force windowed mode
 - Added keybinding for realoading shaders (useful for development)
 - Made the degree of parallelism for screenshot taking configurable
 - Prevent keybindings from triggering for background games
@@ -21,6 +22,8 @@ GeDoSaToTool:
 - Add buttons for showing screenshot/config folders
 GenericDepth Plugin:
 - Created: generic plugin + depth buffer handling
+Dark Souls 2:
+- Greatly improved SSAO quality
 
 13-08-2014 -- beta 11 - "At Sixes and Sevens"
 =============================================

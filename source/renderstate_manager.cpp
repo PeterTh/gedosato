@@ -599,6 +599,15 @@ namespace {
 			pPresentationParameters->BackBufferWidth = Settings::get().getPresentWidth();
 			pPresentationParameters->BackBufferHeight = Settings::get().getPresentHeight();
 		}
+		if(Settings::get().getForceWindowedMode()) {
+			SDLOG(1, "Forcing windowed mode.\n");
+			if(pPresentationParameters->hDeviceWindow) SetForegroundWindow(pPresentationParameters->hDeviceWindow);
+			WindowManager::get().addCaption();
+			WindowManager::get().resize(Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
+			pPresentationParameters->Windowed = TRUE;
+			pPresentationParameters->FullScreen_RefreshRateInHz = 0;
+			pPresentationParameters->hDeviceWindow = ::GetActiveWindow();
+		}
 	}
 	void initPresentationParams(D3DPRESENT_PARAMETERS* pPresentationParameters, D3DPRESENT_PARAMETERS* copy) {
 		if(pPresentationParameters->BackBufferCount == 0) pPresentationParameters->BackBufferCount = 1;
@@ -644,6 +653,11 @@ namespace {
 			pPresentationParameters->MultiSampleType, pPresentationParameters->MultiSampleQuality,
 			pPresentationParameters->SwapEffect, 
 			pPresentationParameters->EnableAutoDepthStencil?true:false, pPresentationParameters->AutoDepthStencilFormat);
+
+		if(Settings::get().getForceWindowedMode()) {
+			WindowManager::get().addCaption();
+			WindowManager::get().resize(Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
+		}
 	}
 }
 

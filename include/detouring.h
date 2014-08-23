@@ -21,9 +21,7 @@ void setDisplayFaking(bool fake);
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
 extern __name##_FNType True##__name;
 
-GENERATE_INTERCEPT_DECLARATION(AdjustWindowRect, BOOL, WINAPI, __inout LPRECT lpRect, __in DWORD dwStyle, __in BOOL bMenu);
-GENERATE_INTERCEPT_DECLARATION(AdjustWindowRectEx, BOOL, WINAPI, _Inout_ LPRECT lpRect, _In_ DWORD dwStyle, _In_ BOOL bMenu, _In_ DWORD dwExStyle);
-GENERATE_INTERCEPT_DECLARATION(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags);
+//GENERATE_INTERCEPT_DECLARATION(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags);
 
 GENERATE_INTERCEPT_DECLARATION(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect);
 GENERATE_INTERCEPT_DECLARATION(GetWindowRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect);

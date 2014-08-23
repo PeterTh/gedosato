@@ -28,6 +28,7 @@ public:
 	void maintainBorderlessFullscreen();
 	void maintainWindowSize();
 	void resize(unsigned clientW, unsigned clientH);
+	void addCaption();
 
 	void setFakeFullscreen(unsigned w, unsigned h);
 	void interceptGetDisplayMode(D3DDISPLAYMODE* pMode);

@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "d3dutil.h"
 #include "winutil.h"
+#include "string_utils.h"
 
 WindowManager WindowManager::instance;
 
@@ -90,9 +91,12 @@ void WindowManager::forceBorderlessFullscreen() {
 }
 
 void WindowManager::resize(unsigned clientW, unsigned clientH) {
+	SDLOG(19, "WindowManager::resize A\n");
 	HWND hwnd = ::GetActiveWindow();
+	SDLOG(19, "WindowManager::resize B %p\n", hwnd);
 	// Store current window rect
-	::GetClientRect(hwnd, &prevWindowRect);
+	TrueGetClientRect(hwnd, &prevWindowRect);
+	SDLOG(19, "WindowManager::resize C\n");
 	// Get monitor size
 	HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 	MONITORINFO info;
@@ -100,6 +104,7 @@ void WindowManager::resize(unsigned clientW, unsigned clientH) {
 	GetMonitorInfo(monitor, &info);
 	int monitorWidth = info.rcMonitor.right - info.rcMonitor.left;
 	int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
+	SDLOG(1, "WindowManager::resize D\n");
 
 	// How much do we overlap or are smaller than the actual screen size
 	int widthDiff = monitorWidth - (clientW ? clientW : prevWindowRect.right);
@@ -110,10 +115,26 @@ void WindowManager::resize(unsigned clientW, unsigned clientH) {
 	desiredRect.top = heightDiff / 2;
 	desiredRect.right = monitorWidth - (widthDiff / 2);
 	desiredRect.bottom = monitorHeight - (heightDiff / 2);
- 	LONG lStyle = ::GetWindowLong(hwnd, GWL_STYLE);
- 	TrueAdjustWindowRect(&desiredRect, lStyle, false);
-	TrueSetWindowPos(hwnd, NULL, desiredRect.left, desiredRect.top, desiredRect.right-desiredRect.left, desiredRect.bottom-desiredRect.top, SWP_NOZORDER);
+	SDLOG(19, "WindowManager::resize E\n");
+	LONG lStyle = TrueGetWindowLongA(hwnd, GWL_STYLE);
+	SDLOG(19, "WindowManager::resize F style: %d desiredRect: %s\n", lStyle, RectToString(&desiredRect).c_str());
+	::AdjustWindowRect(&desiredRect, lStyle, false);
+	SDLOG(19, "WindowManager::resize G\n");
+	::SetWindowPos(hwnd, NULL, desiredRect.left, desiredRect.top, desiredRect.right - desiredRect.left, desiredRect.bottom - desiredRect.top, SWP_NOZORDER);
+	SDLOG(19, "WindowManager::resize H\n");
 	SDLOG(0, "Set Window rect to %s\n", RectToString(&desiredRect).c_str());
+}
+
+void WindowManager::addCaption() {
+	HWND hwnd = ::GetActiveWindow();
+	// set styles
+	LONG lStyle = TrueGetWindowLongA(hwnd, GWL_STYLE);
+	lStyle |= WS_OVERLAPPEDWINDOW;
+	TrueSetWindowLongA(hwnd, GWL_STYLE, lStyle);
+	LONG lExStyle = TrueGetWindowLongA(hwnd, GWL_EXSTYLE);
+	lExStyle |= WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE;
+	TrueSetWindowLongA(hwnd, GWL_EXSTYLE, lExStyle);
+	SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 }
 
 void WindowManager::maintainWindowSize() {
@@ -123,7 +144,7 @@ void WindowManager::maintainWindowSize() {
 		::GetWindowRect(hwnd, &rect);
 		
 		if(rect.right-rect.left < (long)Settings::get().getPresentWidth() || rect.bottom-rect.top < (long)Settings::get().getPresentHeight()) {
-			SDLOG(0, "Restoring window size, previous rect: %s\n", RectToString(&rect).c_str());
+			SDLOG(2, "Restoring window size, previous rect: %s\n", RectToString(&rect).c_str());
 			resize(Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 		}
 	}

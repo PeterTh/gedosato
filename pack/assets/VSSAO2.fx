@@ -9,8 +9,8 @@
 /***User-controlled variables***/
 #define N_SAMPLES 32 //number of samples, currently do not change.
 
-extern float aoRadiusMultiplier = 0.2; //Linearly multiplies the radius of the AO Sampling
-extern float ThicknessModel = 6; //units in space the AO assumes objects' thicknesses are
+extern float aoRadiusMultiplier = 0.006; //Linearly multiplies the radius of the AO Sampling
+extern float ThicknessModel = 0.025; //units in space the AO assumes objects' thicknesses are
 extern float FOV = 75; //Field of View in Degrees
 extern float luminosity_threshold = 0.5;
 
@@ -32,17 +32,17 @@ extern float luminosity_threshold = 0.5;
 
 #ifdef SSAO_STRENGTH_LOW
 extern float aoClamp = 0.6;
-extern float aoStrengthMultiplier = 0.9;
+extern float aoStrengthMultiplier = 1.5;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
 extern float aoClamp = 0.3;
-extern float aoStrengthMultiplier = 1.5;
+extern float aoStrengthMultiplier = 2.0;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
 extern float aoClamp = 0.1;
-extern float aoStrengthMultiplier = 2.0;
+extern float aoStrengthMultiplier = 3.0;
 #endif
 
 #define LUMINANCE_CONSIDERATION //comment this line to not take pixel brightness into account
@@ -50,8 +50,8 @@ extern float aoStrengthMultiplier = 2.0;
 /***End Of User-controlled Variables***/
 static float2 rcpres = PIXEL_SIZE;
 static float aspect = rcpres.y/rcpres.x;
-static const float nearZ = 1;
-static const float farZ = 3500;
+static const float nearZ = 0;
+static const float farZ = 1;
 static const float2 g_InvFocalLen = { tan(0.5f*radians(FOV)) / rcpres.y * rcpres.x, tan(0.5f*radians(FOV)) };
 static const float depthRange = nearZ-farZ;
 
@@ -188,7 +188,10 @@ float2 rand(in float2 uv : TEXCOORD0) {
 
 //#define NEW_SSAO
 //#define SHOW_SSAO
+//#define SHOW_NORMALS
 //#define SHOW_DEPTH
+#define MAX_DEPTH 1
+#define NORM_WITHOUT_DD
 
 #ifdef USE_HWDEPTH
 float2 readDepth(in float2 coord : TEXCOORD0)
@@ -200,15 +203,14 @@ float2 readDepth(in float2 coord : TEXCOORD0)
 float2 readDepth(in float2 coord : TEXCOORD0)
 {
 	float4 col = tex2D(depthSampler, coord);
-	#ifdef NEW_SSAO
 	float posZ = ((col.x) + (col.y)*255.0 + (col.z)*(255.0*255.0));
-	// (2.0f * nearZ) / (sumZ - depth * rangeZ);
-	float depth = abs(posZ)/(256.0);
+	float depth = (abs(posZ)) / (256.0*256.0);
+	#ifdef NEW_SSAO
+	depth = pow(depth, 20);
 	return float2(depth, col.w);
-	//return float2((2.0 * nearZ) / (farZ + nearZ - depth * (farZ - nearZ)), col.w);
 	#else
-	float posZ = ((1 - col.x) + (1 - col.y)*255.0 + (1 - col.z)*(255.0*255.0));
-	return float2(pow(posZ / (5 * 256.0*256.0) + 1.0, 8.0) - 1.0, col.w);
+	depth = pow(depth, 66);
+	return float2(1-depth, col.w);
 	#endif
 }
 #endif
@@ -260,9 +262,9 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	float s = 0.0;
 
 	float2 rand_vec = rand(IN.UVCoord);
-	float2 sample_vec_divisor = g_InvFocalLen*depth*depthRange/(aoRadiusMultiplier*5000*rcpres);
+	float2 sample_vec_divisor = g_InvFocalLen*pow(1.0+depth,2.5)*depthRange / (aoRadiusMultiplier * 6000 * rcpres);
 	float2 sample_center = IN.UVCoord + norm.xy/sample_vec_divisor*float2(1.0f,aspect);
-	float sample_center_depth = depth*depthRange + norm.z*aoRadiusMultiplier*7;
+	float sample_center_depth = depth*depthRange + norm.z*aoRadiusMultiplier*1;
 	
 	for(int i = 0; i < N_SAMPLES; i++)
 	{
@@ -274,16 +276,13 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 		float curr_sample_depth = depthRange*readDepth(sample_coords);
 		
 		ao += clamp(0,curr_sample_radius+sample_center_depth-curr_sample_depth,2*curr_sample_radius);
-		ao -= clamp(0,curr_sample_radius+sample_center_depth-curr_sample_depth-ThicknessModel,2*curr_sample_radius);
+		ao -= clamp(0,curr_sample_radius+sample_center_depth-curr_sample_depth-ThicknessModel*pow(depth,1.5),2*curr_sample_radius);
 		s += 2.0*curr_sample_radius;
 	}
 
 	ao /= s;
 	
-	// adjust for close and far away
-	if(depth<0.065f) ao = lerp(ao, 0.0f, (0.065f-depth)*13.3);
-
-	ao = 1.0f-ao*aoStrengthMultiplier;
+	ao = saturate(1.36f-ao*aoStrengthMultiplier);
 
 	return float4(ao, ao, ao, depth);
 	//return float4(depth, depth, depth, depth);
@@ -295,10 +294,11 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	const float total_strength = 1.0;
 	const float base = 1.2;
 
-	const float area = 3.0;
+	const float area = 0.1;
 	const float falloff = 0.001;
 
-	const float radius = 25.0;
+	const float radius = 0.02;
+	//const float radius = 0.004;
 
 	const int samples = 16;
 	float3 sample_sphere[samples] = {
@@ -322,11 +322,20 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	if(d2.y < 0.1) return float4(1.0, 1.0, 1.0, 1.0);
 	float depth = d2.x;
 
+	#ifdef SHOW_DEPTH
+	if(depth < 0.00 * MAX_DEPTH) return float4(1.0, 0.0, 1.0, 1.0);
+	if(depth < 0.25 * MAX_DEPTH) return float4(0.0, 1.0, 0.0, 1.0);
+	if(depth < 0.50 * MAX_DEPTH) return float4(0.0, 0.0, 1.0, 1.0);
+	if(depth < 0.75 * MAX_DEPTH) return float4(1.0, 0.0, 0.0, 1.0);
+	if(depth < 1.00 * MAX_DEPTH) return float4(0.0, 1.0, 1.0, 1.0);
+	else return float4(0.0, 0.0, 0.0, 1.0);
+	#endif
+
 	float3 position = float3(IN.UVCoord, depth);
 	float3 normal = normalFromDepth(depth, IN.UVCoord);
-	normal.z = -normal.z;
+	//normal.z = -normal.z;
 
-	float radius_depth = radius / pow(depth,1.3);
+	float radius_depth = radius / depth;
 	float occlusion = 0.0;
 	for(int i = 0; i < samples; i++) {
 		float3 ray = radius_depth * reflect(sample_sphere[i], random);
@@ -340,7 +349,9 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 
 	float ao = saturate(base - total_strength * occlusion * (1.0 / samples));
 
-	//return float4(normal.x, normal.y, normal.z, depth);
+	#ifdef SHOW_NORMALS
+	return float4(normal.x, normal.y, normal.z, depth);
+	#endif
 	return float4(ao, ao, ao, depth);
 }
 #endif

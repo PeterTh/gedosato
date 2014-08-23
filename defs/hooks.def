@@ -39,8 +39,6 @@ HOOK(SetWindowLongW, "User32.dll")
 HOOK(GetWindowLongA, "User32.dll")
 HOOK(GetWindowLongW, "User32.dll")
 
-//HOOK(AdjustWindowRect, "User32.dll")
-//HOOK(AdjustWindowRectEx, "User32.dll")
 //HOOK(SetWindowPos, "User32.dll")
 
 HOOK(DirectInput8Create, "dinput8.dll")
