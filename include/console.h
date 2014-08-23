@@ -37,7 +37,7 @@ typedef std::shared_ptr<StaticText> StaticTextPtr;
 class Console {
 	typedef std::pair<float, float> Position;
 	static Console* latest;
-	static const unsigned MAX_LINES = 8;
+	static const unsigned MAX_LINES = 16;
 	static const unsigned BMPSIZE = 512;
 
 	vector<ConsoleLine> lines;
@@ -75,11 +75,7 @@ public:
 		latest = c;
 	}
 
-	void add(const string& msg) {
-		SDLOG(1, "Console add: %s\n", msg.c_str());
-		lines.push_back(ConsoleLine(msg));
-		lineHeight = 1.0f;
-	}
+	void add(const string& msg);
 
 	void add(StaticTextPtr text) {
 		statics.push_back(text);

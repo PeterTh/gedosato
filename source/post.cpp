@@ -11,12 +11,16 @@ using namespace std;
 #include "renderstate_manager.h"
 
 Post::Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB) 
-	: Effect(device), width(width), height(height) {
+	: Effect(device), width(width), height(height), useSRGB(useSRGB) {
 	
-	// Setup the defines for compiling the effect
-    vector<D3DXMACRO> defines;
+	reloadShader();
+}
 
-    // Setup pixel size macro
+void Post::reloadShader() {
+	// Setup the defines for compiling the effect
+	vector<D3DXMACRO> defines;
+
+	// Setup pixel size macro
 	string pixelSizeText = format("float2(1.0/%d, 1.0/%d)", width, height);
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
@@ -28,9 +32,9 @@ Post::Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB)
 
 	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
 	defines.push_back(srgbMacro);
-	
-    D3DXMACRO null = { NULL, NULL };
-    defines.push_back(null);
+
+	D3DXMACRO null = { NULL, NULL };
+	defines.push_back(null);
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
 
@@ -40,14 +44,24 @@ Post::Post(IDirect3DDevice9 *device, int width, int height, bool useSRGB)
 	string customfn = getConfigFileName(getExeFileName() + "\\" + shaderFn);
 	if(boost::filesystem::exists(customfn)) shaderFn = customfn;
 	else shaderFn = getAssetFileName(shaderFn);
-	SDLOG(0, "%s load\n", shaderFn.c_str());	
+	SDLOG(0, "%s load\n", shaderFn.c_str());
 	ID3DXBuffer* errors;
-	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
-	
+	ID3DXEffect* newEffect = NULL;
+	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
+	if(hr != D3D_OK) {
+		SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+		Console::get().add(format("Error compiling %s:", shaderFn.c_str()));
+		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
+	}
+	else {
+		SAFERELEASE(effect);
+		effect = newEffect;
+	}
+
 	// Get handles
 	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
 }
+
 
 Post::~Post() {
 	SAFERELEASE(effect);

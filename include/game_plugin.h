@@ -34,6 +34,8 @@ public:
 	virtual void dumpSSAO() { Console::get().add("AO not supported by this plugin!"); }
 	virtual void dumpBloom() { Console::get().add("Bloom not supported by this plugin!"); }
 
+	virtual void reloadShaders() { }
+
 	virtual Scaler* getScaler() { return NULL; }
 
 	virtual HRESULT redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {

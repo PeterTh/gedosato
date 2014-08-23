@@ -188,6 +188,7 @@ float2 rand(in float2 uv : TEXCOORD0) {
 
 //#define NEW_SSAO
 //#define SHOW_SSAO
+//#define SHOW_DEPTH
 
 #ifdef USE_HWDEPTH
 float2 readDepth(in float2 coord : TEXCOORD0)

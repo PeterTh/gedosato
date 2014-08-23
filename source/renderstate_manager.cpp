@@ -142,6 +142,15 @@ void RSManager::initResources(bool downsampling, unsigned rw, unsigned rh,
 	inited = true;
 }
 
+
+void RSManager::reloadShaders() {
+	if(downsampling) {
+		scaler->reloadShader();
+	}
+	plugin->reloadShaders();
+}
+
+
 void RSManager::releaseResources() {
 	SDLOG(0, "RenderstateManager release: going into neutral state\n");
 	for(int i = 0; i < 16; ++i) d3ddev->SetTexture(i, NULL);

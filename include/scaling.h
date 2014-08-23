@@ -22,12 +22,14 @@ public:
 	void nextScaling();
 
 	void showStatus();
+	void reloadShader();
 
 private:
+	bool useSRGB;
 	int inputwidth, inputheight, width, height;
 	scalingType sType;
 
-	ID3DXEffect *effect;
+	ID3DXEffect *effect = NULL;
 	
 	D3DXHANDLE frameTexHandle;
 	D3DXHANDLE inputSizeHandle;

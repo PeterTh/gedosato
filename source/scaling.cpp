@@ -14,7 +14,7 @@ using namespace std;
 
 Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height, bool useSRGB)
 	: Effect(device), inputwidth(inputwidth), inputheight(inputheight), width(width), height(height),
-	  levels(0), levelInputSizes(NULL) {
+	  levels(0), levelInputSizes(NULL), useSRGB(useSRGB) {
 	SDLOG(0, "Scaler construct\n");
 	// Determine initial scaling type from settings
 	if(boost::iequals(Settings::get().getScalingType(), string("bicubic"))) {
@@ -27,27 +27,8 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 		sType = BILINEAR;
 	}
 
-	// Setup the defines for compiling the effect
-    vector<D3DXMACRO> defines;
+	reloadShader();
 
-	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
-	defines.push_back(srgbMacro);
-
-	D3DXMACRO null = { NULL, NULL };
-	defines.push_back(null);
-
-	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
-
-	// Load effect from file
-	SDLOG(0, "Scaler load\n");
-	ID3DXBuffer* errors;
-	HRESULT hr = D3DXCreateEffectFromFile(device, getAssetFileName("scaling.fx").c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
-		
-	// get handles
-	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
-	inputSizeHandle = effect->GetParameterByName(NULL, "inputSize");
-	
 	stringstream ss;
 
 	// generate multi-level buffers
@@ -82,6 +63,38 @@ Scaler::~Scaler() {
 	SAFERELEASE(effect);
 	delete [] levelInputSizes;
 }
+
+void Scaler::reloadShader() {
+	// Setup the defines for compiling the effect
+	vector<D3DXMACRO> defines;
+
+	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
+	defines.push_back(srgbMacro);
+
+	D3DXMACRO null = { NULL, NULL };
+	defines.push_back(null);
+
+	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
+
+	// Load effect from file
+	SDLOG(0, "Scaler load\n");
+	ID3DXBuffer* errors;
+	ID3DXEffect* newEffect = NULL;
+	HRESULT hr = D3DXCreateEffectFromFile(device, getAssetFileName("scaling.fx").c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
+	if(hr != D3D_OK) {
+		SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+		Console::get().add("Error compiling scaling.fx:");
+		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
+	} else {
+		SAFERELEASE(effect);
+		effect = newEffect;
+	}
+
+	// get handles
+	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
+	inputSizeHandle = effect->GetParameterByName(NULL, "inputSize");
+}
+
 
 void Scaler::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 	if(sType == NEAREST) {

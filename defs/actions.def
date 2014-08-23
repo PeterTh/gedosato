@@ -37,6 +37,8 @@ ACTION(dumpSSAO, RSManager::get().dumpSSAO())
 
 ACTION(togglePerfInfo, RSManager::get().togglePerfInfo())
 
+ACTION(reloadShaders, RSManager::get().reloadShaders())
+
 ACTION(showStatus, RSManager::get().showStatus())
 
 ACTION(dumpFrame, RSManager::get().dumpFrame())

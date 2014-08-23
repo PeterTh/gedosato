@@ -35,6 +35,12 @@ void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
 	if(Settings::get().getEnableBloom()) bloom = new Bloom(d3ddev, drw, drh, 0.9f, 1.0f, 0.5f);
 }
 
+void DS2Plugin::reloadShaders() {
+	if(ssao) ssao->reloadShader();
+	if(post) post->reloadShader();
+}
+
+
 void DS2Plugin::reportStatus() {
 	if(doAA && (smaa || fxaa)) {
 		if(smaa) Console::get().add(format("SMAA enabled, quality level %d", Settings::get().getAAQuality()));

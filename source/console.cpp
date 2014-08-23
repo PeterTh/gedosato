@@ -7,6 +7,9 @@
 #include <sstream>
 #include <algorithm>
 
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
+
 Console* Console::latest = NULL;
 	
 const D3DVERTEXELEMENT9 Console::vertexElements[3] = {
@@ -186,4 +189,12 @@ void Console::quad(const stbtt_aligned_quad& q) {
 bool Console::needsDrawing() {
 	return device && lineHeight > 0.0f 
 		|| std::any_of(statics.begin(), statics.end(), [](const StaticTextPtr& p) { return p->show; });
+}
+
+void Console::add(const string& msg) {
+	SDLOG(1, "Console add: %s\n", msg.c_str());
+	std::vector<std::string> splitstring;
+	boost::algorithm::split(splitstring, msg, boost::is_any_of("\n\r"));
+	for(const auto& s : splitstring) lines.push_back(ConsoleLine(s));
+	lineHeight = 1.0f;
 }

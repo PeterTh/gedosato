@@ -4,10 +4,10 @@
 // -------------------- Settings -----------------------------------------------
 
 // Set to 1 for ON or 0 for OFF
-#define USE_BLOOM         0  // [0 or 1] Bloom : Makes bright lights bleed their light into their surroundings (relatively high performance cost)
-#define USE_HDR           0  // [0 or 1] HDR : Not actual HDR - It just tries to mimic an HDR look (relatively high performance cost)
-#define USE_LUMASHARPEN   0  // [0 or 1] LumaSharpen
-#define USE_VIBRANCE      0  // [0 or 1] Vibrance : Intelligently saturates (or desaturates if you use negative values) the pixels depending on their original saturation.
+#define USE_BLOOM             0 //[0 or 1] Bloom : Makes bright lights bleed their light into their surroundings (relatively high performance cost)
+#define USE_HDR               0 //[0 or 1] HDR : Not actual HDR - It just tries to mimic an HDR look (relatively high performance cost)
+#define USE_LUMASHARPEN       0 //[0 or 1] LumaSharpen
+#define USE_VIBRANCE          0 //[0 or 1] Vibrance : Intelligently saturates (or desaturates if you use negative values) the pixels depending on their original saturation.
 #define USE_TONEMAP           0 //[0 or 1] Tonemap : Adjust gamma, exposure, saturation, bleach and defog. (may cause clipping)
 #define USE_CA                0 //[0 or 1] Chromatic aberration. You can only use Chromatic Aberration OR the Explosion Shader. Not both at the same time.
 #define USE_CURVES            0 //[0 or 1] Curves : Contrast adjustments using S-curves.
@@ -38,10 +38,10 @@
 
 // Tonemap settings
 	#define Gamma 1.0                      //[0.000 to 2.000] Adjust midtones
-	#define Exposure 0.0                     //[-1.000 to 1.000] Adjust exposure
-	#define Saturation 0.0                   //[-1.000 to 1.000] Adjust saturation
-	#define Bleach 0.0                       //[0.000 to 1.000] Brightens the shadows and fades the colors
-	#define Defog 1.0                       //[0.000 to 1.000] How much of the color tint to remove
+	#define Exposure 0.0                   //[-1.000 to 1.000] Adjust exposure
+	#define Saturation 0.0                 //[-1.000 to 1.000] Adjust saturation
+	#define Bleach 0.0                     //[0.000 to 1.000] Brightens the shadows and fades the colors
+	#define Defog 1.0                      //[0.000 to 1.000] How much of the color tint to remove
 	#define FogColor float3(0.0, 0.0, 0.0) //[0.00 to 2.55, 0.00 to 2.55, 0.00 to 2.55] What color to remove - default is blue
 
 // Chromatic Abberation settings
@@ -78,7 +78,7 @@
 	#define CRTCornerSize        0.0100  //[0.0000 to 0.0020] Higher values, more rounded corner. Default is 0.001
 	#define CRTDistance          2.00    //[0.00 to 4.00]     Simulated distance from viewer to monitor. Default is 2.00
 	#define CRTAngleX            0.00    //[-0.20 to 0.20]    Tilt angle in radians (X coordinates)
-	#define CRTAngleY           -0.15   //[-0.20 to 0.20]    Tilt angle in radians (Y coordinates). (Value of -0.15 gives the 'arcade tilt' look)
+	#define CRTAngleY           -0.15    //[-0.20 to 0.20]    Tilt angle in radians (Y coordinates). (Value of -0.15 gives the 'arcade tilt' look)
 	#define CRTOverScan          1.00    //[1.00 to 1.10]     Overscan (e.g. 1.02 for 2% overscan). Default is 1.01
 	#define CRTOversample        0       //[0 or 1]           Enable 3x oversampling of the beam profile (warning : performance hit)
 	
@@ -93,11 +93,11 @@
 	#define B2 			0.7		//[0.0 to 1.0]   Amount of blue color for odd scanlines
 	
 // Technicolor settings
-	#define TechniAmount 0.46         //[0.00 to 1.00]
+	#define TechniAmount 0.46        //[0.00 to 1.00]
 	#define TechniPower  4.0         //[0.00 to 8.00]
 	#define redNegativeAmount   0.74 //[0.00 to 1.00]
 	#define greenNegativeAmount 0.83 //[0.00 to 1.00]
-	#define blueNegativeAmount  0.9 //[0.00 to 1.00]
+	#define blueNegativeAmount  0.9  //[0.00 to 1.00]
 	
 // Cineon DPX settings
 	#define Red   9.0  //[1.0 to 15.0]
@@ -114,7 +114,7 @@
 	#define Blend 0.23    //[0.00 to 1.00] How strong the effect should be
 	
 // Border settings
-	#define border_width float2(0,100)     //[0 to 2048, 0 to 2048] (X,Y)-width of the border. Measured in pixels.
+	#define border_width float2(0,100)    //[0 to 2048, 0 to 2048] (X,Y)-width of the border. Measured in pixels.
 	#define border_color float3(0, 0, 0)  //[0 to 255, 0 to 255, 0 to 255] What color the border should be. In integer RGB colors, meaning 0,0,0 is black and 255,255,255 is full white.
 
 // Splitscreen settings
@@ -126,6 +126,8 @@
 texture2D thisframeTex;
 
 static float2 rcpres = PIXEL_SIZE;
+
+const float timer;
 
 #ifndef USE_SRGB
 #define USE_SRGB true

@@ -130,6 +130,8 @@ public:
 	void dumpSSAO() { plugin->dumpSSAO(); }
 	void dumpBloom() { plugin->dumpBloom(); }
 
+	void reloadShaders();
+
 	void togglePerfInfo() { frameTimeText->show = !frameTimeText->show; }
 
 	Scaler* getScaler();

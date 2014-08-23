@@ -9,13 +9,27 @@ using namespace std;
 #include "renderstate_manager.h"
 
 SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth)
-	: Effect(device), width(width), height(height), dumping(false), 
+	: Effect(device), width(width), height(height), strength(strength), type(type), blur(blur), useSRGB(useSRGB), readHWDepth(readHWDepth),
 	  blurPasses(blur==BLUR_SHARP ? 3 : 1) {
-	
-	// Setup the defines for compiling the effect
-    vector<D3DXMACRO> defines;
 
-    // Setup pixel size macro
+	reloadShader();
+
+	// Create buffers
+	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	hdrBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_FP16);
+}
+
+SSAO::~SSAO() {
+	SAFERELEASE(effect);
+}
+
+void SSAO::reloadShader() {
+
+	// Setup the defines for compiling the effect
+	vector<D3DXMACRO> defines;
+
+	// Setup pixel size macro
 	stringstream sp;
 	sp << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
 	string pixelSizeText = sp.str();
@@ -25,12 +39,12 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	// Setup SRGB macro
 	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
 	defines.push_back(srgbMacro);
-	
+
 	// Setup depth reading method
 	D3DXMACRO readHWDepthMacro = { "USE_HWDEPTH", "true" };
 	if(readHWDepth) defines.push_back(readHWDepthMacro);
-	
-    // Setup scale macro
+
+	// Setup scale macro
 	stringstream ss;
 	ss << Settings::get().getSsaoScale() << ".0";
 	string scaleText = ss.str();
@@ -51,38 +65,38 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 		defines.push_back(sharpBlur);
 	}
 
-    D3DXMACRO null = { NULL, NULL };
-    defines.push_back(null);
+	D3DXMACRO null = { NULL, NULL };
+	defines.push_back(null);
 
 	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
 
 	// Load effect from file
 	string shaderFn;
 	switch(type) {
-		case VSSAO: shaderFn = "VSSAO.fx"; break;
-		case HBAO: shaderFn = "HBAO.fx"; break;
-		case SCAO: shaderFn = "SCAO.fx"; break;
-		case VSSAO2: shaderFn = "VSSAO2.fx"; break;
+	case VSSAO: shaderFn = "VSSAO.fx"; break;
+	case HBAO: shaderFn = "HBAO.fx"; break;
+	case SCAO: shaderFn = "SCAO.fx"; break;
+	case VSSAO2: shaderFn = "VSSAO2.fx"; break;
 	}
 	shaderFn = getAssetFileName(shaderFn);
-	SDLOG(0, "%s load, scale %s, strength %s\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);	
+	SDLOG(0, "%s load, scale %s, strength %s\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);
 	ID3DXBuffer* errors;
-	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(-1, "ERRORS:\n %s\n", errors->GetBufferPointer());
-	
-	// Create buffers
-	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
-	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
-	hdrBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_FP16);
+	ID3DXEffect* newEffect;
+	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
+	if(hr != D3D_OK) {
+		SDLOG(-1, "ERRORS:\n %s\n", errors->GetBufferPointer());
+		Console::get().add(format("Error compiling %s:", shaderFn.c_str()));
+		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
+	}
+	else {
+		SAFERELEASE(effect);
+		effect = newEffect;
+	}
 
 	// get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
-    prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
-}
-
-SSAO::~SSAO() {
-	SAFERELEASE(effect);
+	prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
 }
 
 void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {

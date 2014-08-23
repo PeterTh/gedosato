@@ -13,11 +13,13 @@ public:
     virtual ~Post();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst);
+	void reloadShader();
 
 private:
 	int width, height;
+	bool useSRGB;
 
-	ID3DXEffect *effect;
+	ID3DXEffect *effect = NULL;
 
 	D3DXHANDLE thisframeTexHandle;
 };
