@@ -9,7 +9,7 @@
 /***User-controlled variables***/
 #define N_SAMPLES 32 //number of samples, currently do not change.
 
-extern float aoRadiusMultiplier = 0.006; //Linearly multiplies the radius of the AO Sampling
+extern float aoRadiusMultiplier = 0.008; //Linearly multiplies the radius of the AO Sampling
 extern float ThicknessModel = 0.025; //units in space the AO assumes objects' thicknesses are
 extern float FOV = 75; //Field of View in Degrees
 extern float luminosity_threshold = 0.5;
@@ -37,12 +37,12 @@ extern float aoStrengthMultiplier = 1.5;
 
 #ifdef SSAO_STRENGTH_MEDIUM
 extern float aoClamp = 0.3;
-extern float aoStrengthMultiplier = 2.0;
+extern float aoStrengthMultiplier = 3.0;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
 extern float aoClamp = 0.1;
-extern float aoStrengthMultiplier = 3.0;
+extern float aoStrengthMultiplier = 4.5;
 #endif
 
 #define LUMINANCE_CONSIDERATION //comment this line to not take pixel brightness into account
@@ -190,6 +190,8 @@ float2 rand(in float2 uv : TEXCOORD0) {
 //#define SHOW_SSAO
 //#define SHOW_NORMALS
 //#define SHOW_DEPTH
+//#define BLUR_SHARP
+//#define DONT_BLUR
 #define MAX_DEPTH 1
 #define NORM_WITHOUT_DD
 
@@ -197,7 +199,13 @@ float2 rand(in float2 uv : TEXCOORD0) {
 float2 readDepth(in float2 coord : TEXCOORD0)
 {
 	float z = tex2D(depthSampler, coord).r; // Depth is stored in the red component
-	return (2.0 * nearZ) / (farZ + nearZ - z * (farZ - nearZ));
+	#ifdef NEW_SSAO
+	float depth = pow(z, 36);
+	return float2(depth, 1.0);
+#else
+	float depth = pow(z, 120);
+	return float2(1 - depth, 1.0);
+	#endif
 }
 #else
 float2 readDepth(in float2 coord : TEXCOORD0)
@@ -262,9 +270,9 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 	float s = 0.0;
 
 	float2 rand_vec = rand(IN.UVCoord);
-	float2 sample_vec_divisor = g_InvFocalLen*pow(1.0+depth,2.5)*depthRange / (aoRadiusMultiplier * 6000 * rcpres);
+	float2 sample_vec_divisor = g_InvFocalLen*pow(1.0+depth,3.0)*depthRange / (aoRadiusMultiplier * 8000 * rcpres);
 	float2 sample_center = IN.UVCoord + norm.xy/sample_vec_divisor*float2(1.0f,aspect);
-	float sample_center_depth = depth*depthRange + norm.z*aoRadiusMultiplier*1;
+	float sample_center_depth = depth*depthRange + norm.z*aoRadiusMultiplier*1.4;
 	
 	for(int i = 0; i < N_SAMPLES; i++)
 	{
@@ -282,7 +290,7 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 
 	ao /= s;
 	
-	ao = saturate(1.36f-ao*aoStrengthMultiplier);
+	ao = 1 - saturate(-0.15f + ao)*aoStrengthMultiplier;
 
 	return float4(ao, ao, ao, depth);
 	//return float4(depth, depth, depth, depth);
@@ -357,46 +365,57 @@ float4 ssao_Main(VSOUT IN) : COLOR0
 #endif
 
 #ifdef BLUR_SHARP
+#define THICKNESS_FACTOR 0.2
 float4 HBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
+	#ifdef DONT_BLUR
+	return sample;
+	#endif
 	float blurred = sample.r*2;
 	float depth = sample.a;
 	float divide = 2.0;
 
 	float4 left = tex2D(passSampler, IN.UVCoord - float2(rcpres.x, 0));
-	float lpower = saturate(ThicknessModel - abs(left.a - depth));
+	float lpower = saturate((THICKNESS_FACTOR*ThicknessModel - abs(left.a - depth))*(1 / ThicknessModel));
 	blurred += lpower*left.r;
 	divide += lpower;
 
 	float4 right = tex2D(passSampler, IN.UVCoord + float2(rcpres.x, 0));
-	float rpower = saturate(ThicknessModel - abs(right.a - depth));
+	float rpower = saturate((THICKNESS_FACTOR*ThicknessModel - abs(right.a - depth))*(1 / ThicknessModel));
 	blurred += rpower*left.r;
 	divide += rpower;
 
-	return float4(blurred/divide, 0, 0, depth);
+	blurred /= divide;
+
+	return float4(blurred, blurred, blurred, depth);
 }
 float4 VBlur( VSOUT IN ) : COLOR0 {
 	float4 sample = tex2D(passSampler, IN.UVCoord);
+	#ifdef DONT_BLUR
+	return sample;
+	#endif
 	float blurred = sample.r*2;
 	float depth = sample.a;
 	float divide = 2.0;
 
 	float4 top = tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y));
-	float tpower = saturate(ThicknessModel - abs(top.a - depth));
+	float tpower = saturate((THICKNESS_FACTOR*ThicknessModel - abs(top.a - depth))*(1 / ThicknessModel));
 	blurred += tpower*top.r;
 	divide += tpower;
 
 	float4 bottom = tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y));
-	float bpower = saturate(ThicknessModel - abs(bottom.a - depth));
+	float bpower = saturate((THICKNESS_FACTOR*ThicknessModel - abs(bottom.a - depth))*(1 / ThicknessModel));
 	blurred += bpower*bottom.r;
 	divide += bpower;
 
-	return float4(blurred / divide, 0, 0, depth);
+	blurred /= divide;
+
+	return float4(blurred, blurred, blurred, depth);
 }
 #else // BLUR_GAUSSIAN
 float4 HBlur(VSOUT IN) : COLOR0{
 	float4 sample = tex2D(passSampler, IN.UVCoord);
-	#ifdef SHOW_SSAO
+	#ifdef DONT_BLUR
 	return sample;
 	#endif
 	float color = sample.r;
@@ -407,12 +426,12 @@ float4 HBlur(VSOUT IN) : COLOR0{
 	blurred += tex2D(passSampler, IN.UVCoord + float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
 	blurred += tex2D(passSampler, IN.UVCoord - float2(rcpres.x*3.2307692308, 0)).r * 0.0702702703;
 
-	return float4(blurred, 0, 0, sample.a);
+	return float4(blurred, blurred, blurred, sample.a);
 }
 
 float4 VBlur(VSOUT IN) : COLOR0{
 	float4 sample = tex2D(passSampler, IN.UVCoord);
-	#ifdef SHOW_SSAO
+	#ifdef DONT_BLUR
 	return sample;
 	#endif
 	float color = sample.r;
@@ -423,7 +442,7 @@ float4 VBlur(VSOUT IN) : COLOR0{
 	blurred += tex2D(passSampler, IN.UVCoord + float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
 	blurred += tex2D(passSampler, IN.UVCoord - float2(0, rcpres.y*3.2307692308)).r * 0.0702702703;
 
-	return float4(blurred, 0, 0, sample.a);
+	return float4(blurred, blurred, blurred, sample.a);
 }
 #endif // blur type
 

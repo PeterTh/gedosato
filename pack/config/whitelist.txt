@@ -97,6 +97,8 @@ StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
+trine2_32bit                 || Trine 2
+trine2_launcher              || Trine 2 Launcher
 tru                          || Tomb Raider: Underworld
 Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2

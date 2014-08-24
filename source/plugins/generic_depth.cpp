@@ -123,3 +123,8 @@ HRESULT GenericDepthPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pN
 
 	return GenericPlugin::redirectSetDepthStencilSurface(pNewZStencil);
 }
+
+void GenericDepthPlugin::reloadShaders() {
+	GenericPlugin::reloadShaders();
+	if(ssao) ssao->reloadShader();
+}

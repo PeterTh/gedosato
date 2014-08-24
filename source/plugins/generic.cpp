@@ -164,3 +164,7 @@ void GenericPlugin::toggleHUD() {
 		Console::get().add(string("HUD rendering ") + (hudEnabled ? "enabled" : "disabled"));
 	}
 }
+
+void GenericPlugin::reloadShaders() {
+	if(post) post->reloadShader();
+}
