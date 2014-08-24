@@ -14,6 +14,7 @@ General:
 - Restore initial state device after setup (fixes e.g. Risen 3)
 - Fix DX9Ex crash introduced with multi-resolution options
 - Fixed loop error with borderless fullscreen
+- Fixed reading setting files with long lines
 GeDoSaToTool:
 - Gracefully handle errors when checking for updates
 - Change security permissions for unloading event

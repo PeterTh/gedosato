@@ -49,20 +49,19 @@ void Settings::load(const string &fn) {
 	if(!boost::filesystem::exists(fn)) return;
 	std::ifstream sfile;
 	sfile.open(fn, std::ios::in);
-	char buffer[128];
 	while(!sfile.eof()) {
-		sfile.getline(buffer, 128);
-		if(buffer[0] == '#') continue;
-		if(sfile.gcount() <= 1) continue;
-		std::string bstring(buffer);
+		string bstring;
+		std::getline(sfile, bstring);
+		if(bstring[0] == '#') continue;
+		if(bstring.size() <= 1) continue;
 
 		if(bstring.find("renderResolution") == 0) {
-			resSettings.readResolution(buffer + strlen("renderResolution") + 1);
+			resSettings.readResolution(bstring.substr(strlen("renderResolution") + 1).c_str());
 		}
 
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		if(bstring.find(_inistring) == 0) { \
-			read(buffer + strlen(_inistring) + 1, _var); \
+			read(bstring.substr(strlen(_inistring) + 1).c_str(), _var); \
 		}
 		#include "Settings.def"
 		#undef SETTING
@@ -137,25 +136,25 @@ void Settings::restoreLogLevel() {
 
 // reading --------------------------------------------------------------------
 
-void Settings::read(char* source, bool& value) {
+void Settings::read(const char* source, bool& value) {
 	std::string ss(source);
 	if(ss.find("true")==0 || ss.find("1")==0 || ss.find("TRUE")==0 || ss.find("enable")==0) value = true;
 	else value = false;
 }
 
-void Settings::read(char* source, int& value) {
+void Settings::read(const char* source, int& value) {
 	sscanf_s(source, "%d", &value);
 }
 
-void Settings::read(char* source, unsigned& value) {
+void Settings::read(const char* source, unsigned& value) {
 	sscanf_s(source, "%u", &value);
 }
 
-void Settings::read(char* source, float& value) {
+void Settings::read(const char* source, float& value) {
 	sscanf_s(source, "%f", &value);
 }
 
-void Settings::read(char* source, std::string& value) {
+void Settings::read(const char* source, std::string& value) {
 	value.assign(source);
 }
 

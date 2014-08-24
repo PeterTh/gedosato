@@ -35,11 +35,11 @@ class Settings {
 	bool inited;
 	unsigned baseLogLevel;
 
-	void read(char* source, bool& value);
-	void read(char* source, int& value);
-	void read(char* source, unsigned& value);
-	void read(char* source, float& value);
-	void read(char* source, std::string& value);
+	void read(const char* source, bool& value);
+	void read(const char* source, int& value);
+	void read(const char* source, unsigned& value);
+	void read(const char* source, float& value);
+	void read(const char* source, std::string& value);
 	
 	void log(const char* name, bool value);
 	void log(const char* name, int value);
