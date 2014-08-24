@@ -34,6 +34,7 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
+DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Dishonored                   || Dishonored
 DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
@@ -73,6 +74,7 @@ MassEffect3Config            || Mass Effect 3 Configurator
 MassEffectConfig             || Mass Effect Configurator
 MazeGame-Win32-Shipping      || Lili: Child of Geos
 Might and Magic X Legacy     || Might and Magic X Legacy
+MirrorsEdge                  || Mirror's Edge
 mitsurugi                    || Mitsurugi Kamui Hikae
 mm                           || Dark Messiah of Might and Magic Single Player
 OfOrcsAndMen_Steam           || Of Orcs And Men
