@@ -21,12 +21,14 @@ Borderlands2                 || Borderlands 2
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
+cnc3game.dat                 || Command & Conquer 3: Tiberium Wars
 Cognition Episode*           || Cognition: An Erica Reed Thriller
 Condemned                    || Condemned: Criminal Origins
 config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 Crysis                       || Crysis & Crysis Warhead
+Crysis2                      || Crysis 2
 DAOrigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
@@ -64,6 +66,7 @@ kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
 Launcher                     || Launcher (multiple)
 lcgol                        || Lara Croft and the Guardian of Light
+left4dead2                   || Left 4 Dead 2
 LEGOMARVEL                   || LEGO Marvel Superheroes
 Leviathan                    || Leviathan: Warships
 MassEffect                   || Mass Effect
@@ -98,6 +101,7 @@ SpaceMarine                  || SpaceMarine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
+TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
 trine2_32bit                 || Trine 2
