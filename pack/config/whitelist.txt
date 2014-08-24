@@ -35,6 +35,7 @@ DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
 Dishonored                   || Dishonored
+DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
