@@ -5,7 +5,8 @@
 #include <d3dx9.h>
 #include <dxerr.h>
 
-#include "Effect.h"
+#include "effect.h"
+#include "timer.h"
 
 class Post : public Effect {
 public:
@@ -18,8 +19,10 @@ public:
 private:
 	int width, height;
 	bool useSRGB;
+	Timer timer;
 
 	ID3DXEffect *effect = NULL;
 
 	D3DXHANDLE thisframeTexHandle;
+	D3DXHANDLE timerHandle;
 };

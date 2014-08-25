@@ -60,6 +60,10 @@ void Post::reloadShader() {
 
 	// Get handles
 	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
+	timerHandle = effect->GetParameterByName(NULL, "timer");
+
+	// start timer
+	timer.start();
 }
 
 
@@ -72,6 +76,7 @@ void Post::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
 	
     device->SetRenderTarget(0, dst);
     effect->SetTexture(thisframeTexHandle, frame);
+	effect->SetFloat(timerHandle, static_cast<float>(timer.elapsed() / 1000000.0));
 
     // Do it!
     UINT passes;
