@@ -112,10 +112,12 @@
 	#define BlueC  0.35  //[0.60 to 0.20]
 
 	#define Blend 0.23    //[0.00 to 1.00] How strong the effect should be
-	
+
 // Border settings
-	#define border_width float2(0,100)    //[0 to 2048, 0 to 2048] (X,Y)-width of the border. Measured in pixels.
-	#define border_color float3(0, 0, 0)  //[0 to 255, 0 to 255, 0 to 255] What color the border should be. In integer RGB colors, meaning 0,0,0 is black and 255,255,255 is full white.
+	#define border_width float2(0,0)		//[0 to 2048, 0 to 2048] (X,Y)-width of the border. Measured in pixels. If this is set to 0,0 then the border_ratio will be used instead
+	#define border_ratio float(0.75 / 1.0)	//[0.1000 to 10.0000] Set the desired ratio for the visible area. You MUST use floating point - Integers do not work right.
+	//Examples that work: (1680.0 / 1050.0), (16.0 / 10.0), (1.6) Examples that does NOT work right: (1680 / 1050), (16 / 10)
+	#define border_color float3(0, 0, 0)	//[0 to 255, 0 to 255, 0 to 255] What color the border should be. In integer RGB colors, meaning 0,0,0 is black and 255,255,255 is full white.
 
 // Splitscreen settings
 	#define splitscreen_mode   1  //[1|2|3|4|5|6]  1 = Vertical 50/50 split, 2 = Vertical 25/50/25 split, 3 = Vertical 50/50 angled split, 
@@ -1276,22 +1278,34 @@ float4 DPXPass(float4 InputColor) : COLOR0 {
 #ifndef border_width
   #define border_width float2(1,0)
 #endif
+ 
 #ifndef border_color
   #define border_color float3(0, 0, 0)
 #endif
 
+#define screen_ratio (SCREEN_SIZE.x / SCREEN_SIZE.y)
+ 
 float4 BorderPass( float4 colorInput, float2 tex )
 {
-float3 border_color_float = border_color / 255.0;
-
-float2 border = (PIXEL_SIZE * border_width); //Translate integer pixel width to floating point
-float2 within_border = saturate((-tex * tex + tex) - (-border * border + border)); //becomes positive when inside the border and 0 when outside
-
-colorInput.rgb = all(within_border) ?  colorInput.rgb : border_color_float ; //
-
-return colorInput; //return the pixel
-
-} 
+  float3 border_color_float = border_color / 255.0;
+ 
+  float2 border_width_variable = border_width;
+ 
+  // -- calculate the right border_width for a given border_ratio --
+  if (!any(border_width)) //if border_width is not used
+    if (screen_ratio < border_ratio)
+      border_width_variable = float2(0.0, (SCREEN_SIZE.y - (SCREEN_SIZE.x / border_ratio)) * 0.5);
+    else
+      border_width_variable = float2((SCREEN_SIZE.x - (SCREEN_SIZE.y * border_ratio)) * 0.5, 0.0);
+ 
+  float2 border = (PIXEL_SIZE * border_width_variable); //Translate integer pixel width to floating point
+ 
+  float2 within_border = saturate((-tex * tex + tex) - (-border * border + border)); //becomes positive when inside the border and 0 when outside
+ 
+  colorInput.rgb = all(within_border) ?  colorInput.rgb : border_color_float ; //if the pixel is within the border use the original color, if not use the border_color
+ 
+  return colorInput; //return the pixel
+}
 
 
 // ------------------------- Splitscreen --------------------------------------------
