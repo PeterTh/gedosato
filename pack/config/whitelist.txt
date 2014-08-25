@@ -16,17 +16,20 @@ bionic_commando              || Bionic Commando
 Bioshock                     || Bioshock
 Bioshock2                    || Bioshock 2
 Blackguards                  || Blackguards (The Dark Eye)
+BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
+cnc3game.dat                 || Command & Conquer 3: Tiberium Wars
 Cognition Episode*           || Cognition: An Erica Reed Thriller
 Condemned                    || Condemned: Criminal Origins
 config                       || Configurator (multiple)
 Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 Crysis                       || Crysis & Crysis Warhead
+Crysis2                      || Crysis 2
 DAOrigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
@@ -34,6 +37,7 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
+DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Dishonored                   || Dishonored
 DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
@@ -63,6 +67,7 @@ kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
 Launcher                     || Launcher (multiple)
 lcgol                        || Lara Croft and the Guardian of Light
+left4dead2                   || Left 4 Dead 2
 LEGOMARVEL                   || LEGO Marvel Superheroes
 Leviathan                    || Leviathan: Warships
 MassEffect                   || Mass Effect
@@ -73,6 +78,7 @@ MassEffect3Config            || Mass Effect 3 Configurator
 MassEffectConfig             || Mass Effect Configurator
 MazeGame-Win32-Shipping      || Lili: Child of Geos
 Might and Magic X Legacy     || Might and Magic X Legacy
+MirrorsEdge                  || Mirror's Edge
 mitsurugi                    || Mitsurugi Kamui Hikae
 mm                           || Dark Messiah of Might and Magic Single Player
 OfOrcsAndMen_Steam           || Of Orcs And Men
@@ -96,6 +102,7 @@ SpaceMarine                  || SpaceMarine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
+TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
 trine2_32bit                 || Trine 2
