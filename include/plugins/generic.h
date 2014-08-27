@@ -47,6 +47,7 @@ public:
 	virtual void toggleHUD() override;
 
 	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
+	virtual HRESULT redirectSetVertexShader(IDirect3DVertexShader9* pShader) override;
 	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) override;
 
 	virtual HRESULT redirectDrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) override;

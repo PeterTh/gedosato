@@ -1,4 +1,9 @@
-??-09-2014 -- beta 12 - "Sepia Recollections"
+??-09-2014 -- beta 13 - "Cross Again"
+=============================================
+General:
+- Added "injectVSHash" injection setting
+
+27-08-2014 -- beta 12 - "Sepia Recollections"
 =============================================
 General:
 - PresentWidth/Height now defaults to the primary monitor resolution
@@ -7,6 +12,7 @@ General:
 - Added "delayDetouring" setting to make unified injection work like previous default
 - Added support for user profiles for both keybindings and settings
 - Added setting to force windowed mode
+- Added timer for postprocessing shader
 - Added keybinding for realoading shaders (useful for development)
 - Made the degree of parallelism for screenshot taking configurable
 - Prevent keybindings from triggering for background games

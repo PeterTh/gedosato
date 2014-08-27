@@ -48,6 +48,7 @@ SETTING(bool, ForceWindowedMode, "forceWindowedMode", false)
 
 // Injection options
 SETTING(string, InjectPSHash, "injectPSHash", "")
+SETTING(string, InjectVSHash, "injectVSHash", "")
 SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 SETTING(string, InjectRenderstate, "injectRenderstate", "")
 

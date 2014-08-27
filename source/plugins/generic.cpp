@@ -120,6 +120,12 @@ HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	}
 	return GamePlugin::redirectSetPixelShader(pShader);
 }
+HRESULT GenericPlugin::redirectSetVertexShader(IDirect3DVertexShader9* pShader) {
+	if(!postDone && manager.getShaderManager().getName(pShader) == Settings::get().getInjectVSHash()) {
+		performInjection();
+	}
+	return GamePlugin::redirectSetVertexShader(pShader);
+}
 
 HRESULT GenericPlugin::drawingStep(std::function<HRESULT(void)> drawCall) {
 	if(!hudEnabled && postDone) return D3D_OK;
@@ -156,7 +162,7 @@ HRESULT GenericPlugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Va
 }
 
 void GenericPlugin::toggleHUD() {
-	if(injectRSType == 0 && Settings::get().getInjectPSHash().empty()) {
+	if(injectRSType == 0 && Settings::get().getInjectPSHash().empty() && Settings::get().getInjectVSHash().empty()) {
 		Console::get().add("ERROR: HUD toggling requires some form of injection targeting.");
 	}
 	else {
