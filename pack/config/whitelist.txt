@@ -102,6 +102,7 @@ SpaceMarine                  || SpaceMarine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
+TheFall                      || The Fall
 TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
