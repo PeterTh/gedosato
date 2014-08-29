@@ -531,9 +531,9 @@ float4 TonemapPass(float4 colorInput)
     float3 result2 = 1.0f - 2.0f * (1.0f - blend) * (1.0f - color.rgb);
     
     float3 newColor = lerp(result1, result2, L);
-    float A2 = Bleach * color.rgb; //why use a float for A2 here and then multiply by color.rgb (a float3)?
-    //float3 A2 = Bleach * color.rgb; //
-    float3 mixRGB = A2 * newColor;
+    //float A2 = Bleach * color.rgb; //why use a float for A2 here and then multiply by color.rgb (a float3)?
+    float3 A2 = Bleach * color.rgb; //
+    float3 mixRGB = (A2 * newColor.r, A2 * newColor.g, A2*newColor.b);
     
     color.rgb += ((1.0f - A2) * mixRGB);
     
