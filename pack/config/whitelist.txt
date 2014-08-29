@@ -57,6 +57,8 @@ grimrock                     || Legend of Grimrock
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
 GTAIV                        || Grand Theft Auto 4
+halo                         || Halo: Combat Evolved
+halo2                        || Halo 2
 hardreset                    || Hard Reset
 HawkenGame-Win32-Shipping    || Hawken
 HitmanBloodMoney             || Hitman: Blood Money
