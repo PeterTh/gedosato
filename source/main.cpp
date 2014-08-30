@@ -76,7 +76,7 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		}
 
 		// don't attach to processes on the blacklist / not on the whitelist
-		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist.txt") : !onList(getExeFileName(), "whitelist.txt")) {
+		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist") : !onList(getExeFileName(), "whitelist")) {
 			OutputDebugString("GeDoSaTo: blacklisted / not whitelisted");
 			// Prevent steam big picture mode crash
 			if(boost::iequals(getExeFileName(), "Steam")) {

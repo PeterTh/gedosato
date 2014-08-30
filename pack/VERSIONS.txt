@@ -2,6 +2,10 @@
 =============================================
 General:
 - Added "injectVSHash" injection setting
+- Added user blacklist and whitelist support
+GeDoSaToTool:
+- Fix undo history across file changes, ask users about unsaved changes
+- Correctly show existing user profiles in profile list
 
 27-08-2014 -- beta 12 - "Sepia Recollections"
 =============================================
