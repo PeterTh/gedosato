@@ -12,6 +12,7 @@ Astebreed                    || Astebreed
 AvP                          || Aliens vs Predator 2010
 BatmanAC                     || Batman: Arkham City GOTY
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
+BFBC2Game                    || Battlefield: Bad Company 2
 bionic_commando              || Bionic Commando
 Bioshock                     || Bioshock
 Bioshock2                    || Bioshock 2
@@ -57,6 +58,8 @@ grimrock                     || Legend of Grimrock
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
 GTAIV                        || Grand Theft Auto 4
+halo                         || Halo: Combat Evolved
+halo2                        || Halo 2
 hardreset                    || Hard Reset
 HawkenGame-Win32-Shipping    || Hawken
 HitmanBloodMoney             || Hitman: Blood Money
@@ -102,6 +105,7 @@ SpaceMarine                  || SpaceMarine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
+TheFall                      || The Fall
 TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
