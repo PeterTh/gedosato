@@ -13,5 +13,6 @@ stuff
 *SyncToy*
 *.lnk
 *_user.ini
+*_user.txt
 !GeDoSaTo.dll
 !GeDoSaToTool.exe
