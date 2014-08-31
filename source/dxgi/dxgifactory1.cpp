@@ -3,6 +3,8 @@
 
 #include "dxgi/dxgifactory1.h"
 
+#include "dxgi/dxgiadapter.h"
+#include "dxgi/dxgiadapter1.h"
 #include "settings.h"
 
 hkIDXGIFactory1::hkIDXGIFactory1(IDXGIFactory1 **ppIDXGIFactory1) {
@@ -46,8 +48,13 @@ HRESULT APIENTRY hkIDXGIFactory1::GetParent(REFIID riid, void **ppParent) {
 }
 
 HRESULT APIENTRY hkIDXGIFactory1::EnumAdapters(UINT Adapter, IDXGIAdapter **ppAdapter) {
-	SDLOG(20, "hkIDXGIFactory1::EnumAdapters\n");
-	return pWrapped->EnumAdapters(Adapter, ppAdapter);
+	SDLOG(20, "hkIDXGIFactory1::EnumAdapters %d %p\n", Adapter, ppAdapter);
+	HRESULT res = pWrapped->EnumAdapters(Adapter, ppAdapter);
+	if(SUCCEEDED(res)) {
+		SDLOG(20, "--> Success, wrapping %p\n", *ppAdapter);
+		new hkIDXGIAdapter(ppAdapter);
+	}
+	return res;
 }
 
 HRESULT APIENTRY hkIDXGIFactory1::MakeWindowAssociation(HWND WindowHandle, UINT Flags) {
@@ -72,7 +79,12 @@ HRESULT APIENTRY hkIDXGIFactory1::CreateSoftwareAdapter(HMODULE Module, IDXGIAda
 
 HRESULT APIENTRY hkIDXGIFactory1::EnumAdapters1(UINT Adapter, IDXGIAdapter1 **ppAdapter) {
 	SDLOG(20, "hkIDXGIFactory1::EnumAdapters1\n");
-	return pWrapped->EnumAdapters1(Adapter, ppAdapter);
+	HRESULT res = pWrapped->EnumAdapters1(Adapter, ppAdapter);
+	if(SUCCEEDED(res)) {
+		SDLOG(20, "--> Success, wrapping %p\n", *ppAdapter);
+		new hkIDXGIAdapter1(ppAdapter);
+	}
+	return res;
 }
 
 BOOL APIENTRY hkIDXGIFactory1::IsCurrent() {
