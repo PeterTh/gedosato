@@ -279,8 +279,10 @@
     <ClCompile Include="source\depth_texture.cpp" />
     <ClCompile Include="source\detouring.cpp" />
     <ClCompile Include="source\dof.cpp" />
+    <ClCompile Include="source\dxgi\dxgiadapter.cpp" />
     <ClCompile Include="source\dxgi\dxgifactory.cpp" />
     <ClCompile Include="source\dxgi\dxgifactory1.cpp" />
+    <ClCompile Include="source\dxgi\dxgioutput.cpp" />
     <ClCompile Include="source\dxgi\dxgiswapchain.cpp" />
     <ClCompile Include="source\effect.cpp" />
     <ClCompile Include="source\fxaa.cpp" />
@@ -365,10 +367,12 @@
     <ClInclude Include="include\depth_texture.h" />
     <ClInclude Include="include\detouring.h" />
     <ClInclude Include="include\dof.h" />
+    <ClInclude Include="include\dxgi\dxgiadapter.h" />
     <ClInclude Include="include\dxgi\dxgifactory.h" />
     <ClInclude Include="include\dxgi\dxgifactory1.h" />
     <ClInclude Include="include\dxgi\dxgifactory2.h" />
     <ClInclude Include="include\dxgi\dxgifactory3.h" />
+    <ClInclude Include="include\dxgi\dxgioutput.h" />
     <ClInclude Include="include\dxgi\dxgiswapchain.h" />
     <ClInclude Include="include\effect.h" />
     <ClInclude Include="include\fxaa.h" />

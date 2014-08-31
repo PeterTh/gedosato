@@ -18,6 +18,9 @@
 #include "d3d11/d3d11dev.h"
 #include "d3d11/d3d11devcontext.h"
 #include "dxgi/dxgiswapchain.h"
+#include "dxgi/dxgifactory.h"
+#include "dxgi/dxgifactory1.h"
+//#include "dxgi/dxgifactory2.h"
 
 #define GENERATE_INTERCEPT_HEADER(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
@@ -200,7 +203,7 @@ namespace {
 		// enter our modes, either if its number is requested
 		if((emptyMode != 0 && iModeNum >= emptyMode && iModeNum < emptyMode + Settings::getResSettings().getNumResolutions() && ret == NULL)
 			// or if we are downsampling and need to fake it as current
-			|| (iModeNum == ENUM_CURRENT_SETTINGS && (RSManager::currentlyDownsampling() /*|| Settings::get().getForceBorderlessFullscreen()*/))
+			|| (iModeNum == ENUM_CURRENT_SETTINGS && RSManager::currentlyDownsampling())
 			|| (iModeNum == ENUM_CURRENT_SETTINGS && g_FakeChangedDisplaySettings)) {
 			const auto& res = Settings::getResSettings().getResolution(iModeNum - emptyMode);
 			lpDevMode->dmBitsPerPel = 32;
@@ -492,15 +495,27 @@ GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ H
 
 GENERATE_INTERCEPT_HEADER(CreateDXGIFactory, HRESULT, WINAPI, _In_ REFIID riid, _Out_ void **ppFactory) {
 	SDLOG(0, "DetouredCreateDXGIFactory\n");
-	return TrueCreateDXGIFactory(riid, ppFactory);
+	HRESULT ret = TrueCreateDXGIFactory(riid, ppFactory);
+	if(SUCCEEDED(ret)) {
+		if(ppFactory != NULL) new hkIDXGIFactory(reinterpret_cast<IDXGIFactory**>(ppFactory));
+	}
+	return ret;
 }
 GENERATE_INTERCEPT_HEADER(CreateDXGIFactory1, HRESULT, WINAPI, _In_ REFIID riid, _Out_ void **ppFactory) {
 	SDLOG(0, "DetouredCreateDXGIFactory1\n");
-	return TrueCreateDXGIFactory1(riid, ppFactory);
+	HRESULT ret = TrueCreateDXGIFactory1(riid, ppFactory);
+	if(SUCCEEDED(ret)) {
+		if(ppFactory != NULL) new hkIDXGIFactory1(reinterpret_cast<IDXGIFactory1**>(ppFactory));
+	}
+	return ret;
 }
 GENERATE_INTERCEPT_HEADER(CreateDXGIFactory2, HRESULT, WINAPI, _In_ UINT flags, _In_ const IID &riid, _Out_ void **ppFactory) {
 	SDLOG(0, "DetouredCreateDXGIFactory2\n");
-	return TrueCreateDXGIFactory2(flags, riid, ppFactory);
+	HRESULT ret = TrueCreateDXGIFactory2(flags, riid, ppFactory);
+	//if(SUCCEEDED(ret)) {
+	//	if(ppFactory != NULL) new hkIDXGIFactory2(reinterpret_cast<IDXGIFactory2**>(ppFactory));
+	//}
+	return ret;
 }
 
 // D3D11 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -529,6 +544,7 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 	SDLOG(0, "-> ppDevice: %p (%p) ppImmediateContext: %p (%p)\n",
 		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL);
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
+	// also check if call was delegated to D3D11CreateDeviceAndSwapChain internally
 	if(SUCCEEDED(ret) && g_NeedD3D11Hooking) {
 		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
 		if(ppImmediateContext != NULL) new hkID3D11DeviceContext(ppImmediateContext);
