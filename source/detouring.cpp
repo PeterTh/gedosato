@@ -79,7 +79,7 @@ GENERATE_INTERCEPT_HEADER(LoadLibraryA, HMODULE, WINAPI, _In_ LPCSTR lpLibFileNa
 	return mod;
 }
 GENERATE_INTERCEPT_HEADER(LoadLibraryW, HMODULE, WINAPI, _In_ LPCWSTR lpLibFileName) {
-	SDLOG(22, "DetouredLoadLibraryW %s\n", CW2A(lpLibFileName));
+	SDLOG(22, "DetouredLoadLibraryW %s\n", lpLibFileName);
 
 	if(preventDllLoading(std::wstring(lpLibFileName), true)) return NULL;
 

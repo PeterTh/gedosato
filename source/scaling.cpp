@@ -46,7 +46,7 @@ Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int wi
 		levelInputSizes[i*2+0] = static_cast<FLOAT>(w*2);
 		levelInputSizes[i*2+1] = static_cast<FLOAT>(h*2);
 		levelBuffers[i] = RSManager::getRTMan().createTexture(w, h, RenderTarget::FMT_ARGB_8);
-		SDLOG(2, "Multi-level buffer %u: %p - size: %ux%u\n", i, levelBuffers[i], w, h);
+		SDLOG(2, "Multi-level buffer %u: %p - size: %ux%u\n", i, &*levelBuffers[i], w, h);
 	}
 	levelInputSizes[0] = static_cast<FLOAT>(inputwidth);
 	levelInputSizes[1] = static_cast<FLOAT>(inputheight);

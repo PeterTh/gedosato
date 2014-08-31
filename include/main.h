@@ -20,6 +20,8 @@
 #include <string>
 using std::string;
 
+#include "string_utils.h"
+
 #define EDITION "GENERIC"
 
 #define INTERCEPTOR_NAME "GeDoSaTo"
@@ -49,8 +51,6 @@ using std::string;
 #include "d3d9/d3d9.h"
 
 bool fileExists(const char *filename);
-void __cdecl sdlogtime(int level);
-void __cdecl sdlog(const char * fmt, ...);
 void messageErrorAndExit(string error);
 
 const string& getInstallDirectory();
@@ -63,3 +63,16 @@ string getTimeString(bool forDisplay = false);
 
 LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
 const char* GeDoSaToVersion();
+
+extern FILE* g_oFile;
+inline void sdlog(const char *fmt) {
+	if(!fmt) { return; }
+	fprintf(g_oFile, fmt);
+	fflush(g_oFile);
+}
+template<typename... Args>
+inline void sdlog(const char *fmt, const Args&... args) {
+	if(!fmt) { return; }
+	sdlog(format(fmt, args...).c_str());
+}
+

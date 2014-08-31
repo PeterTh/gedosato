@@ -285,6 +285,7 @@
     <ClCompile Include="source\dxgi\dxgifactory1.cpp" />
     <ClCompile Include="source\dxgi\dxgioutput.cpp" />
     <ClCompile Include="source\dxgi\dxgiswapchain.cpp" />
+    <ClCompile Include="source\dxgi_utils.cpp" />
     <ClCompile Include="source\effect.cpp" />
     <ClCompile Include="source\fxaa.cpp" />
     <ClCompile Include="source\game_plugin.cpp" />
@@ -377,6 +378,7 @@
     <ClInclude Include="include\dxgi\dxgifactory3.h" />
     <ClInclude Include="include\dxgi\dxgioutput.h" />
     <ClInclude Include="include\dxgi\dxgiswapchain.h" />
+    <ClInclude Include="include\dxgi_utils.h" />
     <ClInclude Include="include\effect.h" />
     <ClInclude Include="include\fxaa.h" />
     <ClInclude Include="include\game_plugin.h" />

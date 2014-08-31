@@ -4,6 +4,7 @@
 #include "dxgi/dxgioutput.h"
 
 #include "settings.h"
+#include "dxgi_utils.h"
 
 hkIDXGIOutput::hkIDXGIOutput(IDXGIOutput **ppIDXGIOutput) {
 	pWrapped = *ppIDXGIOutput;
@@ -52,7 +53,27 @@ HRESULT APIENTRY hkIDXGIOutput::GetDesc(DXGI_OUTPUT_DESC *pDesc) {
 
 HRESULT APIENTRY hkIDXGIOutput::GetDisplayModeList(DXGI_FORMAT EnumFormat, UINT Flags, UINT *pNumModes, DXGI_MODE_DESC *pDesc) {
 	SDLOG(20, "hkIDXGIOutput::GetDisplayModeList\n");
-	return pWrapped->GetDisplayModeList(EnumFormat, Flags, pNumModes, pDesc);
+	SDLOG(20, "   - EnumFormat: %s\n", DxgiFormatToString(EnumFormat));
+	SDLOG(20, "   - Flags: %u\n", Flags);
+	HRESULT hr = pWrapped->GetDisplayModeList(EnumFormat, Flags, pNumModes, pDesc);
+	if(SUCCEEDED(hr) && *pNumModes > 0) {
+		UINT totalModes = *pNumModes + Settings::getResSettings().getNumResolutions();
+		if(pDesc != NULL) {
+			for(unsigned i = *pNumModes, j = 0; i < totalModes; ++i, ++j) {
+				auto res = Settings::get().getResSettings().getResolution(j);
+				SDLOG(20, " -> GetDisplayModeList add mode #%u (%ux%u@%u)\n", i, res.width, res.height, res.hz);
+				pDesc[i].Format = EnumFormat;
+				pDesc[i].Width = res.width;
+				pDesc[i].Height = res.height;
+				pDesc[i].RefreshRate = { res.hz, 1 };
+				pDesc[i].ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE;
+				pDesc[i].Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+			}
+		}
+		SDLOG(20, " -> GetDisplayModeList increase reported number of modes from %u to %u\n", *pNumModes, totalModes);
+		*pNumModes = totalModes;
+	}
+	return hr;
 }
 
 HRESULT APIENTRY hkIDXGIOutput::FindClosestMatchingMode(const DXGI_MODE_DESC *pModeToMatch, DXGI_MODE_DESC *pClosestMatch, IUnknown *pConcernedDevice) {

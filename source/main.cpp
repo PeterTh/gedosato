@@ -22,7 +22,6 @@
 #include "blacklist.h"
 #include "string_utils.h"
 
-
 FILE* g_oFile = NULL;
 HMODULE g_dll = NULL;
 bool g_active = false, g_tool = false, g_detoured = false;
@@ -51,6 +50,10 @@ const char* GeDoSaToSettings() {
 		#include "Settings.def"
 		#undef SETTING
 	;
+}
+
+void sdlogtime(int level) {
+	SDLOG(level, "===== %s =====\n", getTimeString().c_str());
 }
 
 // run in a thread, to unload in case we cannot return false from DLLMain (e.g. Steam big picture)
@@ -196,22 +199,6 @@ string getTimeString(bool forDisplay) {
 		strftime(timebuf, 64, "%Y-%d-%m %H:%M:%S", &gmt);
 	}
 	return string(timebuf);
-}
-
-void __cdecl sdlogtime(int level) {
-	SDLOG(level, "===== %s =====\n", getTimeString().c_str());
-}
-
-void __cdecl sdlog(const char *fmt, ...) {
-	if(!fmt) { return; }
-
-	va_list va_alist;
-
-	va_start (va_alist, fmt);
-	vfprintf(g_oFile, fmt, va_alist);
-	va_end (va_alist);
-
-	fflush(g_oFile);
 }
 
 bool fileExists(const char *filename) {
