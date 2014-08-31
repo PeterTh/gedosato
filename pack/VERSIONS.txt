@@ -3,6 +3,8 @@
 General:
 - Added "injectVSHash" injection setting
 - Added user blacklist and whitelist support
+- Added lots more DXGI wrapping machinery
+- Started refactoring Renderstate management for multiple APIs
 GeDoSaToTool:
 - Fix undo history across file changes, ask users about unsaved changes
 - Correctly show existing user profiles in profile list

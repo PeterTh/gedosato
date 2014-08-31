@@ -10,7 +10,7 @@
 #include "winutil.h"
 
 #include "settings.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 
 #include "d3d9/d3d9.h"
 #include "d3d9/d3d9int_ex.h"
@@ -154,23 +154,23 @@ GENERATE_INTERCEPT_HEADER(D3DXCreateTexture, HRESULT, WINAPI, _In_ LPDIRECT3DDEV
 GENERATE_INTERCEPT_HEADER(D3DXCreateTextureFromFileInMemory, HRESULT, WINAPI, _In_ LPDIRECT3DDEVICE9 pDevice, _In_ LPCVOID pSrcData, _In_ UINT SrcDataSize, _Out_ LPDIRECT3DTEXTURE9 *ppTexture) {
 	SDLOG(4, "DetouredD3DXCreateTextureFromFileInMemory\n");
 	HRESULT res = TrueD3DXCreateTextureFromFileInMemory(pDevice, pSrcData, SrcDataSize, ppTexture);
-	RSManager::get().registerD3DXCreateTextureFromFileInMemory(pSrcData, (SrcDataSize == 2147483647u) ? 256 : SrcDataSize, *ppTexture);
+	RSManager::getDX9().registerD3DXCreateTextureFromFileInMemory(pSrcData, (SrcDataSize == 2147483647u) ? 256 : SrcDataSize, *ppTexture);
 	return res;
 }
 GENERATE_INTERCEPT_HEADER(D3DXCreateTextureFromFileInMemoryEx, HRESULT, WINAPI, LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, 
 						  UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO *pSrcInfo, PALETTEENTRY *pPalette, LPDIRECT3DTEXTURE9 *ppTexture) {
 	SDLOG(4, "DetouredD3DXCreateTextureFromFileInMemoryEx: \n -- pDevice %p, pSrcData %p, SrcDataSize %u, Width %u, Height %u, MipLevels %u, Usage %d, Format %s\n",
 		pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, D3DFormatToString(Format));
-	HRESULT res = RSManager::get().redirectD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
+	HRESULT res = RSManager::getDX9().redirectD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
 	if(SrcDataSize == 2147483647u) SrcDataSize = Width*Height/2;
-	RSManager::get().registerD3DXCreateTextureFromFileInMemory(pSrcData, SrcDataSize, *ppTexture); 
+	RSManager::getDX9().registerD3DXCreateTextureFromFileInMemory(pSrcData, SrcDataSize, *ppTexture); 
 	return res;
 }
 
 GENERATE_INTERCEPT_HEADER(D3DXCompileShader, HRESULT, WINAPI, _In_ LPCSTR pSrcData, _In_ UINT srcDataLen, _In_ const D3DXMACRO *pDefines, _In_ LPD3DXINCLUDE pInclude, _In_ LPCSTR pFunctionName, 
 						  _In_ LPCSTR pProfile, _In_ DWORD Flags, _Out_ LPD3DXBUFFER *ppShader, _Out_ LPD3DXBUFFER *ppErrorMsgs, _Out_ LPD3DXCONSTANTTABLE *ppConstantTable) {
 	HRESULT res = TrueD3DXCompileShader(pSrcData, srcDataLen, pDefines, pInclude, pFunctionName, pProfile, Flags, ppShader, ppErrorMsgs, ppConstantTable);
-	RSManager::get().registerD3DXCompileShader(pSrcData, srcDataLen, pDefines, pInclude, pFunctionName, pProfile, Flags, ppShader, ppErrorMsgs, ppConstantTable);
+	RSManager::getDX9().registerD3DXCompileShader(pSrcData, srcDataLen, pDefines, pInclude, pFunctionName, pProfile, Flags, ppShader, ppErrorMsgs, ppConstantTable);
 	return res;
 }
 

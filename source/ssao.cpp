@@ -6,7 +6,7 @@
 using namespace std;
 
 #include "settings.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 
 SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth)
 	: Effect(device), width(width), height(height), strength(strength), type(type), blur(blur), useSRGB(useSRGB), readHWDepth(readHWDepth),
@@ -118,15 +118,15 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	device->SetVertexDeclaration(vertexDeclaration);
 
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_PRE_frame", frame);
-		RSManager::get().dumpTexture("SSAO_PRE_depth", depth);
-		RSManager::get().dumpSurface("SSAO_PRE_dest", dst);
+		RSManager::getDX9().dumpTexture("SSAO_PRE_frame", frame);
+		RSManager::getDX9().dumpTexture("SSAO_PRE_depth", depth);
+		RSManager::getDX9().dumpSurface("SSAO_PRE_dest", dst);
 	}
 	
 	mainSsaoPass(depth, buffer1->getSurf());
 
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_MD1_buffer1", buffer1->getTex());
+		RSManager::getDX9().dumpTexture("SSAO_MD1_buffer1", buffer1->getTex());
 	}
 	
 	for(size_t i = 0; i<blurPasses; ++i) {
@@ -135,13 +135,13 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	}
 	
 	if(dumping) {
-		RSManager::get().dumpTexture("SSAO_MD2_buffer1", buffer1->getTex());
+		RSManager::getDX9().dumpTexture("SSAO_MD2_buffer1", buffer1->getTex());
 	}
 
 	combinePass(frame, buffer1->getTex(), hdrBuffer->getSurf());
 	
 	if(dumping) {
-		RSManager::get().dumpSurface("SSAO_END_buffer2", hdrBuffer->getSurf());
+		RSManager::getDX9().dumpSurface("SSAO_END_buffer2", hdrBuffer->getSurf());
 	}
 
 	device->StretchRect(hdrBuffer->getSurf(), NULL, dst, NULL, D3DTEXF_NONE);

@@ -2,7 +2,7 @@
 #include "plugins/generic.h"
 
 #include "d3dutil.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 #include "blacklist.h"
 
 GenericPlugin::~GenericPlugin() {
@@ -77,9 +77,9 @@ void GenericPlugin::processCurrentBB() {
 	IDirect3DSurface9* bb = NULL;
 	d3ddev->GetRenderTarget(0, &bb);
 	if(bb) {
-		RSManager::get().storeRenderState();
+		manager.storeRenderState();
 		process(bb);
-		RSManager::get().restoreRenderState();
+		manager.restoreRenderState();
 		if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
 			manager.captureRTScreen("hudless");
 			manager.tookScreenshot();

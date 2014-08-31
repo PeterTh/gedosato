@@ -1,8 +1,7 @@
 #include "plugins/generic_depth.h"
 
 #include "d3dutil.h"
-#include "renderstate_manager.h"
-
+#include "renderstate_manager_dx9.h"
 
 GenericDepthPlugin::~GenericDepthPlugin() {
 	SAFEDELETE(ssao);
@@ -15,7 +14,7 @@ void GenericDepthPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat
 
 	if(Settings::get().getSsaoStrength() > 0) {
 		ssao = new SSAO(d3ddev, drw, drh, Settings::get().getSsaoStrength() - 1, SSAO::VSSAO2, (Settings::get().getSsaoBlurType() == "sharp") ? SSAO::BLUR_SHARP : SSAO::BLUR_GAUSSIAN, false, true);
-		depthTexture.reset(new DepthTexture(RSManager::get().getD3D()));
+		depthTexture.reset(new DepthTexture(manager.getD3D()));
 		if(depthTexture->isSupported()) {
 			SDLOG(-1, "[GenericDepthPlugin] depthTexture supported\n");
 			depthTexture->createTexture(d3ddev, drw, drh);
@@ -37,13 +36,13 @@ void GenericDepthPlugin::process(IDirect3DSurface9* backBuffer) {
 		processedBB = backBuffer;
 		SDLOG(8, "Generic plugin processing start\n");
 		if((doAA && (fxaa || smaa)) || (doPost && post) || (doAO && ssao)) {
-			RSManager::get().setNeutralRenderState();
+			manager.setNeutralRenderState();
 			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
 			bool didAO = false;
 			if(doAO && ssao) {
 				if(depthTexture->isSupported()) {
 					didAO = true;
-					if(RSManager::get().usingMultisampling()) depthTexture->resolveDepth(d3ddev); // only necessary when multisampling is enabled (doh)
+					if(manager.usingMultisampling()) depthTexture->resolveDepth(d3ddev); // only necessary when multisampling is enabled (doh)
 					ssao->goHDR(tmp->getTex(), depthTexture->getTexture(), backBuffer);
 				}
 			}

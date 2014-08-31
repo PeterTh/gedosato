@@ -1,7 +1,7 @@
 
 #include "plugins/dark_souls_2.h"
 
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 #include "d3dutil.h"
 
 DS2Plugin::~DS2Plugin() {

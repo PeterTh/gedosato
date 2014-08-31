@@ -8,7 +8,7 @@
 
 #include "string_utils.h"
 
-GamePlugin* GamePlugin::getPlugin(IDirect3DDevice9 *device, RSManager &manager) {
+GamePlugin* GamePlugin::getPlugin(IDirect3DDevice9 *device, RSManagerDX9 &manager) {
 	#define PLUGIN(_name, _exename, _class) \
 	if(Settings::get().getPluginOverride() == #_class) { \
 		_class* ret = new _class(device, manager); \

@@ -11,7 +11,6 @@ using std::string;
 #include "hash.h"
 #include "string_utils.h"
 
-
 class ShaderManager {
 	std::map<void*, UINT32> shaderPtrIdMap;
 	std::map<void*, string> shaderPtrNameMap;

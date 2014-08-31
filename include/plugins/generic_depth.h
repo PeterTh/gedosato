@@ -16,7 +16,7 @@ class GenericDepthPlugin : public GenericPlugin {
 	virtual void process(IDirect3DSurface9* backBuffer) override;
 
 public:
-	GenericDepthPlugin(IDirect3DDevice9* device, RSManager &manager) : GenericPlugin(device, manager)
+	GenericDepthPlugin(IDirect3DDevice9* device, RSManagerDX9 &manager) : GenericPlugin(device, manager)
 	{ }
 
 	virtual ~GenericDepthPlugin();

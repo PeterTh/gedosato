@@ -5,7 +5,7 @@
 #include "d3d9/d3d9dev.h"
 
 #include "settings.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 
 hkIDirect3DSwapChain9::hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9, hkIDirect3DDevice9* hdev) 
 		: hookedDev(hdev) {
@@ -35,7 +35,7 @@ ULONG APIENTRY hkIDirect3DSwapChain9::Release() {
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
 	SDLOG(3, "hkIDirect3DSwapChain9::Present\n");
-	return RSManager::get().redirectPresent(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion); // TODO: dwflags?
+	return RSManager::getDX9().redirectPresent(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion); // TODO: dwflags?
 }
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::GetFrontBufferData(IDirect3DSurface9* pDestSurface) {
@@ -45,7 +45,7 @@ HRESULT APIENTRY hkIDirect3DSwapChain9::GetFrontBufferData(IDirect3DSurface9* pD
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9** ppBackBuffer) {
 	SDLOG(7, "hkIDirect3DSwapChain9::GetBackBuffer\n");
-	return RSManager::get().redirectGetBackBuffer(0, iBackBuffer, Type, ppBackBuffer);
+	return RSManager::getDX9().redirectGetBackBuffer(0, iBackBuffer, Type, ppBackBuffer);
 }
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::GetRasterStatus(D3DRASTER_STATUS* pRasterStatus) {
@@ -55,7 +55,7 @@ HRESULT APIENTRY hkIDirect3DSwapChain9::GetRasterStatus(D3DRASTER_STATUS* pRaste
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::GetDisplayMode(D3DDISPLAYMODE* pMode) {
 	SDLOG(1, "hkIDirect3DSwapChain9::GetDisplayMode\n");
-	return RSManager::get().redirectGetDisplayMode(0, pMode);
+	return RSManager::getDX9().redirectGetDisplayMode(0, pMode);
 }
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::GetDevice(IDirect3DDevice9** ppDevice) {

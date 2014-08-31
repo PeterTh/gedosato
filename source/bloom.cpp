@@ -6,7 +6,7 @@
 using namespace std;
 
 #include "settings.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 #include "utils.h"
 
 #define STEP_SKIP 5
@@ -96,28 +96,28 @@ void Bloom::go(IDirect3DTexture9 *hdrFrame, IDirect3DTexture9 *composeFrame, IDi
 	device->SetVertexDeclaration(vertexDeclaration);
 	
 	if(dumping) {
-		RSManager::get().dumpTexture("Bloom_PRE_hdr", hdrFrame);
-		RSManager::get().dumpTexture("Bloom_PRE_frame", composeFrame);
+		RSManager::getDX9().dumpTexture("Bloom_PRE_hdr", hdrFrame);
+		RSManager::getDX9().dumpTexture("Bloom_PRE_frame", composeFrame);
 	}
 	
     initialPass(hdrFrame, stepBuffers[0][0]->getSurf());
 	
 	if(dumping) {
-		RSManager::get().dumpTexture("Bloom_INIT_out", stepBuffers[0][0]->getTex());
+		RSManager::getDX9().dumpTexture("Bloom_INIT_out", stepBuffers[0][0]->getTex());
 	}
 	
 	// traverse pyramid down
 	unsigned cur = 0;
 	for(; cur<steps-1; ++cur) {
 		if(dumping) {
-			RSManager::get().dumpTexture("Bloom_STEP_in", stepBuffers[0][cur]->getTex());
+			RSManager::getDX9().dumpTexture("Bloom_STEP_in", stepBuffers[0][cur]->getTex());
 		}
 		if(cur<steps-STEP_SKIP) {
 			// first Blur
 			blurPass(stepBuffers[0][cur]->getTex(), stepBuffers[1][cur]->getSurf(), stepSizes[cur].w, stepSizes[cur].h, true);
 			blurPass(stepBuffers[1][cur]->getTex(), stepBuffers[0][cur]->getSurf(), stepSizes[cur].w, stepSizes[cur].h, false);
 			if(dumping) {
-				RSManager::get().dumpTexture("Bloom_STEP_out", stepBuffers[0][cur]->getTex());
+				RSManager::getDX9().dumpTexture("Bloom_STEP_out", stepBuffers[0][cur]->getTex());
 			}
 		}
 		// downsample
@@ -135,13 +135,13 @@ void Bloom::go(IDirect3DTexture9 *hdrFrame, IDirect3DTexture9 *composeFrame, IDi
 	
 	// apply final combination pass
 	if(dumping) {
-		RSManager::get().dumpTexture("Bloom_FINAL_in", stepBuffers[0][0]->getTex());
+		RSManager::getDX9().dumpTexture("Bloom_FINAL_in", stepBuffers[0][0]->getTex());
 	}
 
 	finalPass(stepBuffers[0][0]->getTex(), stepBuffers[1][steps-1]->getTex(), composeFrame, dst);
 	
 	if(dumping) {
-		RSManager::get().dumpSurface("Bloom_FINAL_out", dst);
+		RSManager::getDX9().dumpSurface("Bloom_FINAL_out", dst);
 	}
 	
 	dumping = false;

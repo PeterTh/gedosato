@@ -17,7 +17,7 @@ class MitsurugiPlugin : public GenericPlugin {
 	IDirect3DSurface9 *depthSurf = NULL;
 
 public:
-	MitsurugiPlugin(IDirect3DDevice9* device, RSManager &manager) : GenericPlugin(device, manager)
+	MitsurugiPlugin(IDirect3DDevice9* device, RSManagerDX9 &manager) : GenericPlugin(device, manager)
 	{ }
 
 	virtual ~MitsurugiPlugin();

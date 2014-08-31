@@ -23,7 +23,7 @@ class DS2Plugin : public GamePlugin {
 	bool doDof, doAO, doPost, doAA, doBloom;
 
 public:
-	DS2Plugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager)
+	DS2Plugin(IDirect3DDevice9* device, RSManagerDX9 &manager) : GamePlugin(device, manager)
 		, defaultState(NULL), zBufferSurf(NULL), normalSurf(NULL), hdrRT(NULL)
 		, aaStepStarted(false), aoDone(false)
 		, dof(NULL), ssao(NULL), post(NULL)

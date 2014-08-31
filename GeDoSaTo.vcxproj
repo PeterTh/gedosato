@@ -297,6 +297,7 @@
     <ClCompile Include="source\plugins\mitsurugi.cpp" />
     <ClCompile Include="source\post.cpp" />
     <ClCompile Include="source\registry.cpp" />
+    <ClCompile Include="source\renderstate_manager_dx9.cpp" />
     <ClCompile Include="source\rendertarget_manager.cpp" />
     <ClCompile Include="source\scaling.cpp" />
     <ClCompile Include="source\key_actions.cpp" />
@@ -390,6 +391,7 @@
     <ClInclude Include="include\plugins\mitsurugi.h" />
     <ClInclude Include="include\post.h" />
     <ClInclude Include="include\registry.h" />
+    <ClInclude Include="include\renderstate_manager_dx9.h" />
     <ClInclude Include="include\rendertarget.h" />
     <ClInclude Include="include\rendertarget_manager.h" />
     <ClInclude Include="include\scaling.h" />

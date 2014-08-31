@@ -4,7 +4,6 @@
 #define hkIDirect3D9 hkIDirect3D9Ex
 #include "d3d9int.cpp"
 #undef hkIDirect3D9
-
 /////////
 
 UINT APIENTRY hkIDirect3D9Ex::GetAdapterModeCountEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter) {
@@ -45,7 +44,7 @@ HRESULT APIENTRY hkIDirect3D9Ex::GetAdapterDisplayModeEx(UINT Adapter, D3DDISPLA
 HRESULT APIENTRY hkIDirect3D9Ex::CreateDeviceEx(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, 
 												D3DDISPLAYMODEEX* pFullscreenDisplayMode, IDirect3DDevice9Ex** ppReturnedDeviceInterface) {
 	SDLOG(0, "CreateDeviceEx ------ Adapter %u Thread %u\n", Adapter, GetCurrentThreadId());
-	return RSManager::redirectCreateDeviceEx(m_pD3Dint, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
+	return RSManagerDX9::redirectCreateDeviceEx(m_pD3Dint, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, ppReturnedDeviceInterface);
 }
 
 HRESULT APIENTRY hkIDirect3D9Ex::GetAdapterLUID(UINT Adapter, LUID* pLUID) {

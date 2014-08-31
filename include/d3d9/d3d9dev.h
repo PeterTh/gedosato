@@ -3,7 +3,7 @@
 #include "main.h"
 #include "d3d9.h"
 
-class RSManager;
+class RSManagerDX9;
 struct hkIDirect3DSwapChain9;
 
 interface hkIDirect3DDevice9 : public IDirect3DDevice9
@@ -12,7 +12,7 @@ interface hkIDirect3DDevice9 : public IDirect3DDevice9
 	IDirect3DDevice9 *m_pD3Ddev;
 	IDirect3D9 *m_pD3Dint;
 	
-	RSManager *rsMan;
+	RSManagerDX9 *rsMan;
 
 	// swap chain
 	hkIDirect3DSwapChain9 *hookedSwapChain0;

@@ -6,7 +6,7 @@
 #include "d3dutil.h"
 
 #include "settings.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 
 HRESULT APIENTRY hkIDirect3D9::QueryInterface(REFIID riid,  void **ppvObj) {
 	SDLOG(1, "hkIDirect3D9::QueryInterface\n");
@@ -60,7 +60,7 @@ HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType,
 		return hRet;
 	}
 
-	return RSManager::redirectCreateDevice(m_pD3Dint, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
+	return RSManagerDX9::redirectCreateDevice(m_pD3Dint, Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 }
 
 HRESULT APIENTRY hkIDirect3D9::EnumAdapterModes(UINT Adapter, D3DFORMAT Format, UINT Mode, D3DDISPLAYMODE* pMode) {

@@ -1,7 +1,7 @@
 
 #include "rendertarget_manager.h"
 
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 
 RenderTargetPtr RenderTargetManager::createTexture(unsigned width, unsigned height, RenderTarget::Format fmt) {
 	return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatFromFormat(fmt), RenderTarget::TEXTURE_USE));
@@ -17,7 +17,7 @@ RenderTargetPtr RenderTargetManager::createTexture(unsigned width, unsigned heig
 
 RenderTargetPtr RenderTargetManager::createTexture(unsigned width, unsigned height) {
 	if(overrideFormat == RenderTarget::FMT_NONE) {
-		return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatWithAlpha(RSManager::get().getBackBufferFormat()), RenderTarget::TEXTURE_USE));
+		return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatWithAlpha(RSManager::getDX9().getBackBufferFormat()), RenderTarget::TEXTURE_USE));
 	}
 	else {
 		return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatFromFormat(overrideFormat), RenderTarget::TEXTURE_USE));
@@ -34,7 +34,7 @@ RenderTargetPtr RenderTargetManager::createSurface(unsigned width, unsigned heig
 
 RenderTargetPtr RenderTargetManager::createSurface(unsigned width, unsigned height) {
 	if(overrideFormat == RenderTarget::FMT_NONE) {
-		return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatWithAlpha(RSManager::get().getBackBufferFormat()), RenderTarget::SURFACE_USE));
+		return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatWithAlpha(RSManager::getDX9().getBackBufferFormat()), RenderTarget::SURFACE_USE));
 	}
 	else {
 		return RenderTargetPtr(new RenderTarget(device, width, height, RenderTarget::d3dformatFromFormat(overrideFormat), RenderTarget::TEXTURE_USE));

@@ -32,7 +32,7 @@ protected:
 	bool isPostDone() { return postDone; }
 
 public:
-	GenericPlugin(IDirect3DDevice9* device, RSManager &manager) : GamePlugin(device, manager) {}
+	GenericPlugin(IDirect3DDevice9* device, RSManagerDX9 &manager) : GamePlugin(device, manager) {}
 
 	virtual ~GenericPlugin() override;
 

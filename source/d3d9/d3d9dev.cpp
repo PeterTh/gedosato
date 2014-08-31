@@ -7,7 +7,7 @@
 #include "main.h"
 #include "d3d9.h"
 #include "d3dutil.h"
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 #include "window_manager.h"
 #include "Settings.h"
 
@@ -42,7 +42,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetRenderTarget(DWORD RenderTargetIndex, ID
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetVertexShader %p, name: %s\n", pvShader, RSManager::get().getShaderManager().getName(pvShader));
+	SDLOG(3, "SetVertexShader %p, name: %s\n", pvShader, rsMan->getShaderManager().getName(pvShader));
 	return rsMan->redirectSetVertexShader(pvShader);
 }
 
@@ -55,25 +55,25 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9 *pViewport) 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
 	RSManager::setLatest(rsMan);
 	SDLOG(9, "DrawIndexedPrimitive\n");
-	return RSManager::get().redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
+	return rsMan->redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void *pIndexData, D3DFORMAT IndexDataFormat, CONST void *pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	RSManager::setLatest(rsMan);
 	SDLOG(9, "DrawIndexedPrimitiveUP(%d, %u, %u, %u, %u, %p, %d, %p, %d)\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
-	return RSManager::get().redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
+	return rsMan->redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, UINT PrimitiveCount) {
 	RSManager::setLatest(rsMan);
 	SDLOG(9, "DrawPrimitive\n");
-	return RSManager::get().redirectDrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
+	return rsMan->redirectDrawPrimitive(PrimitiveType, StartVertex, PrimitiveCount);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void *pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	RSManager::setLatest(rsMan);
 	SDLOG(9, "DrawPrimitiveUP(%d, %u, %u, %u, %u, %p, %d, %p, %d)\n", PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
-	return RSManager::get().redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+	return rsMan->redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawRectPatch(UINT Handle, CONST float *pNumSegs, CONST D3DRECTPATCH_INFO *pRectPatchInfo) {
@@ -170,7 +170,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreatePixelShader(CONST DWORD* pFunction,ID
 	RSManager::setLatest(rsMan);
 	HRESULT hr = m_pD3Ddev->CreatePixelShader(pFunction, ppShader);
 	if(SUCCEEDED(hr)) {
-		RSManager::get().getShaderManager().registerShader(pFunction, *ppShader);
+		rsMan->getShaderManager().registerShader(pFunction, *ppShader);
 	}
 	return hr;
 }
@@ -195,7 +195,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDi
 HRESULT APIENTRY hkIDirect3DDevice9::CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
 	SDLOG(1, "CreateTexture w/h: %4u/%4u    format: %s    RENDERTARGET=%d\n", Width, Height, D3DFormatToString(Format), Usage & D3DUSAGE_RENDERTARGET);
-	return RSManager::get().redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+	return rsMan->redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer9** VERTexBuffer, HANDLE* pSharedHandle) {
@@ -215,7 +215,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexShader(CONST DWORD* pFunction,I
 	RSManager::setLatest(rsMan);
 	HRESULT hr = m_pD3Ddev->CreateVertexShader(pFunction, ppShader);
 	if(SUCCEEDED(hr)) {
-		RSManager::get().getShaderManager().registerShader(pFunction, *ppShader);
+		rsMan->getShaderManager().registerShader(pFunction, *ppShader);
 	}
 	return hr;
 }
@@ -522,7 +522,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetCurrentTexturePalette(UINT PaletteNumber
 void APIENTRY hkIDirect3DDevice9::SetCursorPosition(int X, int Y, DWORD Flags) {
 	RSManager::setLatest(rsMan);
 	SDLOG(5, "SetCursorPosition\n");
-	RSManager::get().redirectSetCursorPosition(X, Y, Flags);
+	rsMan->redirectSetCursorPosition(X, Y, Flags);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetCursorProperties(UINT XHotSpot, UINT YHotSpot, IDirect3DSurface9 *pCursorBitmap) {
@@ -580,8 +580,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPaletteEntries(UINT PaletteNumber, CONST
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShader(IDirect3DPixelShader9* pShader) {
 	RSManager::setLatest(rsMan);
-	SDLOG(3, "SetPixelShader %p, name: %s\n", pShader, RSManager::get().getShaderManager().getName(pShader));
-	return RSManager::get().redirectSetPixelShader(pShader);
+	SDLOG(3, "SetPixelShader %p, name: %s\n", pShader, rsMan->getShaderManager().getName(pShader));
+	return rsMan->redirectSetPixelShader(pShader);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantB(UINT StartRegister,CONST BOOL* pConstantData,UINT  BoolCount) {
@@ -620,13 +620,13 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetPixelShaderConstantI(UINT StartRegister,
 HRESULT APIENTRY hkIDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
 	RSManager::setLatest(rsMan);
 	SDLOG(6, "SetRenderState: state: %s, value: %u\n", D3DRenderStateTypeToString(State), Value);
-	return RSManager::get().redirectSetRenderState(State, Value);
+	return rsMan->redirectSetRenderState(State, Value);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value) {
 	RSManager::setLatest(rsMan);
 	SDLOG(14, "SetSamplerState sampler %lu:   state type: %s   value: %lu\n", Sampler, D3DSamplerStateTypeToString(Type), Value);
-	return RSManager::get().redirectSetSamplerState(Sampler, Type, Value);
+	return rsMan->redirectSetSamplerState(Sampler, Type, Value);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetScissorRect(CONST RECT* pRect) {

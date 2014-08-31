@@ -1,6 +1,6 @@
 #include "plugins/mitsurugi.h"
 
-#include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 
 MitsurugiPlugin::~MitsurugiPlugin() {
 	SAFERELEASE(depthSurf);
@@ -140,14 +140,14 @@ HRESULT MitsurugiPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,
 				tex->GetSurfaceLevel(0, &surf);
 				d3ddev->GetRenderTarget(0, &rt);
 				if(surf != NULL && rt != NULL) {
-					RSManager::get().storeRenderState();
+					manager.storeRenderState();
 					GenericPlugin::process(surf);
 					scaler->go(tex, rt);
-					if(RSManager::get().getTakeScreenshot() == RSManager::SCREENSHOT_FULL || RSManager::get().getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
-						RSManager::get().captureRTScreen("full", surf);
+					if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_FULL || manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
+						manager.captureRTScreen("full", surf);
 					}
-					RSManager::get().tookScreenshot();
-					RSManager::get().restoreRenderState();
+					manager.tookScreenshot();
+					manager.restoreRenderState();
 				}
 				SAFERELEASE(surf);
 				SAFERELEASE(rt);
@@ -169,7 +169,7 @@ HRESULT MitsurugiPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZ
 }
 
 HRESULT MitsurugiPlugin::redirectSetVertexShader(IDirect3DVertexShader9* pvShader) {
-	if(RSManager::get().getShaderManager().getName(pvShader) == string("a5840dcc")) {
+	if(manager.getShaderManager().getName(pvShader) == string("a5840dcc")) {
 		shaderCountA++;
 		if(shaderCountA == 2) GenericPlugin::processCurrentBB();
 	}
@@ -177,7 +177,7 @@ HRESULT MitsurugiPlugin::redirectSetVertexShader(IDirect3DVertexShader9* pvShade
 }
 
 HRESULT MitsurugiPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
-	if(RSManager::get().getShaderManager().getName(pShader) == string("8358759b")) {
+	if(manager.getShaderManager().getName(pShader) == string("8358759b")) {
 		shaderCountB++;
 		if(shaderCountB == 2) GenericPlugin::processCurrentBB();
 	}
