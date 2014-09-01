@@ -5,10 +5,6 @@
 #include "game_plugin.h"
 
 class RSManagerDX9 : public RSManager {
-public:
-	typedef enum { SCREENSHOT_NONE, SCREENSHOT_STANDARD, SCREENSHOT_FULL, SCREENSHOT_HUDLESS } ScreenshotType;
-
-private:
 	bool inited = false, multisampling = false;
 	IDirect3DDevice9 *d3ddev = NULL;
 	GamePlugin *plugin = NULL;

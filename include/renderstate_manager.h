@@ -4,7 +4,6 @@
 #include <set>
 #include <vector>
 
-#include "d3d9.h"
 #include "d3dperf.h"
 #include "console.h"
 #include "shader_manager.h"
@@ -13,6 +12,7 @@
 #include "game_plugin.h"
 
 class RSManagerDX9;
+class RSManagerDX11;
 class Scaler;
 
 class RSManager {
@@ -45,6 +45,7 @@ protected:
 public:
 	static RSManager& get();
 	static RSManagerDX9& getDX9();
+	static RSManagerDX11& getDX11();
 	static RenderTargetManager& getRTMan();
 	static void setLatest(RSManager *man);
 	static bool currentlyDownsampling();

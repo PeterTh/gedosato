@@ -3,6 +3,7 @@
 
 #include "dxgi/dxgifactory1.h"
 
+#include "dxgi/dxgiswapchain.h"
 #include "dxgi/dxgiadapter.h"
 #include "dxgi/dxgiadapter1.h"
 #include "settings.h"
@@ -69,7 +70,12 @@ HRESULT APIENTRY hkIDXGIFactory1::GetWindowAssociation(HWND *pWindowHandle) {
 
 HRESULT APIENTRY hkIDXGIFactory1::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
 	SDLOG(20, "hkIDXGIFactory1::CreateSwapChain\n");
-	return pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
+	HRESULT hr = pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
+	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
+		SDLOG(2, " -> hkIDXGIFactory1::CreateSwapChain hooked\n");
+		new hkIDXGISwapChain(ppSwapChain);
+	}
+	return hr;
 }
 
 HRESULT APIENTRY hkIDXGIFactory1::CreateSoftwareAdapter(HMODULE Module, IDXGIAdapter **ppAdapter) {

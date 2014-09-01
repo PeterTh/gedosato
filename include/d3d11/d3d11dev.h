@@ -5,8 +5,12 @@
 
 #include "d3d11/d3d11.h"
 
+#include "renderstate_manager_dx11.h"
+
 interface hkID3D11Device : public ID3D11Device {
 	ID3D11Device *pWrapped;
+
+	RSManagerDX11 *rsMan;
 	
 public:
 	hkID3D11Device(ID3D11Device **ppID3D11Device);

@@ -2,10 +2,12 @@
 
 #include "rendertarget.h"
 
-#include "d3d9.h"
+#include "d3d9/d3d9.h"
+#include "d3d11/d3d11.h"
 
 class RenderTargetManager {
-	IDirect3DDevice9* device;
+	IDirect3DDevice9* device = NULL;
+	ID3D11Device* device11 = NULL;
 
 	// can be used by plugins to override the default buffer format
 	// e.g. in case they are applying effects to FP16 buffers
@@ -13,6 +15,7 @@ class RenderTargetManager {
 
 public:
 	RenderTargetManager(IDirect3DDevice9* device) : device(device) {}
+	RenderTargetManager(ID3D11Device* device) : device11(device) {}
 
 	void setOverrideFormat(RenderTarget::Format format) { overrideFormat = format; }
 

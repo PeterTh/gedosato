@@ -391,6 +391,7 @@
     <ClInclude Include="include\plugins\mitsurugi.h" />
     <ClInclude Include="include\post.h" />
     <ClInclude Include="include\registry.h" />
+    <ClInclude Include="include\renderstate_manager_dx11.h" />
     <ClInclude Include="include\renderstate_manager_dx9.h" />
     <ClInclude Include="include\rendertarget.h" />
     <ClInclude Include="include\rendertarget_manager.h" />
