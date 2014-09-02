@@ -11,6 +11,7 @@ SETTING(unsigned, OverrideWidth, "overrideWidth", 1280)
 SETTING(unsigned, OverrideHeight, "overrideHeight", 720)
 
 SETTING(string, ScalingType, "scalingType", "linear")
+SETTING(bool, MaintainAspectRatio, "maintainAspectRatio", true)
 
 // Compatibility Options
 SETTING(bool, PluginHandlesDownsampling, "pluginHandlesDownsampling", false)

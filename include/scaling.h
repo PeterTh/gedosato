@@ -41,4 +41,5 @@ private:
 	string status;
 
 	const char* getScalingName();
+	void aspectQuad();
 };

@@ -4,6 +4,7 @@ General:
 - Added "injectVSHash" injection setting
 - Added user blacklist and whitelist support
 - Added lots more DXGI wrapping machinery
+- Added option to maintain aspect ratio when scaling
 - Started refactoring Renderstate management for multiple APIs
 GeDoSaToTool:
 - Fix undo history across file changes, ask users about unsaved changes

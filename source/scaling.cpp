@@ -112,24 +112,15 @@ void Scaler::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
 		if(i==levels) dst = finalDst;
 		else dst = levelBuffers[i]->getSurf();
 		UINT passes;
-		if(sType == BICUBIC || sType == LANCZOS) { 
-			device->SetRenderTarget(0, dst);
-			effect->SetTexture(frameTexHandle, input);
-			effect->SetFloatArray(inputSizeHandle, levelInputSizes+i*2, 2);
-			effect->Begin(&passes, 0);
-			effect->BeginPass(sType);
-			quad(width, height);
-			effect->EndPass();
-			effect->End();
-		} else { // default to bilinear
-			device->SetRenderTarget(0, dst);
-			effect->SetTexture(frameTexHandle, input);
-			effect->Begin(&passes, 0);
-			effect->BeginPass(0);
-			quad(width, height);
-			effect->EndPass();
-			effect->End();
-		}
+		device->SetRenderTarget(0, dst);
+		effect->SetTexture(frameTexHandle, input);
+		effect->SetFloatArray(inputSizeHandle, levelInputSizes + i * 2, 2);
+		effect->Begin(&passes, 0);
+		effect->BeginPass(sType);
+		if(Settings::get().getMaintainAspectRatio() && i == 0) aspectQuad();
+		else quad(width, height);
+		effect->EndPass();
+		effect->End();
 		if(i < levels) input = levelBuffers[i]->getTex();
 	}
 }
@@ -157,4 +148,25 @@ const char* Scaler::getScalingName() {
 	case NEAREST: return "nearest";
 	}
 	return "unknown";
+}
+
+void Scaler::aspectQuad() {
+	float w = 1.0, h = 1.0;
+	double renderRatio = static_cast<double>(inputwidth) / inputheight;
+	double targetRatio = static_cast<double>(width) / height;
+	if(renderRatio > targetRatio) { // render res is wider
+		h /= static_cast<float>(renderRatio / targetRatio);
+	}
+	else if(renderRatio < targetRatio) { // render res is taller
+		w /= static_cast<float>(targetRatio / renderRatio);
+	}
+
+	D3DXVECTOR2 pixelSize = D3DXVECTOR2(1.0f / float(width), 1.0f / float(height));
+	float quad[4][5] = {
+		{ -w - pixelSize.x,  h + pixelSize.y, 0.5f, 0.0f, 0.0f },
+		{  w - pixelSize.x,  h + pixelSize.y, 0.5f, 1.0f, 0.0f },
+		{ -w - pixelSize.x, -h + pixelSize.y, 0.5f, 0.0f, 1.0f },
+		{  w - pixelSize.x, -h + pixelSize.y, 0.5f, 1.0f, 1.0f }
+	};
+	device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, quad, sizeof(quad[0]));
 }
