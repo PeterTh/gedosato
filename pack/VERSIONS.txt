@@ -6,6 +6,7 @@ General:
 - Added lots more DXGI wrapping machinery
 - Added option to maintain aspect ratio when scaling
 - Started refactoring Renderstate management for multiple APIs
+- Fixed screenshot taking when upsampling and at unusual ARs
 GeDoSaToTool:
 - Fix undo history across file changes, ask users about unsaved changes
 - Correctly show existing user profiles in profile list
