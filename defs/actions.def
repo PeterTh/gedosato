@@ -33,6 +33,10 @@ ACTION(takeHUDlessScreenshot, RSManager::get().enableTakeScreenshot(RSManager::S
 ACTION(dumpBloom, RSManager::get().dumpBloom())
 ACTION(dumpSSAO, RSManager::get().dumpSSAO())
 
+// Timing Actions
+
+ACTION(toggleFreeze, TimeManager::get().toggleFreeze())
+
 // Development Actions
 
 ACTION(togglePerfInfo, RSManager::get().togglePerfInfo())

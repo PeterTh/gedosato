@@ -11,6 +11,7 @@
 
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
+#include "time_manager.h"
 
 #include "d3d9/d3d9.h"
 #include "d3d9/d3d9int_ex.h"
@@ -578,6 +579,14 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 		if(ppSwapChain != NULL) new hkIDXGISwapChain(ppSwapChain);
 		g_NeedD3D11Hooking = false;
 	}
+	return ret;
+}
+
+// Time ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GENERATE_INTERCEPT_HEADER(QueryPerformanceCounter, BOOL, WINAPI, _Out_ LARGE_INTEGER *lpPerformanceCount) {
+	SDLOG(4, "DetouredQueryPerformanceCounter\n");
+	BOOL ret = TimeManager::get().redirectQueryPerformanceCounter(lpPerformanceCount);
 	return ret;
 }
 

@@ -349,6 +349,7 @@
     <ClCompile Include="source\ssao.cpp" />
     <ClCompile Include="source\string_utils.cpp" />
     <ClCompile Include="source\timer.cpp" />
+    <ClCompile Include="source\time_manager.cpp" />
     <ClCompile Include="source\version.cpp" />
     <ClCompile Include="source\window_manager.cpp" />
     <ClCompile Include="source\winutil.cpp" />
@@ -410,6 +411,7 @@
     <ClInclude Include="include\settings.h" />
     <ClInclude Include="include\ssao.h" />
     <ClInclude Include="include\timer.h" />
+    <ClInclude Include="include\time_manager.h" />
     <ClInclude Include="include\utils.h" />
     <ClInclude Include="include\version.h" />
     <ClInclude Include="include\window_manager.h" />

@@ -15,6 +15,7 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 #include "scaling.h"
+#include "time_manager.h"
 
 #define KEY_FILE_NAME (INTERCEPTOR_NAME"Keys.ini")
 #define USER_KEY_FILE_NAME (INTERCEPTOR_NAME"Keys_user.ini")
