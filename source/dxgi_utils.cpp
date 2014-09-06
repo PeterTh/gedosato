@@ -1,5 +1,6 @@
-
 #include "dxgi_utils.h"
+
+#include "string_utils.h"
 
 const char* DxgiFormatToString(const DXGI_FORMAT& fmt) {
 	switch(fmt) {
@@ -105,4 +106,66 @@ const char* DxgiFormatToString(const DXGI_FORMAT& fmt) {
 	case DXGI_FORMAT_BC7_UNORM_SRGB: return "DXGI_FORMAT_BC7_UNORM_SRGB";
 	}
 	return "Unknown DXGI format";
+}
+
+const char* DxgiModeScalingToString(const DXGI_MODE_SCALING& scaling) {
+	switch(scaling) {
+	case DXGI_MODE_SCALING_UNSPECIFIED: return "DXGI_MODE_SCALING_UNSPECIFIED";
+	case DXGI_MODE_SCALING_CENTERED: return "DXGI_MODE_SCALING_CENTERED";
+	case DXGI_MODE_SCALING_STRETCHED: return "DXGI_MODE_SCALING_STRETCHED";
+	}
+	return "Unknown DXGI mode scaling";
+}
+
+const char* DxgiModeScanlineOrderToString(const DXGI_MODE_SCANLINE_ORDER& order) {
+	switch(order) {
+	case DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED: return "DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED";
+	case DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE: return "DXGI_MODE_SCANLINE_ORDER_PROGRESSIVE";
+	case DXGI_MODE_SCANLINE_ORDER_UPPER_FIELD_FIRST: return "DXGI_MODE_SCANLINE_ORDER_UPPER_FIELD_FIRST";
+	case DXGI_MODE_SCANLINE_ORDER_LOWER_FIELD_FIRST: return "DXGI_MODE_SCANLINE_ORDER_LOWER_FIELD_FIRST";
+	}
+	return "Unknown DXGI mode scanline order";
+}
+
+const char* DxgiSwapEffectToString(const DXGI_SWAP_EFFECT& eff) {
+	switch(eff) {
+	case DXGI_SWAP_EFFECT_DISCARD: return "DXGI_SWAP_EFFECT_DISCARD";
+	case DXGI_SWAP_EFFECT_SEQUENTIAL: return "DXGI_SWAP_EFFECT_SEQUENTIAL";
+	//case DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL: return "DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL";
+	}
+	return "Unknown DXGI swap effect";
+}
+
+std::string DxgiUsageToString(const DXGI_USAGE& usage) {
+	string ret = "";
+	if(usage & DXGI_CPU_ACCESS_DYNAMIC) ret += "DXGI_CPU_ACCESS_DYNAMIC|";
+	if(usage & DXGI_CPU_ACCESS_READ_WRITE) ret += "DXGI_CPU_ACCESS_READ_WRITE|";
+	if(usage & DXGI_CPU_ACCESS_SCRATCH) ret += "DXGI_CPU_ACCESS_SCRATCH|";
+	if(usage & DXGI_CPU_ACCESS_DYNAMIC) ret += "DXGI_CPU_ACCESS_DYNAMIC|";
+	if((usage & DXGI_CPU_ACCESS_FIELD) == 0) ret += "DXGI_CPU_ACCESS_NONE|";
+
+	if(usage & DXGI_USAGE_SHADER_INPUT) ret += "DXGI_USAGE_SHADER_INPUT|";
+	if(usage & DXGI_USAGE_RENDER_TARGET_OUTPUT) ret += "DXGI_USAGE_RENDER_TARGET_OUTPUT|";
+	if(usage & DXGI_USAGE_BACK_BUFFER) ret += "DXGI_USAGE_BACK_BUFFER|";
+	if(usage & DXGI_USAGE_SHARED) ret += "DXGI_USAGE_SHARED|";
+	if(usage & DXGI_USAGE_READ_ONLY) ret += "DXGI_USAGE_READ_ONLY|";
+	if(usage & DXGI_USAGE_DISCARD_ON_PRESENT) ret += "DXGI_USAGE_DISCARD_ON_PRESENT|";
+	if(usage & DXGI_USAGE_UNORDERED_ACCESS) ret += "DXGI_USAGE_UNORDERED_ACCESS|";
+	return ret;
+}
+
+std::string DxgiRationalToString(const DXGI_RATIONAL& rat) {
+	return format("%8.4f", static_cast<double>(rat.Numerator) / (rat.Denominator == 0 ? 1 : rat.Denominator));
+}
+
+std::string DxgiModeDescToString(const DXGI_MODE_DESC& desc) {
+	return format("%4d x %4d @ %s - format: %s, scaling: %s, order: %s",
+		desc.Width, desc.Height, DxgiRationalToString(desc.RefreshRate), DxgiFormatToString(desc.Format),
+		DxgiModeScalingToString(desc.Scaling), DxgiModeScanlineOrderToString(desc.ScanlineOrdering));
+}
+
+std::string DxgiSwapChainDescToString(const DXGI_SWAP_CHAIN_DESC& desc) {
+	return format(" - windowed: %s, buffers: %d, swap: %s\n", desc.Windowed ? "true" : "false", desc.BufferCount, DxgiSwapEffectToString(desc.SwapEffect))
+		 + format(" - format: %s\n", DxgiModeDescToString(desc.BufferDesc))
+		 + format(" - usage: %s, flags: %p, samples: %d/%d\n", DxgiUsageToString(desc.BufferUsage), desc.Flags, desc.SampleDesc.Count, desc.SampleDesc.Quality);
 }

@@ -10,6 +10,7 @@
 #include "dxgi/dxgiadapter.h"
 #include "dxgi/dxgiadapter1.h"
 #include "settings.h"
+#include "dxgi_utils.h"
 
 hkIDXGIFactory::hkIDXGIFactory(IDXGIFactory **ppIDXGIFactory) {
 	pWrapped = *ppIDXGIFactory;
@@ -73,10 +74,10 @@ HRESULT APIENTRY hkIDXGIFactory::GetWindowAssociation(HWND *pWindowHandle) {
 }
 
 HRESULT APIENTRY hkIDXGIFactory::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
-	SDLOG(20, "hkIDXGIFactory::CreateSwapChain\n");
+	SDLOG(2, "hkIDXGIFactory::CreateSwapChain with device %p, requested:\n%s\n", pDevice, DxgiSwapChainDescToString(*pDesc));
 	HRESULT hr = pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
 	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
-		SDLOG(2, " -> hkIDXGIFactory1::CreateSwapChain hooked\n");
+		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n%s\n", DxgiSwapChainDescToString(*pDesc));
 		new hkIDXGISwapChain(ppSwapChain);
 	}
 	return hr;
