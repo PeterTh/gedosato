@@ -3,12 +3,6 @@
 
 #include "dxgi/dxgifactory1.h"
 
-#include "dxgi/dxgiswapchain.h"
-#include "dxgi/dxgiadapter.h"
-#include "dxgi/dxgiadapter1.h"
-#include "settings.h"
-#include "dxgi_utils.h"
-
 hkIDXGIFactory1::hkIDXGIFactory1(IDXGIFactory1 **ppIDXGIFactory1) {
 	pWrapped = *ppIDXGIFactory1;
 	*ppIDXGIFactory1 = this;

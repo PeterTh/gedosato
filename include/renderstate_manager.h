@@ -29,6 +29,7 @@ protected:
 	unsigned dumpCaptureIndex = 0;
 
 	unsigned renderWidth = 0, renderHeight = 0;
+	unsigned numBackBuffers = 0;
 
 	// Performance measurement
 	Timer cpuFrameTimer;

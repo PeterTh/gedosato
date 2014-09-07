@@ -12,7 +12,6 @@ class RSManagerDX9 : public RSManager {
 	ShaderManager shaderMan;
 
 	enum { SWAP_COPY, SWAP_FLIP, SWAP_DISCARD } swapEffect = SWAP_DISCARD;
-	unsigned numBackBuffers = 0;
 	D3DFORMAT backbufferFormat = D3DFMT_X8R8G8B8;
 	vector<RenderTargetPtr> backBuffers;
 	RenderTargetPtr extraBuffer;

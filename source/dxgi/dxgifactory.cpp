@@ -1,21 +1,23 @@
 // wrapper for IDXGIFactory in dxgi.h
 // generated using wrapper_gen11.rb
 
-// could be included from dxgifactory1
-#ifndef hkIDXGIFactory 
-
-#include "dxgi/dxgifactory.h"
-
 #include "dxgi/dxgiswapchain.h"
 #include "dxgi/dxgiadapter.h"
 #include "dxgi/dxgiadapter1.h"
 #include "settings.h"
 #include "dxgi_utils.h"
+#include "renderstate_manager_dx11.h"
+
+// could be included from dxgifactory1
+#ifndef hkIDXGIFactory 
+
+#include "dxgi/dxgifactory.h"
 
 hkIDXGIFactory::hkIDXGIFactory(IDXGIFactory **ppIDXGIFactory) {
 	pWrapped = *ppIDXGIFactory;
 	*ppIDXGIFactory = this;
 }
+
 #endif // not def hkIDXGIFactory
 
 HRESULT APIENTRY hkIDXGIFactory::QueryInterface(REFIID riid, void **ppvObject) {
@@ -75,7 +77,7 @@ HRESULT APIENTRY hkIDXGIFactory::GetWindowAssociation(HWND *pWindowHandle) {
 
 HRESULT APIENTRY hkIDXGIFactory::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
 	SDLOG(2, "hkIDXGIFactory::CreateSwapChain with device %p, requested:\n%s\n", pDevice, DxgiSwapChainDescToString(*pDesc));
-	HRESULT hr = pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
+	HRESULT hr = RSManager::getDX11().redirectCreateSwapChain(pWrapped, pDevice, pDesc, ppSwapChain); // pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
 	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
 		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n%s\n", DxgiSwapChainDescToString(*pDesc));
 		new hkIDXGISwapChain(ppSwapChain);
