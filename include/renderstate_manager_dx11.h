@@ -7,6 +7,7 @@
 class RSManagerDX11 : public RSManager {
 	ID3D11Device* d3ddev = NULL;
 	IDXGIFactory* dxgiFactory = NULL;
+	IDXGISwapChain* dxgiSwapChain = NULL;
 
 	ID3D11Texture2D* backBuffers[10];
 
@@ -30,6 +31,7 @@ public:
 			copy.BufferDesc.Width = Settings::get().getPresentWidth();
 			copy.BufferDesc.Height = Settings::get().getPresentHeight();
 			copy.BufferDesc.RefreshRate = { Settings::get().getPresentHz(), 1 };
+			copy.BufferCount = 1;
 			// create swap chain
 			SDLOG(1, " - redirectCreateSwapChain create downsampling swapchain\n");
 			ret = dxgiFactory->CreateSwapChain(pDevice, &copy, ppSwapChain);
@@ -56,6 +58,28 @@ public:
 		else {
 			ret = dxgiFactory->CreateSwapChain(pDevice, pDesc, ppSwapChain);
 		}
+		if(SUCCEEDED(ret)) {
+			dxgiSwapChain = *ppSwapChain;
+		}
 		return ret;
 	}
+
+	HRESULT redirectPresent(UINT SyncInterval, UINT Flags) {
+		if(downsampling) {
+			ID3D11DeviceContext *context;
+			d3ddev->GetImmediateContext(&context);
+			ID3D11Texture2D *realBackBuffer;
+			dxgiSwapChain->GetBuffer(0, __uuidof(realBackBuffer), reinterpret_cast<void**>(&realBackBuffer));
+			ID3D11RenderTargetView* rtView;
+			d3ddev->CreateRenderTargetView(realBackBuffer, NULL, &rtView);
+			context->OMSetRenderTargets(1, &rtView, NULL);
+
+			// TODO downsample
+
+			context->Release();
+		}
+		return dxgiSwapChain->Present(SyncInterval, Flags);
+	}
+
+
 };

@@ -576,7 +576,7 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 	if(SUCCEEDED(ret)) {
 		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
 		if(ppImmediateContext != NULL) new hkID3D11DeviceContext(ppImmediateContext);
-		if(ppSwapChain != NULL) new hkIDXGISwapChain(ppSwapChain);
+		if(ppSwapChain != NULL) new hkIDXGISwapChain(ppSwapChain, &RSManager::getDX11());
 		g_NeedD3D11Hooking = false;
 	}
 	return ret;

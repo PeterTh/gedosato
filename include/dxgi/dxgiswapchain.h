@@ -5,11 +5,14 @@
 
 #include "dxgi.h"
 
+class RSManagerDX11;
+
 interface hkIDXGISwapChain : public IDXGISwapChain {
-	IDXGISwapChain *pWrapped;
+	IDXGISwapChain *pWrapped = NULL;
+	RSManagerDX11* rsMan = NULL;
 	
 public:
-	hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain);
+	hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain, RSManagerDX11* rsMan);
 	
 	// original interface
 

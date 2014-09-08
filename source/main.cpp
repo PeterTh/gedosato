@@ -9,6 +9,7 @@
 #include <sys/timeb.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include "winutil.h"
 #include "main.h"
@@ -179,7 +180,14 @@ string getInstalledFileName(string filename) {
 	return getInstallDirectory() + filename;
 }
 string getAssetFileName(string filename) {
-	return getInstallDirectory() + "assets\\" + filename;
+	string fn = getInstallDirectory() + "assets\\" + filename;
+	if(boost::filesystem::exists(fn)) return fn;
+	fn = getInstallDirectory() + "assets\\dx9\\" + filename;
+	if(boost::filesystem::exists(fn)) return fn;
+	fn = getInstallDirectory() + "assets\\dx11\\" + filename;
+	if(boost::filesystem::exists(fn)) return fn;
+	SDLOG(-1, "ERROR: couldn't find asset file %s\n", filename);
+	return filename;
 }
 string getConfigFileName(string filename) {
 	return getInstallDirectory() + "config\\" + filename;

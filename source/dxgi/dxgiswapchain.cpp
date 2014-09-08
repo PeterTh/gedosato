@@ -4,8 +4,9 @@
 #include "dxgi/dxgiswapchain.h"
 
 #include "settings.h"
+#include "renderstate_manager_dx11.h"
 
-hkIDXGISwapChain::hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain) {
+hkIDXGISwapChain::hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain, RSManagerDX11* rsMan) : rsMan(rsMan) {
 	pWrapped = *ppIDXGISwapChain;
 	*ppIDXGISwapChain = this;
 }
@@ -52,7 +53,7 @@ HRESULT APIENTRY hkIDXGISwapChain::GetDevice(REFIID riid, void **ppDevice) {
 
 HRESULT APIENTRY hkIDXGISwapChain::Present(UINT SyncInterval, UINT Flags) {
 	SDLOG(20, "hkIDXGISwapChain::Present\n");
-	return pWrapped->Present(SyncInterval, Flags);
+	return rsMan->redirectPresent(SyncInterval, Flags);
 }
 
 HRESULT APIENTRY hkIDXGISwapChain::GetBuffer(UINT Buffer, REFIID riid, void **ppSurface) {

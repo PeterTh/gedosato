@@ -80,7 +80,7 @@ HRESULT APIENTRY hkIDXGIFactory::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CH
 	HRESULT hr = RSManager::getDX11().redirectCreateSwapChain(pWrapped, pDevice, pDesc, ppSwapChain); // pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
 	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
 		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n%s\n", DxgiSwapChainDescToString(*pDesc));
-		new hkIDXGISwapChain(ppSwapChain);
+		new hkIDXGISwapChain(ppSwapChain, &RSManager::getDX11());
 	}
 	return hr;
 }
