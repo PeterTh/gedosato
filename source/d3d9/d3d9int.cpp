@@ -54,6 +54,9 @@ HRESULT APIENTRY hkIDirect3D9::CheckDeviceType(UINT Adapter, D3DDEVTYPE CheckTyp
 
 HRESULT APIENTRY hkIDirect3D9::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DDevice9 **ppReturnedDeviceInterface) {
 	SDLOG(0, "CreateDevice ------ Adapter %u Thread %u\n", Adapter, GetCurrentThreadId());
+	if(Settings::get().getAdapterOverride() > 0) {
+		Adapter = Settings::get().getAdapterOverride();
+	}
 	if(!pPresentationParameters) {
 		HRESULT hRet = m_pD3Dint->CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, ppReturnedDeviceInterface);
 		if(SUCCEEDED(hRet)) hkIDirect3DDevice9 *ret = new hkIDirect3DDevice9(ppReturnedDeviceInterface, pPresentationParameters, this);

@@ -5,6 +5,7 @@ General:
 - Added user blacklist and whitelist support
 - Added lots more DXGI wrapping machinery
 - Added option to maintain aspect ratio when scaling
+- Added adapter override setting
 - Started refactoring Renderstate management for multiple APIs
 - Fixed screenshot taking when upsampling and at unusual ARs
 GeDoSaToTool:

@@ -6,6 +6,7 @@ SETTING(unsigned, PresentWidth, "presentWidth", 0)
 SETTING(unsigned, PresentHeight, "presentHeight", 0)
 SETTING(unsigned, PresentHz, "presentHz", 60)
 SETTING(int, PresentInterval, "presentInterval", -1)
+SETTING(int, AdapterOverride, "adapterOverride", -1)
 
 SETTING(unsigned, OverrideWidth, "overrideWidth", 1280)
 SETTING(unsigned, OverrideHeight, "overrideHeight", 720)
