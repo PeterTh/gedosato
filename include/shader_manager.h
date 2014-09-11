@@ -9,7 +9,7 @@ using std::string;
 #include "main.h"
 #include "settings.h"
 #include "hash.h"
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 class ShaderManager {
 	std::map<void*, UINT32> shaderPtrIdMap;

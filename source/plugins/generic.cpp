@@ -1,7 +1,7 @@
 
 #include "plugins/generic.h"
 
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 #include "renderstate_manager_dx9.h"
 #include "blacklist.h"
 

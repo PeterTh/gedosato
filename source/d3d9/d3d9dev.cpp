@@ -3,10 +3,10 @@
 #include <iostream>
 #include <list>
 
-#include "winutil.h"
+#include "utils/win_utils.h"
 #include "main.h"
 #include "d3d9.h"
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 #include "renderstate_manager_dx9.h"
 #include "window_manager.h"
 #include "Settings.h"

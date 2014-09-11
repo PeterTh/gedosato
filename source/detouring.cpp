@@ -5,9 +5,9 @@
 
 #include <MinHook.h>
 
-#include "string_utils.h"
-#include "d3dutil.h"
-#include "winutil.h"
+#include "utils/string_utils.h"
+#include "utils/d3d9_utils.h"
+#include "utils/win_utils.h"
 
 #include "settings.h"
 #include "renderstate_manager_dx9.h"

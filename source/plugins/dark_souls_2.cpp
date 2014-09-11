@@ -2,7 +2,7 @@
 #include "plugins/dark_souls_2.h"
 
 #include "renderstate_manager_dx9.h"
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 
 DS2Plugin::~DS2Plugin() {
 	SAFERELEASE(defaultState);

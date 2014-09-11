@@ -275,7 +275,7 @@
     <ClCompile Include="source\d3d9\d3d9int_ex.cpp" />
     <ClCompile Include="source\d3d9\d3d9swap.cpp" />
     <ClCompile Include="source\d3dperf.cpp" />
-    <ClCompile Include="source\d3dutil.cpp" />
+    <ClCompile Include="source\utils\d3d_utils.cpp" />
     <ClCompile Include="source\depth_texture.cpp" />
     <ClCompile Include="source\detouring.cpp" />
     <ClCompile Include="source\dof.cpp" />
@@ -285,7 +285,7 @@
     <ClCompile Include="source\dxgi\dxgifactory1.cpp" />
     <ClCompile Include="source\dxgi\dxgioutput.cpp" />
     <ClCompile Include="source\dxgi\dxgiswapchain.cpp" />
-    <ClCompile Include="source\dxgi_utils.cpp" />
+    <ClCompile Include="source\utils\dxgi_utils.cpp" />
     <ClCompile Include="source\effect.cpp" />
     <ClCompile Include="source\fxaa.cpp" />
     <ClCompile Include="source\game_plugin.cpp" />
@@ -347,12 +347,12 @@
     <ClCompile Include="source\settings.cpp" />
     <ClCompile Include="source\smaa.cpp" />
     <ClCompile Include="source\ssao.cpp" />
-    <ClCompile Include="source\string_utils.cpp" />
+    <ClCompile Include="source\utils\string_utils.cpp" />
     <ClCompile Include="source\timer.cpp" />
     <ClCompile Include="source\time_manager.cpp" />
     <ClCompile Include="source\version.cpp" />
     <ClCompile Include="source\window_manager.cpp" />
-    <ClCompile Include="source\winutil.cpp" />
+    <ClCompile Include="source\utils\win_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\dev\wrapperGen\dxgiadapter1.h" />
@@ -368,7 +368,7 @@
     <ClInclude Include="include\d3d9\d3d9int_ex.h" />
     <ClInclude Include="include\d3d9\d3d9swap.h" />
     <ClInclude Include="include\d3dperf.h" />
-    <ClInclude Include="include\d3dutil.h" />
+    <ClInclude Include="include\utils\d3d9_utils.h" />
     <ClInclude Include="include\depth_texture.h" />
     <ClInclude Include="include\detouring.h" />
     <ClInclude Include="include\dof.h" />
@@ -380,7 +380,7 @@
     <ClInclude Include="include\dxgi\dxgifactory3.h" />
     <ClInclude Include="include\dxgi\dxgioutput.h" />
     <ClInclude Include="include\dxgi\dxgiswapchain.h" />
-    <ClInclude Include="include\dxgi_utils.h" />
+    <ClInclude Include="include\utils\dxgi_utils.h" />
     <ClInclude Include="include\effect.h" />
     <ClInclude Include="include\fxaa.h" />
     <ClInclude Include="include\game_plugin.h" />
@@ -402,7 +402,7 @@
     <ClInclude Include="include\search_tex.h" />
     <ClInclude Include="include\shader_manager.h" />
     <ClInclude Include="include\smaa.h" />
-    <ClInclude Include="include\string_utils.h" />
+    <ClInclude Include="include\utils\string_utils.h" />
     <ClInclude Include="defs\textures.def" />
     <ClInclude Include="include\renderstate_manager.h" />
     <ClInclude Include="include\main.h" />
@@ -415,7 +415,7 @@
     <ClInclude Include="include\utils.h" />
     <ClInclude Include="include\version.h" />
     <ClInclude Include="include\window_manager.h" />
-    <ClInclude Include="include\winutil.h" />
+    <ClInclude Include="include\utils\win_utils.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="defs\actions.def" />

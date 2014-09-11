@@ -11,17 +11,17 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
-#include "winutil.h"
+#include "utils/win_utils.h"
 #include "main.h"
 #include "d3d9.h"
 #include "version.h"
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 #include "settings.h"
 #include "key_actions.h"
 #include "detouring.h"
 #include "registry.h"
 #include "blacklist.h"
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 FILE* g_oFile = NULL;
 HMODULE g_dll = NULL;

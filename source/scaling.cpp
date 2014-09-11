@@ -9,7 +9,7 @@ using namespace std;
 #include "console.h"
 #include "utils.h"
 #include "settings.h"
-#include "string_utils.h"
+#include "utils/string_utils.h"
 #include "renderstate_manager.h"
 
 Scaler::Scaler(IDirect3DDevice9 *device, int inputwidth, int inputheight, int width, int height, bool useSRGB)

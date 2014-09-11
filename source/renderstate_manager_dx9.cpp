@@ -3,10 +3,10 @@
 #include <boost/filesystem.hpp>
 
 #include "d3d9/d3d9dev_ex.h"
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 #include "key_actions.h"
 #include "detouring.h"
-#include "winutil.h"
+#include "utils/win_utils.h"
 #include "window_manager.h"
 
 Scaler* RSManagerDX9::getScaler() {

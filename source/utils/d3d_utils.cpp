@@ -1,10 +1,10 @@
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 
 #include <cstdio>
 #include <sstream>
 
 #include "settings.h"
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 IDirect3DTexture9* D3DGetSurfTexture(IDirect3DSurface9* pSurface) {
 	IDirect3DTexture9 *ret = NULL;

@@ -2,9 +2,9 @@
 
 #include "detouring.h"
 #include "settings.h"
-#include "d3dutil.h"
-#include "winutil.h"
-#include "string_utils.h"
+#include "utils/d3d9_utils.h"
+#include "utils/win_utils.h"
+#include "utils/string_utils.h"
 
 WindowManager WindowManager::instance;
 

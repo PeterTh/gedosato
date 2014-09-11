@@ -6,7 +6,7 @@
 #include "plugins/dark_souls_2.h"
 #include "plugins/mitsurugi.h"
 
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 GamePlugin* GamePlugin::getPlugin(IDirect3DDevice9 *device, RSManagerDX9 &manager) {
 	#define PLUGIN(_name, _exename, _class) \

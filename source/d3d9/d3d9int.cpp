@@ -1,9 +1,9 @@
 /*	Direct3D9 Interface */
 
-#include "winutil.h"
+#include "utils/win_utils.h"
 #include "main.h"
 #include "d3d9.h"
-#include "d3dutil.h"
+#include "utils/d3d9_utils.h"
 
 #include "settings.h"
 #include "renderstate_manager_dx9.h"

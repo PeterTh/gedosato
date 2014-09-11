@@ -4,7 +4,7 @@
 #include "dxgi/dxgioutput.h"
 
 #include "settings.h"
-#include "dxgi_utils.h"
+#include "utils/dxgi_utils.h"
 
 hkIDXGIOutput::hkIDXGIOutput(IDXGIOutput **ppIDXGIOutput) {
 	pWrapped = *ppIDXGIOutput;

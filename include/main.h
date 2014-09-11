@@ -20,7 +20,7 @@
 #include <string>
 using std::string;
 
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 #define EDITION "GENERIC"
 

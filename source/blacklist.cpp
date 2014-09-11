@@ -1,7 +1,7 @@
 #include "blacklist.h"
 
 #include "main.h"
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 #include <fstream>
 using namespace std;

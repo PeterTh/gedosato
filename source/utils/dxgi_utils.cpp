@@ -1,6 +1,6 @@
-#include "dxgi_utils.h"
+#include "utils/dxgi_utils.h"
 
-#include "string_utils.h"
+#include "utils/string_utils.h"
 
 const char* DxgiFormatToString(const DXGI_FORMAT& fmt) {
 	switch(fmt) {

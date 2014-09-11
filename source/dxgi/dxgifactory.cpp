@@ -5,7 +5,7 @@
 #include "dxgi/dxgiadapter.h"
 #include "dxgi/dxgiadapter1.h"
 #include "settings.h"
-#include "dxgi_utils.h"
+#include "utils/dxgi_utils.h"
 #include "renderstate_manager_dx11.h"
 
 // could be included from dxgifactory1

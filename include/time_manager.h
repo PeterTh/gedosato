@@ -2,7 +2,7 @@
 
 #include <boost/noncopyable.hpp>
 
-#include "winutil.h"
+#include "utils/win_utils.h"
 #include "console.h"
 #include "detouring.h"
 
