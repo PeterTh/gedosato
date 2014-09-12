@@ -11,6 +11,8 @@ General:
 GeDoSaToTool:
 - Fix undo history across file changes, ask users about unsaved changes
 - Correctly show existing user profiles in profile list
+GeDoSaToUpdater:
+- Backups to single backup folder
 
 27-08-2014 -- beta 12 - "Sepia Recollections"
 =============================================
