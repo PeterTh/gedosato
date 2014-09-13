@@ -22,6 +22,7 @@ Requirements & Dependencies
 - Boost (http://www.boost.org/)
 - MinHook (this fork: https://github.com/RaMMicHaeL/minhook)
 - Ruby (just for the script which updates the build numbers/dates -- you can do without that if you want to)
+- NVAPI
 
 Contributing
 ============
