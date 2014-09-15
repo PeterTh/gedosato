@@ -116,3 +116,6 @@ Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
 WL2                          || Wastelands 2
 yso_win                      || Ys Origin
+MOHA            			 || Medal of Honor: Airborne
+TFOC          			     || Transformers: Fall of Cybertron
+TWFC          			     || Transformers: War for Cybertron
