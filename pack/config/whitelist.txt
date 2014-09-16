@@ -84,6 +84,7 @@ Might and Magic X Legacy     || Might and Magic X Legacy
 MirrorsEdge                  || Mirror's Edge
 mitsurugi                    || Mitsurugi Kamui Hikae
 mm                           || Dark Messiah of Might and Magic Single Player
+MWOClient                    || MechWarrior Online
 OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
