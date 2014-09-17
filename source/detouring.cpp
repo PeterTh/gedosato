@@ -627,6 +627,7 @@ HMODULE findDll(const string& name) {
 }
 
 void hookFunction(const char* name, const char* dllname, void **ppTarget, void* const pDetour, void** ppOriginal, bool& flag) {
+	if(!Settings::get().getEnableDX11() && (boost::algorithm::icontains(name, "DX11") || boost::algorithm::icontains(name, "DXGI"))) return;
 	if(!flag) {
 		SDLOG(36, "Trying to hook %s in %s\n", name, dllname);
 		HMODULE dllhandle = findDll(dllname);

@@ -26,6 +26,7 @@ SETTING(bool, LoadD3DEarly, "loadD3DEarly", false)
 SETTING(bool, DelayDetouring, "delayDetouring", false)
 SETTING(unsigned, ZBufCompatibilityFlag, "zbufCompatibilityFlag", 0)
 SETTING(string, PluginOverride, "pluginOverride", "")
+SETTING(bool, EnableDX11, "enableDX11", false)
 
 // Texture options
 SETTING(bool, EnableTextureDumping, "enableTextureDumping", false)
