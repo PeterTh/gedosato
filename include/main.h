@@ -31,7 +31,9 @@ using std::string;
 //#define RELEASE_VER
 
 #ifndef RELEASE_VER
-#define SDLOG(_level, _str, ...) { if(Settings::get().getLogLevel() > _level) { sdlog(_str, __VA_ARGS__); } }
+#define SDLOG(_level, _str, ...) { \
+	try { if(Settings::get().getLogLevel() > _level) { sdlog(_str, __VA_ARGS__); } } \
+	catch(boost::io::format_error &e) { sdlog("LOGGING ERROR (%s:%d): %s\n", __FILE__, __LINE__, e.what()); } }
 #define LOG_CHECK(_level, _code) { if(Settings::get().getLogLevel() > _level) { _code; } }
 #else
 #define SDLOG(_level, _str, ...) {}

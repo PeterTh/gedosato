@@ -6,6 +6,7 @@ General:
 - Added lots more DXGI wrapping machinery
 - Added option to maintain aspect ratio when scaling
 - Added adapter override setting
+- Fixed logging error, made more resilient in case of future logging erros
 - Started refactoring Renderstate management for multiple APIs
 - Fixed screenshot taking when upsampling and at unusual ARs
 GeDoSaToTool:
