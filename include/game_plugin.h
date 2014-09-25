@@ -20,7 +20,7 @@ public:
 	virtual ~GamePlugin() { }
 	string getName() { return name; }
 	virtual void reportStatus() { }
-	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) { }
+	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) { }
 	virtual void prePresent() { }
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) { }
 
@@ -82,5 +82,8 @@ public:
 	}
 	virtual HRESULT redirectSetPixelShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) {
 		return d3ddev->SetPixelShaderConstantF(StartRegister, pConstantData, Vector4fCount);
+	}
+	virtual HRESULT redirectBeginScene() {
+		return d3ddev->BeginScene();
 	}
 };

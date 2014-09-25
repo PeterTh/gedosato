@@ -22,6 +22,7 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 
 SSAO::~SSAO() {
 	SAFERELEASE(effect);
+	if(type == SSAO::SAO) SAFERELEASE(noiseTex);
 }
 
 void SSAO::reloadShader() {
@@ -35,6 +36,11 @@ void SSAO::reloadShader() {
 	string pixelSizeText = sp.str();
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
+
+	// Setup screen size macro
+	string screenSizeText = format("float2(%d,%d)", width, height);
+	D3DXMACRO screenSizeMacro = { "SCREEN_SIZE", screenSizeText.c_str() };
+	defines.push_back(screenSizeMacro);
 
 	// Setup SRGB macro
 	D3DXMACRO srgbMacro = { "USE_SRGB", useSRGB ? "true" : "false" };
@@ -73,9 +79,9 @@ void SSAO::reloadShader() {
 	// Load effect from file
 	string shaderFn;
 	switch(type) {
-	case VSSAO: shaderFn = "VSSAO.fx"; break;
 	case HBAO: shaderFn = "HBAO.fx"; break;
-	case SCAO: shaderFn = "SCAO.fx"; break;
+	case MSSAO: shaderFn = "martinsh_ssao.fx"; break;
+	case SAO: shaderFn = "SAO.fx"; break;
 	case VSSAO2: shaderFn = "VSSAO2.fx"; break;
 	}
 	shaderFn = getAssetFileName(shaderFn);
@@ -97,6 +103,14 @@ void SSAO::reloadShader() {
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
 	prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
+	noiseTexHandle = effect->GetParameterByName(NULL, "noiseTexture");
+	isBlurHorizontalHandle = effect->GetParameterByName(NULL, "isBlurHorizontal");
+
+	if(type == SSAO::SAO) {
+		string noiseFile = getAssetFileName("RandomNoiseB.png");
+		hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
+		blurPasses = 2;
+	}
 }
 
 void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
@@ -105,8 +119,8 @@ void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurfa
     mainSsaoPass(depth, buffer1->getSurf());
 	
 	for(size_t i = 0; i<blurPasses; ++i) {
-		hBlurPass(depth, buffer1->getTex(), buffer2->getSurf());
-		vBlurPass(depth, buffer2->getTex(), buffer1->getSurf());
+		blurPass(depth, buffer1->getTex(), buffer2->getSurf(), true);
+		blurPass(depth, buffer2->getTex(), buffer1->getSurf(), false);
 	}
 
 	combinePass(frame, buffer1->getTex(), dst);
@@ -130,8 +144,8 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	}
 	
 	for(size_t i = 0; i<blurPasses; ++i) {
-		hBlurPass(depth, buffer1->getTex(), buffer2->getSurf());
-		vBlurPass(depth, buffer2->getTex(), buffer1->getSurf());
+		blurPass(depth, buffer1->getTex(), buffer2->getSurf(), true);
+		blurPass(depth, buffer2->getTex(), buffer1->getSurf(), false);
 	}
 	
 	if(dumping) {
@@ -155,6 +169,7 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
 
 	// Setup variables.
 	effect->SetTexture(depthTexHandle, depth);
+	if(type == SSAO::SAO) effect->SetTexture(noiseTexHandle, noiseTex);
 
     // Do it!
     UINT passes;
@@ -165,33 +180,18 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
 	effect->End();
 }
 
-void SSAO::hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst) {
+void SSAO::blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst, bool horizontal) {
 	device->SetRenderTarget(0, dst);
 
     // Setup variables.
     effect->SetTexture(prevPassTexHandle, src);
     effect->SetTexture(depthTexHandle, depth);
+	effect->SetBool(isBlurHorizontalHandle, horizontal);
 	
     // Do it!
-    UINT passes;
+	UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(1);
-	quad(width, height);
-	effect->EndPass();
-	effect->End();
-}
-
-void SSAO::vBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst) {
-	device->SetRenderTarget(0, dst);
-
-    // Setup variables.
-    effect->SetTexture(prevPassTexHandle, src);
-    effect->SetTexture(depthTexHandle, depth);
-	
-    // Do it!
-    UINT passes;
-	effect->Begin(&passes, 0);
-	effect->BeginPass(2);
+	effect->BeginPass(type == SSAO::SAO ? 1 : horizontal ? 1 : 2);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
@@ -208,7 +208,7 @@ void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3
     // Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(3);
+	effect->BeginPass(type == SSAO::SAO ? 2 : 3);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
