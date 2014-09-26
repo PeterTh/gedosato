@@ -28,39 +28,36 @@
 
 //////////////////////////////////////////////////////// TWEAKABLE VALUES ////////////////////////////////////////////////////////////
 
-//#define SHOW_SSAO
+#define SHOW_SSAO
+#define HIGH_QUALITY
 
 /** manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
-static const float nearZ = 150.0;
-static const float farZ = 289.9;
-
-#ifndef SSAO_STRENGTH_LOW
-#ifndef SSAO_STRENGTH_MEDIUM
-#ifndef SSAO_STRENGTH_HIGH
-#define SSAO_STRENGTH_MEDIUM 1
-#endif
-#endif
-#endif
+static const float nearZ = 20.0;
+static const float farZ = 220.0;
 
 /** Darkending factor, e.g., 1.0 */
 #ifdef SSAO_STRENGTH_LOW
-float intensity = 0.04;
+float aoClamp = 0.16;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-float intensity = 0.08;
+float aoClamp = 0.28;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-float intensity = 0.16;
+float aoClamp = 0.46;
 #endif
 
 /** Quality */
-#define NUM_SAMPLES (9)
+#define NUM_SAMPLES (6)
+
+//comment this line to not take pixel brightness into account
+#define LUMINANCE_CONSIDERATION
+extern float luminosity_threshold = 0.7;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling.
 This need not match the real far plane*/
-#define FAR_PLANE_Z (399.4)
+#define FAR_PLANE_Z (240.0)
 
 /** World-space AO radius in scene units (r).  e.g., 1.0m */
 static const float radius = 0.4;
@@ -74,11 +71,7 @@ static const float bias = 0.02f;
 You can compute it from your projection matrix.  The actual value is just
 a scale factor on radius; you can simply hardcode this to a constant (~500)
 and make your radius value unitless (...but resolution dependent.)  */
-static const float projScale = 31.0f;
-
-//comment this line to not take pixel brightness into account
-#define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.5;
+static const float projScale = 30.0f;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
 #define EDGE_SHARPNESS     (1.0)
@@ -196,6 +189,7 @@ was placed!]
 */
 float3 reconstructCSPosition(float2 S, float z)
 {
+	// return float3((S.xy * projInfo.xy + projInfo.zw) * z, z);
 	return float3(S, z);
 }
 
@@ -224,6 +218,7 @@ float CSZToKey(float z)
     return clamp(z * (1.0 / FAR_PLANE_Z), 0.0, 1.0);
 }
 
+/** "camera-space z < 0" */
 float LinearizeDepth(float depth)
 {
 	return rcp(depth * ((farZ - nearZ) / (-farZ * nearZ)) + farZ / (farZ * nearZ));
@@ -237,7 +232,6 @@ float3 getPosition(float2 ssP)
     P.z = LinearizeDepth(tex2D(depthSampler, ssP).r);
 
     // Offset to pixel center
-    //P = float3(ssP, P.z);
 	P = reconstructCSPosition(float2(ssP) + float2(0.5, 0.5), P.z);
     return P;
 }
@@ -249,7 +243,7 @@ float3 getOffsetPosition(float2 ssC, float2 unitOffset, float ssR)
 
     float3 P;
 
-    // Divide coordinate by 2^mipLevel
+	// [Note by Boulotaur2024] Mipmap not implemented here
     P.z = LinearizeDepth(tex2D(depthSampler, ssP).r);
 
     // Offset to pixel center
@@ -283,14 +277,21 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
     float vv = dot(v, v);
     float vn = dot(v, n_C);
 
-    const float epsilon = 0.02f;   // Original implementation : epsilon = 0.01f;
+    const float epsilon = 0.001;   // Original implementation : epsilon = 0.01;
 
     // A: From the HPG12 paper
     // Note large epsilon to avoid overdarkening within cracks
     //return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
 
+	#ifdef HIGH_QUALITY
+	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/	
+	// Epsilon inside the sqrt for rsqrt operation
+	float invRadius2 = 1.0 / radius2;
+	float f = max(1.0 - vv * invRadius2, 0.0); return f * max((vn - bias) * rsqrt(epsilon + vv), 0.0);	
+	#else
     // B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
     float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
+	#endif
 
     // C: Medium contrast (which looks better at high radii), no division.  Note that the 
     // contribution still falls off with radius^2, but we've adjusted the rate in a way that is
@@ -361,7 +362,12 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
     const float temp = radius2 * radius;
     sum /= temp * temp;
 
-    float A = max(0.0f, 1.0f - sum * intensity * (5.0f / NUM_SAMPLES));
+	#ifdef HIGH_QUALITY
+	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/	
+	float A = pow(max(0.0, 1.0 - sqrt(sum * (3.0 / NUM_SAMPLES))), 1.0);
+	#else
+    float A = max(0.0f, 1.0f - sum * 1.0 * (5.0f / NUM_SAMPLES));
+	#endif
 
 	// Bilateral box-filter over a quad for free, respecting depth edges
 	// (the difference that this makes is subtle)
@@ -372,7 +378,11 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
 		A -= ddy(A) * ((ssC.y % 2) - 0.5);
 	}
 	
-	visibility = A;	
+	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/
+	// Anti-tone map to reduce contrast and drag dark region farther
+	// (x^0.2 + 1.2 * x^4)/2.2
+	A = (pow(A, 0.2) + 1.2 * A*A*A*A) / 2.2;
+	visibility = lerp(1.0, A, aoClamp);
 	//return float4(visibility, visibility, visibility, 1.0);
 	
     return output;
@@ -416,13 +426,11 @@ float4 BlurBL(VSOUT IN) : COLOR0
 
 	float sum = temp.r;
 
-	/*
 	if (key >= 0.999) { 
 		// Sky pixel (if you aren't using depth keying, disable this test)
 		result = sum;
-		return fragment;
+		return output;
 	}
-	*/
 
 	// Base weight for depth falloff.  Increase this for more blurriness,
 	// decrease it for better edge discrimination
