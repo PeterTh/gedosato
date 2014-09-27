@@ -28,24 +28,27 @@
 
 //////////////////////////////////////////////////////// TWEAKABLE VALUES ////////////////////////////////////////////////////////////
 
-#define SHOW_SSAO
-#define HIGH_QUALITY
+//#define SHOW_SSAO
+//#define HIGH_QUALITY // not sure if appropriate for now
 
 /** manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
-static const float nearZ = 20.0;
-static const float farZ = 220.0;
+static const float nearZ = 8.0;
+static const float farZ = 70.0;
 
-/** Darkending factor, e.g., 1.0 */
+/** intensity : darkending factor, e.g., 1.0 */
 #ifdef SSAO_STRENGTH_LOW
-float aoClamp = 0.16;
+float intensity = 0.4;
+float aoClamp = 0.14;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-float aoClamp = 0.28;
+float intensity = 0.8;
+float aoClamp = 0.24;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-float aoClamp = 0.46;
+float intensity = 1.0;
+float aoClamp = 0.36;
 #endif
 
 /** Quality */
@@ -53,7 +56,7 @@ float aoClamp = 0.46;
 
 //comment this line to not take pixel brightness into account
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.7;
+extern float luminosity_threshold = 0.6;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling.
 This need not match the real far plane*/
@@ -71,7 +74,7 @@ static const float bias = 0.02f;
 You can compute it from your projection matrix.  The actual value is just
 a scale factor on radius; you can simply hardcode this to a constant (~500)
 and make your radius value unitless (...but resolution dependent.)  */
-static const float projScale = 30.0f;
+static const float projScale = 10.0f;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
 #define EDGE_SHARPNESS     (1.0)
@@ -239,7 +242,7 @@ float3 getPosition(float2 ssP)
 /** Read the camera-space position of the point at screen-space pixel ssP + unitOffset * ssR.  Assumes length(unitOffset) == 1 */
 float3 getOffsetPosition(float2 ssC, float2 unitOffset, float ssR)
 {
-    float2 ssP = saturate(float2(ssR*unitOffset) + ssC);
+    float2 ssP = float2(ssR*unitOffset) + ssC;
 
     float3 P;
 
@@ -277,7 +280,7 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
     float vv = dot(v, v);
     float vn = dot(v, n_C);
 
-    const float epsilon = 0.001;   // Original implementation : epsilon = 0.01;
+    const float epsilon = 0.02;   // Original implementation : epsilon = 0.01;
 
     // A: From the HPG12 paper
     // Note large epsilon to avoid overdarkening within cracks
@@ -290,8 +293,8 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
 	float f = max(1.0 - vv * invRadius2, 0.0); return f * max((vn - bias) * rsqrt(epsilon + vv), 0.0);	
 	#else
     // B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
-    float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
-	#endif
+    //float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
+	float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
 
     // C: Medium contrast (which looks better at high radii), no division.  Note that the 
     // contribution still falls off with radius^2, but we've adjusted the rate in a way that is
@@ -299,7 +302,8 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
     //return 4.0 * max(1.0 - vv * 1.0 / radius2, 0.0) * max(vn - bias, 0.0);
 
     // D: Low contrast, no division operation
-    // return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
+    //return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
+	#endif	
 }
 
 /** Used for packing Z into the GB channels */
@@ -366,7 +370,7 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
 	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/	
 	float A = pow(max(0.0, 1.0 - sqrt(sum * (3.0 / NUM_SAMPLES))), 1.0);
 	#else
-    float A = max(0.0f, 1.0f - sum * 1.0 * (5.0f / NUM_SAMPLES));
+    float A = max(0.0f, 1.0f - sum * intensity * (5.0f / NUM_SAMPLES));
 	#endif
 
 	// Bilateral box-filter over a quad for free, respecting depth edges
