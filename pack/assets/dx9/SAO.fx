@@ -29,41 +29,50 @@
 //////////////////////////////////////////////////////// TWEAKABLE VALUES ////////////////////////////////////////////////////////////
 
 //#define SHOW_SSAO
-//#define HIGH_QUALITY // not sure if appropriate for now
 
 /** manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
-static const float nearZ = 8.0;
-static const float farZ = 70.0;
+static const float nearZ = 1.0;
+static const float farZ = 18.0;
 
 /** intensity : darkending factor, e.g., 1.0 */
+/** aoClamp : brightness fine-tuning (the higher the darker) */
 #ifdef SSAO_STRENGTH_LOW
-float intensity = 0.4;
-float aoClamp = 0.14;
+float intensity = 0.3;
+float aoClamp = 0.16;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-float intensity = 0.8;
-float aoClamp = 0.24;
+float intensity = 0.4;
+float aoClamp = 0.26;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-float intensity = 1.0;
-float aoClamp = 0.36;
+float intensity = 0.6;
+float aoClamp = 0.40;
 #endif
 
 /** Quality */
-#define NUM_SAMPLES (6)
+#define NUM_SAMPLES (9)
 
-//comment this line to not take pixel brightness into account
+// If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower 
+// miplevel to maintain reasonable spatial locality in the cache
+// If this number is too small (< 3), too many taps will land in the same pixel, and we'll get bad variance that manifests as flashing.
+// If it is too high (> 5), we'll get bad performance because we're not using the MIP levels effectively
+#define LOG_MAX_OFFSET 3
+
+// This must be less than or equal to the MAX_MIP_LEVEL defined in SSAO.cpp
+#define MAX_MIP_LEVEL (5)
+
+//comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces)
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.6;
+extern float luminosity_threshold = 0.7;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling.
 This need not match the real far plane*/
-#define FAR_PLANE_Z (240.0)
+#define FAR_PLANE_Z (17.6)
 
 /** World-space AO radius in scene units (r).  e.g., 1.0m */
-static const float radius = 0.4;
+static const float radius = 1.0;
 /** radius*radius*/
 static const float radius2 = (radius*radius);
 
@@ -74,10 +83,10 @@ static const float bias = 0.02f;
 You can compute it from your projection matrix.  The actual value is just
 a scale factor on radius; you can simply hardcode this to a constant (~500)
 and make your radius value unitless (...but resolution dependent.)  */
-static const float projScale = 10.0f;
+static const float projScale = 1.2f;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
-#define EDGE_SHARPNESS     (1.0)
+#define EDGE_SHARPNESS     (0.2)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
 first AO pass.  This constant can be increased while R decreases to improve
@@ -232,7 +241,7 @@ float3 getPosition(float2 ssP)
 {
     float3 P;
 
-    P.z = LinearizeDepth(tex2D(depthSampler, ssP).r);
+    P.z = tex2D(depthSampler, ssP).r;
 
     // Offset to pixel center
 	P = reconstructCSPosition(float2(ssP) + float2(0.5, 0.5), P.z);
@@ -242,15 +251,20 @@ float3 getPosition(float2 ssP)
 /** Read the camera-space position of the point at screen-space pixel ssP + unitOffset * ssR.  Assumes length(unitOffset) == 1 */
 float3 getOffsetPosition(float2 ssC, float2 unitOffset, float ssR)
 {
+	// Derivation:
+	//  mipLevel = floor(log(ssR / MAX_OFFSET));
+	int mipLevel = clamp((int)floor(log2(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
+	//int mipLevel = 4;
+
     float2 ssP = float2(ssR*unitOffset) + ssC;
 
     float3 P;
 
-	// [Note by Boulotaur2024] Mipmap not implemented here
-    P.z = LinearizeDepth(tex2D(depthSampler, ssP).r);
+	// Divide coordinate by 2^mipLevel
+	//P.z = tex2Dlod(depthSampler, float4(ssP * pow(0.5, -mipLevel), 0, mipLevel)).r;
+	P.z = tex2D(depthSampler, ssP * pow(0.5, -mipLevel)).r;
 
     // Offset to pixel center
-    //P = float3(ssP, P.z);
 	P = reconstructCSPosition(float2(ssP) + float2(0.5, 0.5), P.z);
 
     return P;
@@ -286,15 +300,9 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
     // Note large epsilon to avoid overdarkening within cracks
     //return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
 
-	#ifdef HIGH_QUALITY
-	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/	
-	// Epsilon inside the sqrt for rsqrt operation
-	float invRadius2 = 1.0 / radius2;
-	float f = max(1.0 - vv * invRadius2, 0.0); return f * max((vn - bias) * rsqrt(epsilon + vv), 0.0);	
-	#else
     // B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
     //float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
-	float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
+	return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
 
     // C: Medium contrast (which looks better at high radii), no division.  Note that the 
     // contribution still falls off with radius^2, but we've adjusted the rate in a way that is
@@ -303,7 +311,6 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
 
     // D: Low contrast, no division operation
     //return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
-	#endif	
 }
 
 /** Used for packing Z into the GB channels */
@@ -322,11 +329,33 @@ float unpackKey(float2 p)
     return p.x * (256.0 / 257.0) + p.y * (1.0 / 257.0);
 }
 
+float4 reconstructCSZPass(VSOUT IN) : COLOR0
+{
+	return float4(LinearizeDepth(tex2D(depthSampler, IN.UVCoord).r), 0, 0, 0);
+}
+
+//extern int previousMIPNumber;
+
+float4 minifyPass(VSOUT IN) : COLOR0
+{
+	// int2 ssP = pixel.texCoords * float2(renderTargetSize[SIZECONST_WIDTH], renderTargetSize[SIZECONST_HEIGHT]);
+	float2 ssP = IN.UVCoord;
+
+	// Rotated grid subsampling to avoid XY directional bias or Z precision bias while downsampling
+	// fragment.color = source.Load(int3(ssP * 2 + int2((ssP.y & 1) ^ 1, (ssP.x & 1) ^ 1), 0)); // DX11
+	// return tex2Dlod(depthSampler, float4(ssP * 2 + float2(((ssP.y - floor(ssP.y)) * 2) != 1, ((ssP.x - floor(ssP.x)) * 2) != 1), 0, previousMIPNumber));
+
+	// Plain dumb Linear mip-map instead of Rotated grid subsampling. (I can't make that one work unfortunately :/)
+	return float4(tex2Dlod(depthSampler, float4(IN.UVCoord, 0, 0)).r, 0, 0, 0);
+}
+
 #define visibility      output.r
 #define bilateralKey    output.gb
 
 float4 SSAOCalculate(VSOUT IN) : COLOR0
 {
+	//return tex2Dlod(depthSampler, float4(IN.UVCoord, 0, 3));
+	
     float4 output = float4(1,1,1,1);
   
     // Pixel being shaded 
@@ -347,6 +376,7 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
 
     // Hash function used in the HPG12 AlchemyAO paper (Note from Boulotaur2024 : no hash in DX9 :/)
 	float randomPatternRotationAngle = tex2D(noiseSampler, ssC*12.0).x * 1000.0;
+	//float randomPatternRotationAngle = (3 * ssC.x != ssC.y + ssC.x * ssC.y) * 10;
 
     // Reconstruct normals from positions. These will lead to 1-pixel black lines
     // at depth discontinuities, however the blur will wipe those out so they are not visible
@@ -366,26 +396,17 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
     const float temp = radius2 * radius;
     sum /= temp * temp;
 
-	#ifdef HIGH_QUALITY
-	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/	
-	float A = pow(max(0.0, 1.0 - sqrt(sum * (3.0 / NUM_SAMPLES))), 1.0);
-	#else
     float A = max(0.0f, 1.0f - sum * intensity * (5.0f / NUM_SAMPLES));
-	#endif
 
 	// Bilateral box-filter over a quad for free, respecting depth edges
 	// (the difference that this makes is subtle)
 	if (abs(ddx(C.z)) < 0.02) {
-		A -= ddx(A) * ((ssC.x % 2) - 0.5);  // ssC.x & 1 -> ssC.x % 2 (DX9)
+		A -= ddx(A) * (((ssC.x - floor(ssC.x)) * 2) - 0.5);  // ssC.x & 1 -> (ssC.x - floor(ssC.x)) * 2 (McGuire tip)
 	}
 	if (abs(ddy(C.z)) < 0.02) {
-		A -= ddy(A) * ((ssC.y % 2) - 0.5);
+		A -= ddy(A) * (((ssC.y - floor(ssC.y)) * 2) - 0.5);
 	}
-	
-	// [Note by Boulotaur2024] Addition from http://graphics.cs.williams.edu/papers/DeepGBuffer14/
-	// Anti-tone map to reduce contrast and drag dark region farther
-	// (x^0.2 + 1.2 * x^4)/2.2
-	A = (pow(A, 0.2) + 1.2 * A*A*A*A) / 2.2;
+
 	visibility = lerp(1.0, A, aoClamp);
 	//return float4(visibility, visibility, visibility, 1.0);
 	
@@ -495,14 +516,24 @@ technique t0
 	pass p0
 	{
 		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 SSAOCalculate();
+		PixelShader = compile ps_3_0 reconstructCSZPass();
 	}
 	pass p1
 	{
 		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 BlurBL();	
+		PixelShader = compile ps_3_0 minifyPass();
 	}
 	pass p2
+	{
+		VertexShader = compile vs_3_0 FrameVS();
+		PixelShader = compile ps_3_0 SSAOCalculate();
+	}
+	pass p3
+	{
+		VertexShader = compile vs_3_0 FrameVS();
+		PixelShader = compile ps_3_0 BlurBL();	
+	}
+	pass p4
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 combine();

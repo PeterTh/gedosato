@@ -5,6 +5,8 @@
 #include <vector>
 using namespace std;
 
+#include <boost/filesystem.hpp>
+
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
 
@@ -18,11 +20,16 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
 	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
 	hdrBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_FP16);
+
+	if(type == SSAO::SAO) HRESULT hr = device->CreateTexture(width, height, 5, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pMipMap, NULL);
 }
 
 SSAO::~SSAO() {
 	SAFERELEASE(effect);
-	if(type == SSAO::SAO) SAFERELEASE(noiseTex);
+	if(type == SSAO::SAO) {
+		SAFERELEASE(pMipMap);
+		SAFERELEASE(noiseTex);
+	}
 }
 
 void SSAO::reloadShader() {
@@ -84,7 +91,9 @@ void SSAO::reloadShader() {
 	case SAO: shaderFn = "SAO.fx"; break;
 	case VSSAO2: shaderFn = "VSSAO2.fx"; break;
 	}
-	shaderFn = getAssetFileName(shaderFn);
+	string customfn = getConfigFileName(getExeFileName() + "\\" + shaderFn);
+	if(boost::filesystem::exists(customfn)) shaderFn = customfn;
+	else shaderFn = getAssetFileName(shaderFn);
 	SDLOG(0, "%s load, scale %s, strength %s\n", shaderFn.c_str(), scaleText.c_str(), strengthMacros[strength].Name);
 	ID3DXBuffer* errors;
 	ID3DXEffect* newEffect;
@@ -136,31 +145,62 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 		RSManager::getDX9().dumpTexture("SSAO_PRE_depth", depth);
 		RSManager::getDX9().dumpSurface("SSAO_PRE_dest", dst);
 	}
-	
-	mainSsaoPass(depth, buffer1->getSurf());
+
+	if(type == SSAO::SAO) {
+		mipMapPass(depth);
+		mainSsaoPass(pMipMap, buffer1->getSurf());
+	}
+	else {
+		mainSsaoPass(depth, buffer1->getSurf());
+	}
 
 	if(dumping) {
 		RSManager::getDX9().dumpTexture("SSAO_MD1_buffer1", buffer1->getTex());
 	}
-	
+
 	for(size_t i = 0; i<blurPasses; ++i) {
 		blurPass(depth, buffer1->getTex(), buffer2->getSurf(), true);
 		blurPass(depth, buffer2->getTex(), buffer1->getSurf(), false);
 	}
-	
+
 	if(dumping) {
 		RSManager::getDX9().dumpTexture("SSAO_MD2_buffer1", buffer1->getTex());
 	}
 
 	combinePass(frame, buffer1->getTex(), hdrBuffer->getSurf());
-	
+
 	if(dumping) {
 		RSManager::getDX9().dumpSurface("SSAO_END_buffer2", hdrBuffer->getSurf());
 	}
 
 	device->StretchRect(hdrBuffer->getSurf(), NULL, dst, NULL, D3DTEXF_NONE);
-
 	dumping = false;
+}
+
+void SSAO::mipMapPass(IDirect3DTexture9 *depth) {
+	HRESULT hr = NULL;
+	IDirect3DSurface9 *pSrcSurfaceLevel;
+
+	for (unsigned iLevel = 0; iLevel < pMipMap->GetLevelCount(); ++iLevel)	{
+		D3DSURFACE_DESC desc;
+		pMipMap->GetSurfaceLevel(iLevel, &pSrcSurfaceLevel);
+		pSrcSurfaceLevel->GetDesc(&desc);
+		
+		device->SetRenderTarget(0, pSrcSurfaceLevel);
+
+		// Setup variables.
+		effect->SetTexture(depthTexHandle, iLevel == 0 ? depth : pMipMap);
+
+		// Do it!
+		UINT passes;
+		effect->Begin(&passes, 0);
+		effect->BeginPass(iLevel == 0 ? 0 : 1);
+		quad(width, height);
+		effect->EndPass();
+		effect->End();
+
+		pSrcSurfaceLevel->Release();
+	}
 }
 
 void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
@@ -174,7 +214,7 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
     // Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(0);
+	effect->BeginPass(type == SSAO::SAO ? 2 : 0);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
@@ -191,7 +231,7 @@ void SSAO::blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DS
     // Do it!
 	UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(type == SSAO::SAO ? 1 : horizontal ? 1 : 2);
+	effect->BeginPass(type == SSAO::SAO ? 3 : horizontal ? 1 : 2);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
@@ -208,7 +248,7 @@ void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3
     // Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(type == SSAO::SAO ? 2 : 3);
+	effect->BeginPass(type == SSAO::SAO ? 4 : 3);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
