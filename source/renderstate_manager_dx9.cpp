@@ -96,7 +96,7 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	}
 
 	plugin = GamePlugin::getPlugin(d3ddev, *this);
-	plugin->initialize(rw, rh, bbFormat);
+	plugin->initialize(rw, rh, bbFormat, depthStencilFormat);
 
 	// restore initial state
 	d3ddev->SetRenderState(D3DRS_ZENABLE, autoDepthStencil ? D3DZB_TRUE : D3DZB_FALSE);
@@ -835,4 +835,8 @@ HRESULT RSManagerDX9::redirectCreateDepthStencilSurface(UINT Width, UINT Height,
 
 HRESULT RSManagerDX9::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil){
 	return plugin->redirectSetDepthStencilSurface(pNewZStencil);
+}
+
+HRESULT RSManagerDX9::redirectBeginScene(){
+	return plugin->redirectBeginScene();
 }
