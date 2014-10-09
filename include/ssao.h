@@ -10,7 +10,7 @@
 
 class SSAO : public Effect {
 public:
-	enum Type { VSSAO, HBAO, SCAO, VSSAO2 };
+	enum Type { HBAO, VSSAO2, MSSAO, SAO };
 	enum Blur { BLUR_GAUSSIAN, BLUR_SHARP };
 
 	SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth);
@@ -33,13 +33,15 @@ private:
 
 	ID3DXEffect *effect = NULL;
 	
+	IDirect3DTexture9* noiseTex; // RandomNoiseB.png
 	RenderTargetPtr buffer1, buffer2, hdrBuffer;
+	IDirect3DTexture9 * pMipMap;
 
-	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle;
+	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle, noiseTexHandle, isBlurHorizontalHandle;
 	
+	void mipMapPass(IDirect3DTexture9 *depth);
 	void mainSsaoPass(IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
-	void vBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst);
-	void hBlurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst);
+	void blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst, bool horizontal);
 	void combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
 	void combineShadowPass(IDirect3DTexture9 *shadow, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
 };

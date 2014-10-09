@@ -19,7 +19,7 @@ public:
 
 	virtual ~FF13Plugin();
 
-	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) override;
+	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) override;
 
 	virtual void prePresent() override;
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) override {}

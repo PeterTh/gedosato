@@ -96,7 +96,7 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	}
 
 	plugin = GamePlugin::getPlugin(d3ddev, *this);
-	plugin->initialize(rw, rh, bbFormat);
+	plugin->initialize(rw, rh, bbFormat, depthStencilFormat);
 
 	// restore initial state
 	d3ddev->SetRenderState(D3DRS_ZENABLE, autoDepthStencil ? D3DZB_TRUE : D3DZB_FALSE);
@@ -847,4 +847,8 @@ HRESULT RSManagerDX9::redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
 
 HRESULT RSManagerDX9::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) {
 	return plugin->redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
+}
+
+HRESULT RSManagerDX9::redirectBeginScene(){
+	return plugin->redirectBeginScene();
 }

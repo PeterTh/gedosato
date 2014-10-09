@@ -7,8 +7,8 @@ MitsurugiPlugin::~MitsurugiPlugin() {
 	SAFEDELETE(scaler);
 }
 
-void MitsurugiPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
-	GenericPlugin::initialize(Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), bbformat);
+void MitsurugiPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
+	GenericPlugin::initialize(Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), bbformat, dssformat);
 
 	d3ddev->CreateDepthStencilSurface(Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), D3DFMT_D24S8, D3DMULTISAMPLE_NONE, 0, false, &depthSurf, NULL);
 

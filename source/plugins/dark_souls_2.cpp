@@ -17,7 +17,7 @@ DS2Plugin::~DS2Plugin() {
 	SAFEDELETE(bloom);
 }
 
-void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
+void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
 	unsigned drw = rw, drh = rh;
 	if(rh > 1 && rw > 1 && rh * 16 > rw * 9) { // 16:10 or 4:3
 		drh = rw * 9 / 16;

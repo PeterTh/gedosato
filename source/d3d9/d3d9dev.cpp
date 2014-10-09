@@ -117,7 +117,7 @@ ULONG APIENTRY hkIDirect3DDevice9::AddRef() {
 HRESULT APIENTRY hkIDirect3DDevice9::BeginScene() {
 	RSManager::setLatest(rsMan);
 	SDLOG(7, "BeginScene\n");
-	return m_pD3Ddev->BeginScene();
+	return rsMan->redirectBeginScene();
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::BeginStateBlock() {

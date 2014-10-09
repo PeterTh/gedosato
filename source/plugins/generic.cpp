@@ -11,7 +11,7 @@ GenericPlugin::~GenericPlugin() {
 	SAFEDELETE(post);
 }
 
-void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
+void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
 	unsigned drw = rw, drh = rh;
 	if(Settings::get().getAAQuality() > 0) {
 		if(Settings::get().getAAType() == "smaa") smaa = new SMAA(d3ddev, drw, drh, (SMAA::Preset)(Settings::get().getAAQuality() - 1), false);

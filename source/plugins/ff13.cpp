@@ -6,8 +6,8 @@
 FF13Plugin::~FF13Plugin() {
 }
 
-void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) {
-	GenericPlugin::initialize(rw, rh, bbformat);
+void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
+	GenericPlugin::initialize(rw, rh, bbformat, dssformat);
 	scaler = new Scaler(d3ddev, Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 	Console::get().add("!! NOTE: This FINAL FANTASY XIII Plugin is currently in pre-alpha and HIGHLY EXPERIMENTAL");
 }

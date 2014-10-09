@@ -20,7 +20,7 @@ public:
 	virtual ~GamePlugin() { }
 	string getName() { return name; }
 	virtual void reportStatus() { }
-	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat) { }
+	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) { }
 	virtual void prePresent() { }
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) { }
 
@@ -86,10 +86,15 @@ public:
 	virtual HRESULT redirectCreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 		return d3ddev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
 	}
+
 	virtual HRESULT redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
 		return d3ddev->SetViewport(pViewport);
 	}
 	virtual HRESULT redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) {
 		return d3ddev->StretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
+	}
+
+	virtual HRESULT redirectBeginScene() {
+		return d3ddev->BeginScene();
 	}
 };
