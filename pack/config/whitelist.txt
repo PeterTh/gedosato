@@ -51,6 +51,7 @@ fear                         || F.E.A.R.
 FEAR2                        || F.E.A.R. 2
 FEARXP                       || F.E.A.R. Extraction Point
 FEARXP2                      || F.E.A.R. Perseus Mandate
+ffxiiiimg                    || Fianl Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 fr-041_debris                || "Debris" by Farbrausch

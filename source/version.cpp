@@ -2,13 +2,13 @@
 
 #include "version.h"
 
-const char* VER_NAME = "Cross Again";
+const char* VER_NAME = "Barrage am Ring";
 
 const unsigned VER_MAJOR = 0;
-const unsigned VER_MINOR = 13;
-const unsigned VER_BUILD = 1448;
+const unsigned VER_MINOR = 14;
+const unsigned VER_BUILD = 1477;
 
-const char* VER_STRING = "version 0.13.1448 built on 2014/09/18 17:55:43";
+const char* VER_STRING = "version 0.14.1477 built on 2014/10/09 23:18:47";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

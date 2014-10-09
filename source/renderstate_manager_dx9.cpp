@@ -836,3 +836,15 @@ HRESULT RSManagerDX9::redirectCreateDepthStencilSurface(UINT Width, UINT Height,
 HRESULT RSManagerDX9::redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil){
 	return plugin->redirectSetDepthStencilSurface(pNewZStencil);
 }
+
+HRESULT RSManagerDX9::redirectCreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle){
+	return plugin->redirectCreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
+}
+
+HRESULT RSManagerDX9::redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
+	return plugin->redirectSetViewport(pViewport);
+}
+
+HRESULT RSManagerDX9::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) {
+	return plugin->redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
+}

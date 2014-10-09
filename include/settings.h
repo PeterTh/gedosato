@@ -22,7 +22,7 @@ public:
 	unsigned getActiveHz() const { return resolutions[activeRes].hz; }
 
 	bool setDSRes(const unsigned width, const unsigned height);
-
+	void clearResolutions();
 private:
 	std::vector<Resolution> resolutions;
 	unsigned activeRes = 0;

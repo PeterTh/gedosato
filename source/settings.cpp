@@ -41,6 +41,10 @@ const ResolutionSettings::Resolution& ResolutionSettings::getResolution(int n) c
 	return resolutions[n];
 }
 
+void ResolutionSettings::clearResolutions() {
+	resolutions.clear();
+}
+
 // Settings --------------------------------------------------------------------
 
 Settings Settings::instance;
@@ -57,6 +61,9 @@ void Settings::load(const string &fn) {
 
 		if(bstring.find("renderResolution") == 0) {
 			resSettings.readResolution(bstring.substr(strlen("renderResolution") + 1).c_str());
+		}
+		if(bstring.find("clearRenderResolutions") == 0) {
+			resSettings.clearResolutions();
 		}
 
 		#define SETTING(_type, _var, _inistring, _defaultval) \

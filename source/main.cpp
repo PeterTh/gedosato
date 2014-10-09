@@ -45,7 +45,7 @@ const char* GeDoSaToVersion() {
 }
 
 const char* GeDoSaToSettings() {
-	return "renderResolution,"
+	return "renderResolution,clearRenderResolutions,"
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		_inistring ","
 		#include "Settings.def"

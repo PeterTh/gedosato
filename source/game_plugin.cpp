@@ -5,6 +5,7 @@
 #include "plugins/generic_depth.h"
 #include "plugins/dark_souls_2.h"
 #include "plugins/mitsurugi.h"
+#include "plugins/ff13.h"
 
 #include "utils/string_utils.h"
 

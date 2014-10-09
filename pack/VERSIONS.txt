@@ -1,5 +1,15 @@
-??-09-2014 -- beta 13 - "Cross Again"
-=============================================
+??-10-2014 -- beta 14 - "Barrage am Ring"
+=========================================
+General:
+- Added "clearRenderResolutions" pseudo-setting to clear render resolution 
+  list in user- or game-specific settings
+- Detoured many more DX9 functions
+Final Fantasy 13 Plugin:
+- Added initial version, resolution unlocking
+
+
+09-10-2014 -- beta 13 - "Cross Again"
+=====================================
 General:
 - Added "injectVSHash" injection setting
 - Added user blacklist and whitelist support

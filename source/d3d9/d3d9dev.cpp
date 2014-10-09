@@ -49,7 +49,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetVertexShader(IDirect3DVertexShader9* pvS
 HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9 *pViewport) {
 	RSManager::setLatest(rsMan);
 	SDLOG(6, "SetViewport X / Y - W x H : %4lu / %4lu  -  %4lu x %4lu ; Z: %f - %f\n", pViewport->X, pViewport->Y, pViewport->Width, pViewport->Height, pViewport->MinZ, pViewport->MaxZ);
-	return m_pD3Ddev->SetViewport(pViewport); 
+	return rsMan->redirectSetViewport(pViewport); 
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
@@ -182,7 +182,8 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuer
 
 HRESULT APIENTRY hkIDirect3DDevice9::CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
-	HRESULT ret = m_pD3Ddev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
+	HRESULT ret = rsMan->redirectCreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
+	//HRESULT ret = m_pD3Ddev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
 	SDLOG(1, "CreateRenderTarget w/h: %4u/%4u  format: %s\n  pointer: %p", Width, Height, D3DFormatToString(Format), *ppSurface);
 	return ret;
 }
@@ -715,7 +716,7 @@ BOOL APIENTRY hkIDirect3DDevice9::ShowCursor(BOOL bShow) {
 HRESULT APIENTRY hkIDirect3DDevice9::StretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect,D3DTEXTUREFILTERTYPE Filter) {
 	RSManager::setLatest(rsMan);
 	SDLOG(5, "StretchRect src -> dest, sR -> dR : %p -> %p,  %s -> %s\n", pSourceSurface, pDestSurface, RectToString(pSourceRect).c_str(), RectToString(pDestRect).c_str());
-	return m_pD3Ddev->StretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
+	return rsMan->redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::TestCooperativeLevel() {
