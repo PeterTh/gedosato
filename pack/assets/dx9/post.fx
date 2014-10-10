@@ -8,7 +8,7 @@
 #define USE_HDR               0 //[0 or 1] HDR : Not actual HDR - It just tries to mimic an HDR look (relatively high performance cost)
 #define USE_LUMASHARPEN       0 //[0 or 1] LumaSharpen
 #define USE_VIBRANCE          0 //[0 or 1] Vibrance : Intelligently saturates (or desaturates if you use negative values) the pixels depending on their original saturation.
-#define USE_TONEMAP           0 // 1 //[0 or 1] Tonemap : Adjust gamma, exposure, saturation, bleach and defog. (may cause clipping)
+#define USE_TONEMAP           0 //[0 or 1] Tonemap : Adjust gamma, exposure, saturation, bleach and defog. (may cause clipping)
 #define USE_CA                0 //[0 or 1] Chromatic aberration. You can only use Chromatic Aberration OR the Explosion Shader. Not both at the same time.
 #define USE_CURVES            0 //[0 or 1] Curves : Contrast adjustments using S-curves.
 #define USE_DITHER            0 //[0 or 1] Dither : Applies dithering to simulate more colors than your monitor can display. This lessens banding artifacts (mostly caused by Vignette)
@@ -18,7 +18,7 @@
 #define USE_GRAIN             0 //[0 or 1] Film Grain: Adds an active graininess to the image.  Helps with banding and can add the illusion of detail
 #define USE_BORDER            0 //[0 or 1] Border : Makes the screenedge black as a workaround for the bright edge that forcing some AA modes sometimes causes.
 #define USE_SPLITSCREEN       0 //[0 or 1] Splitscreen : Enables the before-and-after splitscreen comparison mode.
-#define USE_SINCITY           0 //[0 or 1] SinCity : Make the game look like the movie Sin City. 
+#define USE_SINCITY           0 //[0 or 1] SinCity : Make the game look like the movie Sin City. Use with Tonemap gamma, default value of 0.6.
 
 // Bloom settings
     #define BloomThreshold 20.25 // [0.00 to 50.00] Threshold for what is a bright light (that causes bloom) and what isn't.
@@ -133,7 +133,7 @@
         // 4 = Horizontal 50/50 split, 5 = Horizontal 25/50/25 split, 6 = Curvy vertical 50/50 split
 
 // SinCity settings 
-    #define sincity_strength  1.00 //[0.00 to 1.00] Adjust the strength of the effect
+    #define sincity_strength  1.00 //[0.00 to 1.00] This setting is a placeholder and does nothing at the moment.
     
 // -------------------- Interface -----------------------------------------------
 
@@ -1530,6 +1530,7 @@ float4 SplitscreenPass( float4 colorInput, float2 tex )
 }
 
 // ------------------------- SinCity --------------------------------------------
+//  Original code by /r/TerrifyingCookie that was then ported to SweetFX by /r/PrydeRage. 
 
 float4 SinCityPass( float4 colorInput )
 {
@@ -1540,6 +1541,7 @@ float4 SinCityPass( float4 colorInput )
         float3 colorout = lerp(bwcolor, colorInput * float3(1.1f, 0.5f, 0.5f), weight);
         return pow(float4(colorout, 1.f), 2.2f);
 }
+
 // -------------------- Main -----------------------------------------------
 
 float4 postProcessing(VSOUT IN) : COLOR0
