@@ -4,6 +4,7 @@
 #include "utils/d3d9_utils.h"
 
 FF13Plugin::~FF13Plugin() {
+	delete scaler;
 }
 
 void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
@@ -93,9 +94,15 @@ HRESULT FF13Plugin::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST
 }
 
 HRESULT FF13Plugin::redirectScissorRect(CONST RECT* pRect) {
-	RECT newRect = { 0, 0, Settings::get().getRenderWidth(), Settings::get().getRenderHeight() };
-	return GenericPlugin::redirectScissorRect(&newRect);
+	// [   0/ 165/1279/ 556]
+	// [ 501/ 199/1812/ 562]
+	if(pRect != NULL /*&& pRect->bottom == 556 && pRect->right == 1279*/) {
+		RECT newRect = *pRect;
+		newRect.left = newRect.left * Settings::get().getRenderWidth() / 1280;
+		newRect.right = newRect.right * Settings::get().getRenderWidth() / 1280;
+		newRect.top = newRect.top * Settings::get().getRenderHeight() / 720;
+		newRect.bottom = newRect.bottom * Settings::get().getRenderHeight() / 720;
+		return GenericPlugin::redirectScissorRect(&newRect);
+	}
+	return GenericPlugin::redirectScissorRect(pRect);
 }
-
-// StretchRect src -> dest, sR -> dR : 53DE9EA0 -> 0F0318C0,  RECT[   0/   0/1280/ 720] -> RECT[   0/   0/2560/1440]
-

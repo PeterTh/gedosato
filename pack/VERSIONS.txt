@@ -6,6 +6,8 @@ General:
 - Detoured many more DX9 functions
 Final Fantasy 13 Plugin:
 - Added initial version, resolution unlocking
+- Fixed crash on alt-tab
+- Probably fixed (most?) instances of cut-offs
 
 
 09-10-2014 -- beta 13 - "Cross Again"
