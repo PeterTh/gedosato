@@ -92,5 +92,10 @@ HRESULT FF13Plugin::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST
 	return GenericPlugin::redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
 }
 
+HRESULT FF13Plugin::redirectScissorRect(CONST RECT* pRect) {
+	RECT newRect = { 0, 0, Settings::get().getRenderWidth(), Settings::get().getRenderHeight() };
+	return GenericPlugin::redirectScissorRect(&newRect);
+}
+
 // StretchRect src -> dest, sR -> dR : 53DE9EA0 -> 0F0318C0,  RECT[   0/   0/1280/ 720] -> RECT[   0/   0/2560/1440]
 

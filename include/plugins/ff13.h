@@ -42,4 +42,5 @@ public:
 	virtual HRESULT redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) override;
 
 	virtual HRESULT redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) override;
+	virtual HRESULT redirectScissorRect(CONST RECT* pRect) override;
 };

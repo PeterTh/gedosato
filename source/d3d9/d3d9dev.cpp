@@ -633,7 +633,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERST
 HRESULT APIENTRY hkIDirect3DDevice9::SetScissorRect(CONST RECT* pRect) {
 	RSManager::setLatest(rsMan);
 	SDLOG(5, "SetScissorRect %s\n", RectToString(pRect).c_str());
-	return m_pD3Ddev->SetScissorRect(pRect);
+	return rsMan->redirectScissorRect(pRect);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetSoftwareVertexProcessing(BOOL bSoftware) {

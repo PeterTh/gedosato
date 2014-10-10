@@ -849,6 +849,10 @@ HRESULT RSManagerDX9::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CON
 	return plugin->redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
 }
 
-HRESULT RSManagerDX9::redirectBeginScene(){
+HRESULT RSManagerDX9::redirectBeginScene() {
 	return plugin->redirectBeginScene();
+}
+
+HRESULT RSManagerDX9::redirectScissorRect(CONST RECT* pRect) {
+	return plugin->redirectScissorRect(pRect);
 }

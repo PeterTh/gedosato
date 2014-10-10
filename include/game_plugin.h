@@ -93,6 +93,9 @@ public:
 	virtual HRESULT redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) {
 		return d3ddev->StretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);
 	}
+	virtual HRESULT redirectScissorRect(CONST RECT* pRect) {
+		return d3ddev->SetScissorRect(pRect);
+	}
 
 	virtual HRESULT redirectBeginScene() {
 		return d3ddev->BeginScene();
