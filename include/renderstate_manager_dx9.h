@@ -124,6 +124,7 @@ public:
 	HRESULT redirectCreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle);
 	HRESULT redirectSetViewport(CONST D3DVIEWPORT9 * pViewport);
 	HRESULT redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter);
+	HRESULT redirectScissorRect(CONST RECT* pRect);
 
 	HRESULT redirectBeginScene();
 };
