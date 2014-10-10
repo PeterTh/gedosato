@@ -4,7 +4,7 @@
 #include "utils/d3d9_utils.h"
 
 FF13Plugin::~FF13Plugin() {
-	delete scaler;
+	SAFEDELETE(scaler);
 }
 
 void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
@@ -18,15 +18,14 @@ void FF13Plugin::prePresent() {
 }
 
 HRESULT FF13Plugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
-	if(Usage & D3DUSAGE_RENDERTARGET) {
+	if (D3DFMT_DXT1 && Pool == D3DPOOL_MANAGED) {
+		return GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+	}
+	else if(D3DUSAGE_RENDERTARGET) {
 		if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720)) {
 			Width = Settings::get().getRenderWidth();
 			Height = Settings::get().getRenderHeight();
 		}
-		//else if(Width == 960 || Width == 480 || Width == 240 || Width == 120) {
-		//	Width = Settings::get().getRenderWidth() / (1920 / Width);
-		//	Height = Settings::get().getRenderHeight() / (1080 / Height);
-		//}
 	}
 	return GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }
