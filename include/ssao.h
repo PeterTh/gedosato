@@ -33,15 +33,12 @@ private:
 
 	ID3DXEffect *effect = NULL;
 	
-	IDirect3DTexture9* noiseTex; // RandomNoiseB.png
-	RenderTargetPtr buffer1, buffer2, hdrBuffer;
-	IDirect3DTexture9 * pMipMap;
+	RenderTargetPtr buffer1, buffer2, hdrBuffer, halfZBuffer;
 
 	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle, noiseTexHandle, isBlurHorizontalHandle;
 	
-	void mipMapPass(IDirect3DTexture9 *depth);
+	void downsamplePass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst);
 	void mainSsaoPass(IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
 	void blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst, bool horizontal);
 	void combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
-	void combineShadowPass(IDirect3DTexture9 *shadow, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
 };

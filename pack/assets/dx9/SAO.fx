@@ -31,62 +31,54 @@
 //#define SHOW_SSAO
 
 /** manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
-static const float nearZ = 1.0;
-static const float farZ = 18.0;
+static const float nearZ = 0.1;
+static const float farZ = 12.0;
 
-/** intensity : darkending factor, e.g., 1.0 */
-/** aoClamp : brightness fine-tuning (the higher the darker) */
-#ifdef SSAO_STRENGTH_LOW
-float intensity = 0.3;
-float aoClamp = 0.16;
-#endif
-
-#ifdef SSAO_STRENGTH_MEDIUM
-float intensity = 0.4;
-float aoClamp = 0.26;
-#endif
-
-#ifdef SSAO_STRENGTH_HIGH
-float intensity = 0.6;
-float aoClamp = 0.40;
-#endif
+/** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling.
+This need not match the real far plane*/
+/** If you can't see any AO output at all make sure this value isn't too low :] */
+#define FAR_PLANE_Z (16.2)
 
 /** Quality */
 #define NUM_SAMPLES (9)
 
-// If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower 
-// miplevel to maintain reasonable spatial locality in the cache
-// If this number is too small (< 3), too many taps will land in the same pixel, and we'll get bad variance that manifests as flashing.
-// If it is too high (> 5), we'll get bad performance because we're not using the MIP levels effectively
-#define LOG_MAX_OFFSET 3
+/** intensity : darkending factor, e.g., 1.0 */
+/** aoClamp : brightness fine-tuning (the higher the darker) */
+#ifdef SSAO_STRENGTH_LOW
+float intensity = 1.0;
+float aoClamp = 0.14;
+#endif
 
-// This must be less than or equal to the MAX_MIP_LEVEL defined in SSAO.cpp
-#define MAX_MIP_LEVEL (5)
+#ifdef SSAO_STRENGTH_MEDIUM
+float intensity = 1.0;
+float aoClamp = 0.24;
+#endif
+
+#ifdef SSAO_STRENGTH_HIGH
+float intensity = 1.0;
+float aoClamp = 0.34;
+#endif
 
 //comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces)
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.7;
-
-/** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling.
-This need not match the real far plane*/
-#define FAR_PLANE_Z (17.6)
+extern float luminosity_threshold = 0.5;
 
 /** World-space AO radius in scene units (r).  e.g., 1.0m */
-static const float radius = 1.0;
+static const float radius = 0.6;
 /** radius*radius*/
 static const float radius2 = (radius*radius);
 
 /** Bias to avoid AO in smooth corners, e.g., 0.01m */
-static const float bias = 0.02f;
+static const float bias = 0.15f;
 
 /** The height in pixels of a 1m object if viewed from 1m away.
 You can compute it from your projection matrix.  The actual value is just
 a scale factor on radius; you can simply hardcode this to a constant (~500)
 and make your radius value unitless (...but resolution dependent.)  */
-static const float projScale = 1.2f;
+static const float projScale = -0.6f;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
-#define EDGE_SHARPNESS     (0.2)
+#define EDGE_SHARPNESS     (0.1)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
 first AO pass.  This constant can be increased while R decreases to improve
@@ -99,7 +91,7 @@ from using small numbers of sample taps.
 #define SCALE               (2)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
-#define R                   (6)
+#define R                   (3)
 
 ///////////////////////////////////////////////////END OF TWEAKABLE VALUES ///////////////////////////////////////////////////////////
 
@@ -117,6 +109,16 @@ static const int ROTATIONS[] = { 1, 1, 2, 3, 2, 5, 2, 3, 2,
 // This is the number of turns around the circle that the spiral pattern makes.  This should be prime to prevent
 // taps from lining up.  This particular choice was tuned for NUM_SAMPLES == 9
 static const int NUM_SPIRAL_TURNS = ROTATIONS[NUM_SAMPLES-1];
+
+// [Boulotaur2024] Not used anymore -> mipmaps cause flashing (probably due to my poor implementation)
+// // If using depth mip levels, the log of the maximum pixel offset before we need to switch to a lower 
+// // miplevel to maintain reasonable spatial locality in the cache
+// // If this number is too small (< 3), too many taps will land in the same pixel, and we'll get bad variance that manifests as flashing.
+// // If it is too high (> 5), we'll get bad performance because we're not using the MIP levels effectively
+// #define LOG_MAX_OFFSET 3
+
+// // This must be less than or equal to the MAX_MIP_LEVEL defined in SSAO.cpp
+// #define MAX_MIP_LEVEL (4)
 
 #ifndef USE_SRGB
 #define USE_SRGB true
@@ -158,18 +160,6 @@ sampler passSampler = sampler_state
 	AddressU  = Clamp;
 	AddressV  = Clamp;
 	SRGBTexture=FALSE;
-};
-
-texture2D noiseTexture < string filename = "RandomNoiseB.dds"; >;
-sampler2D noiseSampler = sampler_state {
-	texture = <noiseTexture>;
- 
-	AddressU = WRAP;
-	AddressV = WRAP;
- 
-	MINFILTER = LINEAR;
-	MAGFILTER = LINEAR;
-	MIPFILTER = LINEAR;
 };
 
 struct VSOUT
@@ -262,7 +252,8 @@ float3 getOffsetPosition(float2 ssC, float2 unitOffset, float ssR)
 
 	// Divide coordinate by 2^mipLevel
 	//P.z = tex2Dlod(depthSampler, float4(ssP * pow(0.5, -mipLevel), 0, mipLevel)).r;
-	P.z = tex2D(depthSampler, ssP * pow(0.5, -mipLevel)).r;
+	//P.z = tex2D(depthSampler, ssP * pow(0.5, -mipLevel)).r;
+    P.z = tex2D(depthSampler, ssP).r;	
 
     // Offset to pixel center
 	P = reconstructCSPosition(float2(ssP) + float2(0.5, 0.5), P.z);
@@ -302,7 +293,7 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
 
     // B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
     //float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
-	return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
+	float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
 
     // C: Medium contrast (which looks better at high radii), no division.  Note that the 
     // contribution still falls off with radius^2, but we've adjusted the rate in a way that is
@@ -334,19 +325,33 @@ float4 reconstructCSZPass(VSOUT IN) : COLOR0
 	return float4(LinearizeDepth(tex2D(depthSampler, IN.UVCoord).r), 0, 0, 0);
 }
 
-//extern int previousMIPNumber;
+// extern int previousMIPNumber;
 
-float4 minifyPass(VSOUT IN) : COLOR0
+float4 downsamplePass(VSOUT IN) : COLOR0
 {
 	// int2 ssP = pixel.texCoords * float2(renderTargetSize[SIZECONST_WIDTH], renderTargetSize[SIZECONST_HEIGHT]);
-	float2 ssP = IN.UVCoord;
+	// float2 ssP = IN.UVCoord;
 
 	// Rotated grid subsampling to avoid XY directional bias or Z precision bias while downsampling
 	// fragment.color = source.Load(int3(ssP * 2 + int2((ssP.y & 1) ^ 1, (ssP.x & 1) ^ 1), 0)); // DX11
 	// return tex2Dlod(depthSampler, float4(ssP * 2 + float2(((ssP.y - floor(ssP.y)) * 2) != 1, ((ssP.x - floor(ssP.x)) * 2) != 1), 0, previousMIPNumber));
 
 	// Plain dumb Linear mip-map instead of Rotated grid subsampling. (I can't make that one work unfortunately :/)
-	return float4(tex2Dlod(depthSampler, float4(IN.UVCoord, 0, 0)).r, 0, 0, 0);
+	return tex2Dlod(depthSampler, float4(IN.UVCoord, 0, 0));
+}
+
+// Input: It uses texture coords as the random number seed.
+// Output: Random number: [0,1), that is between 0.0 and 0.999999... inclusive.
+// Author: Michael Pohoreski
+// Copyright: Copyleft 2012 :-)
+float random( float2 p )
+{
+  // We need irrationals for pseudo randomness.
+  // Most (all?) known transcendental numbers will (generally) work.
+  const float2 r = float2(
+    23.1406926327792690,  // e^pi (Gelfond's constant)
+     2.6651441426902251); // 2^sqrt(2) (Gelfond–Schneider constant)
+  return frac( cos( fmod( 123456789., 1e-7 + 256. * dot(p,r) ) ) );
 }
 
 #define visibility      output.r
@@ -375,8 +380,9 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
     packKey(CSZToKey(C.z), bilateralKey);
 
     // Hash function used in the HPG12 AlchemyAO paper (Note from Boulotaur2024 : no hash in DX9 :/)
-	float randomPatternRotationAngle = tex2D(noiseSampler, ssC*12.0).x * 1000.0;
+	// float randomPatternRotationAngle = tex2D(noiseSampler, ssC*12.0).x * 1000.0;
 	//float randomPatternRotationAngle = (3 * ssC.x != ssC.y + ssC.x * ssC.y) * 10;
+	float randomPatternRotationAngle = random(ssC * 12) * 1000.0;	
 
     // Reconstruct normals from positions. These will lead to 1-pixel black lines
     // at depth discontinuities, however the blur will wipe those out so they are not visible
@@ -521,7 +527,7 @@ technique t0
 	pass p1
 	{
 		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 minifyPass();
+		PixelShader = compile ps_3_0 downsamplePass();
 	}
 	pass p2
 	{

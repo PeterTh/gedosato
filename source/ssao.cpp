@@ -21,15 +21,11 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
 	hdrBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_FP16);
 
-	if(type == SSAO::SAO) HRESULT hr = device->CreateTexture(width, height, 5, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pMipMap, NULL);
+	if(type == SSAO::SAO) halfZBuffer = RSManager::getRTMan().createTexture(width / 2, height / 2, RenderTarget::FMT_R32F);
 }
 
 SSAO::~SSAO() {
 	SAFERELEASE(effect);
-	if(type == SSAO::SAO) {
-		SAFERELEASE(pMipMap);
-		SAFERELEASE(noiseTex);
-	}
 }
 
 void SSAO::reloadShader() {
@@ -112,14 +108,9 @@ void SSAO::reloadShader() {
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
 	prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
-	noiseTexHandle = effect->GetParameterByName(NULL, "noiseTexture");
 	isBlurHorizontalHandle = effect->GetParameterByName(NULL, "isBlurHorizontal");
 
-	if(type == SSAO::SAO) {
-		string noiseFile = getAssetFileName("RandomNoiseB.png");
-		hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
-		blurPasses = 2;
-	}
+	if(type == SSAO::SAO) blurPasses = 2;
 }
 
 void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
@@ -147,8 +138,8 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	}
 
 	if(type == SSAO::SAO) {
-		mipMapPass(depth);
-		mainSsaoPass(pMipMap, buffer1->getSurf());
+		downsamplePass(depth, halfZBuffer->getSurf());
+		mainSsaoPass(halfZBuffer->getTex(), buffer1->getSurf());
 	}
 	else {
 		mainSsaoPass(depth, buffer1->getSurf());
@@ -177,39 +168,26 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	dumping = false;
 }
 
-void SSAO::mipMapPass(IDirect3DTexture9 *depth) {
-	HRESULT hr = NULL;
-	IDirect3DSurface9 *pSrcSurfaceLevel;
+void SSAO::downsamplePass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst) {
+	device->SetRenderTarget(0, dst);
 
-	for (unsigned iLevel = 0; iLevel < pMipMap->GetLevelCount(); ++iLevel)	{
-		D3DSURFACE_DESC desc;
-		pMipMap->GetSurfaceLevel(iLevel, &pSrcSurfaceLevel);
-		pSrcSurfaceLevel->GetDesc(&desc);
-		
-		device->SetRenderTarget(0, pSrcSurfaceLevel);
+	// Setup variables.
+	effect->SetTexture(depthTexHandle, depth);
 
-		// Setup variables.
-		effect->SetTexture(depthTexHandle, iLevel == 0 ? depth : pMipMap);
-
-		// Do it!
-		UINT passes;
-		effect->Begin(&passes, 0);
-		effect->BeginPass(iLevel == 0 ? 0 : 1);
-		quad(width, height);
-		effect->EndPass();
-		effect->End();
-
-		pSrcSurfaceLevel->Release();
-	}
+	// Do it!
+	UINT passes;
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
+	quad(width / 2, height / 2);
+	effect->EndPass();
+	effect->End();
 }
 
 void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
-    //device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 0, 0, 0), 1.0f, 0);
 
 	// Setup variables.
 	effect->SetTexture(depthTexHandle, depth);
-	if(type == SSAO::SAO) effect->SetTexture(noiseTexHandle, noiseTex);
 
     // Do it!
     UINT passes;
@@ -239,7 +217,6 @@ void SSAO::blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DS
 
 void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
-    //device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_ARGB(255, 255, 0, 255), 1.0f, 0);
 
     // Setup variables.
     effect->SetTexture(prevPassTexHandle, ao);
@@ -249,22 +226,6 @@ void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3
     UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(type == SSAO::SAO ? 4 : 3);
-	quad(width, height);
-	effect->EndPass();
-	effect->End();
-}
-
-void SSAO::combineShadowPass(IDirect3DTexture9 *shadow, IDirect3DTexture9* ao, IDirect3DSurface9* dst) {
-	device->SetRenderTarget(0, dst);
-
-    // Setup variables.
-    effect->SetTexture(prevPassTexHandle, ao);
-    effect->SetTexture(frameTexHandle, shadow);
-	
-    // Do it!
-    UINT passes;
-	effect->Begin(&passes, 0);
-	effect->BeginPass(4);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
