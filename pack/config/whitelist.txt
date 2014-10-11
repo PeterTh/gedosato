@@ -45,6 +45,7 @@ dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 EoCApp                       || Divinity: Original Sin
+Earth2160*                   || Earth 2160
 Fallout3                     || Fallout 3
 FalloutLauncher              || Fallout 3 Launcher
 fear                         || F.E.A.R.
