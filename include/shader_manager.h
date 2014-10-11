@@ -24,7 +24,7 @@ class ShaderManager {
 			return;
 		}
 		UINT32 id = SuperFastHash(static_cast<char*>(disassembly->GetBufferPointer()), disassembly->GetBufferSize());
-		SDLOG(8, " -> Shader code (hash %08x):\n%s\n===============\n", id, disassembly->GetBufferPointer());
+		SDLOG(8, " -> Shader code (hash %08x):\n%s\n===============\n", id, static_cast<char*>(disassembly->GetBufferPointer()));
 		shaderPtrIdMap.emplace(pShader, id);
 
 		// given names
