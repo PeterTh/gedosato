@@ -1,4 +1,4 @@
-/**
+ï»¿/**
  \file SAO_AO.pix
  \author Morgan McGuire and Michael Mara, NVIDIA Research
 
@@ -243,7 +243,7 @@ float3 getOffsetPosition(float2 ssC, float2 unitOffset, float ssR)
 {
 	// Derivation:
 	//  mipLevel = floor(log(ssR / MAX_OFFSET));
-	int mipLevel = clamp((int)floor(log2(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
+	//int mipLevel = clamp((int)floor(log2(ssR)) - LOG_MAX_OFFSET, 0, MAX_MIP_LEVEL);
 	//int mipLevel = 4;
 
     float2 ssP = float2(ssR*unitOffset) + ssC;
@@ -350,7 +350,7 @@ float random( float2 p )
   // Most (all?) known transcendental numbers will (generally) work.
   const float2 r = float2(
     23.1406926327792690,  // e^pi (Gelfond's constant)
-     2.6651441426902251); // 2^sqrt(2) (Gelfond–Schneider constant)
+     2.6651441426902251); // 2^sqrt(2) (Gelfond-Schneider constant)
   return frac( cos( fmod( 123456789., 1e-7 + 256. * dot(p,r) ) ) );
 }
 
