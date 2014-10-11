@@ -18,10 +18,18 @@ void FF13Plugin::prePresent() {
 }
 
 HRESULT FF13Plugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
-	if (D3DFMT_DXT1 && Pool == D3DPOOL_MANAGED) {
-		return GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
-	}
-	else if(D3DUSAGE_RENDERTARGET) {
+
+	//CreateTexture w / h: 1024 / 1024    format : D3DFMT_D24S8    RENDERTARGET = 0
+	//CreateTexture w / h : 1024 / 1024    format : D3DFMT_R32F    RENDERTARGET = 1
+	//CreateTexture w / h : 1024 / 1024    format : D3DFMT_D24X8    RENDERTARGET = 0
+	//CreateTexture w / h : 1024 / 1024    format : D3DFMT_R32F    RENDERTARGET = 1
+	//CreateTexture w / h : 1024 / 1024    format : D3DFMT_D24X8    RENDERTARGET = 0
+	//if(Width == 1024 && Height == 1024 &&
+	//	(Format == D3DFMT_D24S8 || Format == D3DFMT_R32F || Format == D3DFMT_D24X8)) {
+	//	Width *= 4;
+	//	Height *= 4;
+	//}
+	if(Pool != D3DPOOL_MANAGED) {
 		if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720)) {
 			Width = Settings::get().getRenderWidth();
 			Height = Settings::get().getRenderHeight();
@@ -68,6 +76,12 @@ HRESULT FF13Plugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 }
 
 HRESULT FF13Plugin::redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
+	//if(pViewport->Width == 1024 && pViewport->Height == 1024) {
+	//	D3DVIEWPORT9 vp = *pViewport;
+	//	vp.Width *= 4;
+	//	vp.Height *= 4;
+	//	return GenericPlugin::redirectSetViewport(&vp);
+	//}
 	if(pViewport != NULL && pViewport->Width == 1280 && pViewport->Height == 720) {
 		D3DVIEWPORT9 vp = *pViewport;
 		vp.Width = Settings::get().getRenderWidth();
@@ -81,11 +95,11 @@ HRESULT FF13Plugin::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST
 	if(pSourceRect != NULL && pDestRect != NULL && pSourceRect->right == 1280 && pSourceRect->bottom == 720) {
 		//RECT source = { 0, 0, Settings::get().getRenderWidth(), Settings::get().getRenderHeight() };
 		manager.storeRenderState();
-		scaler->go(D3DGetSurfTexture(pSourceSurface), pDestSurface);
 		if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_FULL || manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
 			manager.captureRTScreen("full");
 		}
 		manager.tookScreenshot();
+		scaler->go(D3DGetSurfTexture(pSourceSurface), pDestSurface);
 		manager.restoreRenderState();
 		return D3D_OK;
 	}

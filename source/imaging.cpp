@@ -12,7 +12,9 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	if(Settings::get().getMaxScreenshotParallelism() == -1) {
 		string fnc = fn;
 		boost::algorithm::replace_first(fnc, ".png", ".bmp");
-		D3DXSaveSurfaceToFile(fnc.c_str(), D3DXIFF_BMP, surf, NULL, NULL);
+		if(D3DXSaveSurfaceToFile(fnc.c_str(), D3DXIFF_BMP, surf, NULL, NULL) != D3D_OK) {
+			Console::get().add("Failed saving screenshot!");
+		}
 		return;
 	}
 

@@ -79,11 +79,11 @@ void GenericPlugin::processCurrentBB() {
 	if(bb) {
 		manager.storeRenderState();
 		process(bb);
-		manager.restoreRenderState();
 		if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
-			manager.captureRTScreen("hudless");
+			manager.captureRTScreen("hudless", bb);
 			manager.tookScreenshot();
 		}
+		manager.restoreRenderState();
 	}
 	SAFERELEASE(bb);
 }
