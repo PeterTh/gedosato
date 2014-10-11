@@ -32,7 +32,7 @@
 
 /** manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
 static const float nearZ = 0.1;
-static const float farZ = 12.0;
+static const float farZ = 22.0;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling.
 This need not match the real far plane*/
@@ -46,17 +46,17 @@ This need not match the real far plane*/
 /** aoClamp : brightness fine-tuning (the higher the darker) */
 #ifdef SSAO_STRENGTH_LOW
 float intensity = 1.0;
-float aoClamp = 0.14;
+float aoClamp = 0.16;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
 float intensity = 1.0;
-float aoClamp = 0.24;
+float aoClamp = 0.26;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
 float intensity = 1.0;
-float aoClamp = 0.34;
+float aoClamp = 0.36;
 #endif
 
 //comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces)
@@ -69,7 +69,7 @@ static const float radius = 0.6;
 static const float radius2 = (radius*radius);
 
 /** Bias to avoid AO in smooth corners, e.g., 0.01m */
-static const float bias = 0.15f;
+static const float bias = 0.20f;
 
 /** The height in pixels of a 1m object if viewed from 1m away.
 You can compute it from your projection matrix.  The actual value is just
@@ -285,7 +285,7 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
     float vv = dot(v, v);
     float vn = dot(v, n_C);
 
-    const float epsilon = 0.02;   // Original implementation : epsilon = 0.01;
+    const float epsilon = 0.001;   // Original implementation : epsilon = 0.01;
 
     // A: From the HPG12 paper
     // Note large epsilon to avoid overdarkening within cracks
