@@ -183,8 +183,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuer
 HRESULT APIENTRY hkIDirect3DDevice9::CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
 	RSManager::setLatest(rsMan);
 	HRESULT ret = rsMan->redirectCreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
-	//HRESULT ret = m_pD3Ddev->CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, ppSurface, pSharedHandle);
-	SDLOG(1, "CreateRenderTarget w/h: %4u/%4u  format: %s\n  pointer: %p", Width, Height, D3DFormatToString(Format), *ppSurface);
+	SDLOG(1, "CreateRenderTarget w/h: %4u/%4u  format: %s\n  pointer: %p  multisample: %s  multisamplequality: %d\n", Width, Height, D3DFormatToString(Format), *ppSurface, D3DMultisampleTypeToString(MultiSample), MultisampleQuality);
 	return ret;
 }
 

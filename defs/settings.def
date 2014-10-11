@@ -17,6 +17,7 @@ SETTING(bool, MaintainAspectRatio, "maintainAspectRatio", true)
 // Compatibility Options
 SETTING(bool, PluginHandlesDownsampling, "pluginHandlesDownsampling", false)
 SETTING(bool, ForcePresentRes, "forcePresentRes", false)
+SETTING(bool, ForceRenderRes, "forceRenderRes", false)
 SETTING(bool, ForceAlwaysDownsamplingRes, "forceAlwaysDownsamplingRes", false)
 SETTING(bool, EmulateFlipBehaviour, "emulateFlipBehaviour", false)
 SETTING(bool, InterceptOnlySystemDlls, "interceptOnlySystemDlls", false)
@@ -73,6 +74,10 @@ SETTING(bool, EnableBloom, "enableBloom", false)
 
 SETTING(bool, EnablePostprocessing, "enablePostprocessing", false)
 SETTING(string, PostProcessingType, "postProcessingType", "durante")
+
+SETTING(unsigned, ShadowScale, "shadowScale", 1)
+SETTING(unsigned, MSAASampleCount, "MSAASampleCount", 4)
+SETTING(bool, EnableCoverageSampling, "enableCoverageSampling", false)
 
 // Screenshot options
 SETTING(int, MaxScreenshotParallelism, "maxScreenshotParallelism", 8)

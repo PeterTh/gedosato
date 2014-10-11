@@ -562,6 +562,10 @@ namespace {
 			pPresentationParameters->BackBufferWidth = Settings::get().getPresentWidth();
 			pPresentationParameters->BackBufferHeight = Settings::get().getPresentHeight();
 		}
+		if(Settings::get().getForceRenderRes()) {
+			pPresentationParameters->BackBufferWidth = Settings::get().getRenderWidth();
+			pPresentationParameters->BackBufferHeight = Settings::get().getRenderHeight();
+		}
 		if(Settings::get().getForceWindowedMode()) {
 			SDLOG(1, "Forcing windowed mode.\n");
 			if(pPresentationParameters->hDeviceWindow) SetForegroundWindow(pPresentationParameters->hDeviceWindow);

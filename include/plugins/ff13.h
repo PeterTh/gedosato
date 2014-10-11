@@ -10,7 +10,6 @@
 
 class FF13Plugin : public GenericPlugin {
 
-	Scaler* scaler = NULL;
 	bool triggered = false;
 
 public:
@@ -23,8 +22,6 @@ public:
 
 	virtual void prePresent() override;
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) override {}
-	
-	virtual Scaler* getScaler() override { return scaler; }
 
 	virtual HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) override;
 

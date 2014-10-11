@@ -322,6 +322,17 @@ TCHAR* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s) {
 	return "Unknown render state";
 }
 
+TCHAR* D3DPoolToString(D3DPOOL pool) {
+	switch(pool) {
+	case D3DPOOL_DEFAULT: return "D3DPOOL_DEFAULT";
+	case D3DPOOL_MANAGED: return "D3DPOOL_MANAGED";
+	case D3DPOOL_SYSTEMMEM: return "D3DPOOL_SYSTEMMEM";
+	case D3DPOOL_SCRATCH: return "D3DPOOL_SCRATCH";
+	}
+	return "Unknown d3d pool";
+}
+
+
 string D3DMatrixToString(const D3DMATRIX* pMatrix) {
 	std::stringstream ss;
 	if(!pMatrix) return string("NULL_MATRIX");
@@ -347,6 +358,12 @@ string D3DPresentExFlagsToString(DWORD flags) {
 	if(flags & D3DPRESENT_UPDATECOLORKEY) ret += "D3DPRESENT_UPDATECOLORKEY | ";
 	return ret;
 }
+
+string D3DSurfaceDescToString(const D3DSURFACE_DESC& desc) {
+	return format("%dx%d, format: %s, usage: %d, ms type: %s, ms qual: %d, mem pool: %s", desc.Width, desc.Height, D3DFormatToString(desc.Format), desc.Usage, 
+		D3DMultisampleTypeToString(desc.MultiSampleType), desc.MultiSampleQuality, D3DPoolToString(desc.Pool));
+}
+
 
 void logRenderState(IDirect3DDevice9* dev, int level) {
 	DWORD result = 0;

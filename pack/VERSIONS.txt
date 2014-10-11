@@ -9,7 +9,10 @@ Final Fantasy 13 Plugin:
 - Fixed crash on alt-tab
 - Probably fixed (most?) instances of cut-offs
 - Fixed AMD user issues and minimap
-
+- Added shadow scale option (increases shadow resolution)
+- Added settings for the number of MSAA samples and coverage sampling
+- Mitigated issues with large screenshots
+- Changed scaling order, fixes some sharpness issues
 
 09-10-2014 -- beta 13 - "Cross Again"
 =====================================
