@@ -9,7 +9,7 @@
 class RenderTarget {
 public:
 	typedef enum { SURFACE_USE = 0, TEXTURE_USE = 1 } Usage;
-	typedef enum { FMT_NONE, FMT_ARGB_8, FMT_RGB_8, FMT_ARGB_16, FMT_RGB_16, FMT_ARGB_FP16, FMT_RGB_FP16 } Format;
+	typedef enum { FMT_NONE, FMT_ARGB_8, FMT_RGB_8, FMT_ARGB_16, FMT_RGB_16, FMT_ARGB_FP16, FMT_RGB_FP16, FMT_R32F } Format;
 
 	static D3DFORMAT d3dformatFromFormat(Format fmt) {
 		switch(fmt) {
@@ -19,6 +19,7 @@ public:
 		case FMT_RGB_16: return D3DFMT_A16B16G16R16;
 		case FMT_ARGB_FP16: return D3DFMT_A16B16G16R16F;
 		case FMT_RGB_FP16: return D3DFMT_A16B16G16R16F;
+		case FMT_R32F: return D3DFMT_R32F;
 		}
 		SDLOG(-1, "ERROR: RenderTarget - unknown format\n");
 		return D3DFMT_UNKNOWN;
