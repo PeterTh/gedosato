@@ -9,9 +9,14 @@
 FF13Plugin::~FF13Plugin() {
 }
 
+void FF13Plugin::reportStatus() {
+	Console::get().add(format("Shadow scale: %d", Settings::get().getShadowScale()));
+	Console::get().add(format("MSAA: %d samples, coverage sampling %s", Settings::get().getMSAASampleCount(), Settings::get().getEnableCoverageSampling() ? "enabled" : "disabled"));
+	Console::get().add("!! NOTE: This FINAL FANTASY XIII Plugin is currently in pre-alpha and HIGHLY EXPERIMENTAL");
+}
+
 void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
 	GenericPlugin::initialize(rw, rh, bbformat, dssformat);
-	Console::get().add("!! NOTE: This FINAL FANTASY XIII Plugin is currently in pre-alpha and HIGHLY EXPERIMENTAL");
 
 	// Force low fragmentation heap
 	HANDLE heaps[128];
@@ -22,7 +27,7 @@ void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFOR
 		if(res != FALSE) {
 			SDLOG(1, "Low-fragmentation heap enabled for heap #%d.\n", i);
 		} else {
-			SDLOG(1, "Failed to enable the low-fragmentation for heap #%d; LastError %d.\n", i, GetLastError());
+			SDLOG(1, "Failed to enable low-fragmentation for heap #%d; LastError %d.\n", i, GetLastError());
 		}
 	}
 }
@@ -73,7 +78,7 @@ HRESULT FF13Plugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D
 			RSManager::getDX9().getD3D()->CheckDeviceMultiSampleType(0, D3DDEVTYPE_HAL, Format, false, MultiSample, &quality);
 			if(quality > 0) {
 				MultisampleQuality = quality - 1;
-				Console::get().add(format("Enabled coverage sampling, quality level %d", MultisampleQuality));
+				SDLOG(2, "FF13: Enabled coverage sampling, quality level %d", MultisampleQuality);
 			}
 		}
 	}
