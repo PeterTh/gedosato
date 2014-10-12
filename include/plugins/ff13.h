@@ -9,7 +9,6 @@
 #include "generic.h"
 
 class FF13Plugin : public GenericPlugin {
-
 	bool triggered = false;
 
 public:
@@ -22,7 +21,6 @@ public:
 	virtual void FF13Plugin::reportStatus() override;
 
 	virtual void prePresent() override;
-	virtual void preDownsample(IDirect3DSurface9* backBuffer) override {}
 
 	virtual HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) override;
 

@@ -13,6 +13,8 @@ Final Fantasy 13 Plugin:
 - Added settings for the number of MSAA samples and coverage sampling
 - Mitigated issues with large screenshots
 - Changed scaling order, fixes some sharpness issues
+- Fixed lack of postprocessing when disabling HuD
+- Fixed crash on alt-tab (again)
 
 09-10-2014 -- beta 13 - "Cross Again"
 =====================================

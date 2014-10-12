@@ -19,6 +19,7 @@ void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFOR
 	GenericPlugin::initialize(rw, rh, bbformat, dssformat);
 
 	// Force low fragmentation heap
+	SDLOG(2, "Starting heap adjustment (LFH)\n");
 	HANDLE heaps[128];
 	DWORD numHeaps = GetProcessHeaps(128, heaps);
 	for(DWORD i = 0; i < numHeaps; ++i) {
@@ -30,24 +31,28 @@ void FF13Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFOR
 			SDLOG(1, "Failed to enable low-fragmentation for heap #%d; LastError %d.\n", i, GetLastError());
 		}
 	}
+	SDLOG(2, "Completed heap adjustment (LFH)\n");
 }
 
 void FF13Plugin::prePresent() {
+	//if(IsDebuggerPresent()) DebugBreak();
 	GenericPlugin::prePresent();
 }
 
 HRESULT FF13Plugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
 	// shadows
-	if(Width == 1024 && Height == 1024 &&
+	if(Settings::get().getShadowScale()>1 && Width == 1024 && Height == 1024 &&
 		(Format == D3DFMT_D24S8 || Format == D3DFMT_R32F || Format == D3DFMT_D24X8)) {
 		Width *= Settings::get().getShadowScale();
 		Height *= Settings::get().getShadowScale();
+		SDLOG(4, " -> [FF13] scaling shadow buffer to %dx%d\n", Width, Height);
 	}
 	// other rendertargets and buffers
 	if(Pool != D3DPOOL_MANAGED) {
 		if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720)) {
 			Width = Settings::get().getRenderWidth();
 			Height = Settings::get().getRenderHeight();
+			SDLOG(4, " -> [FF13] scaling render texture to %dx%d\n", Width, Height);
 		}
 	}
 	return GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
@@ -57,6 +62,7 @@ HRESULT FF13Plugin::redirectCreateRenderTarget(UINT Width, UINT Height, D3DFORMA
 	if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720)) {
 		Width = Settings::get().getRenderWidth();
 		Height = Settings::get().getRenderHeight();
+		SDLOG(4, " -> [FF13] scaling render target to %dx%d\n", Width, Height);
 		if(MultiSample > 0) {
 			MultiSample = static_cast<D3DMULTISAMPLE_TYPE>(Settings::get().getMSAASampleCount());
 			if(Settings::get().getEnableCoverageSampling()) {
@@ -78,10 +84,11 @@ HRESULT FF13Plugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D
 			RSManager::getDX9().getD3D()->CheckDeviceMultiSampleType(0, D3DDEVTYPE_HAL, Format, false, MultiSample, &quality);
 			if(quality > 0) {
 				MultisampleQuality = quality - 1;
-				SDLOG(2, "FF13: Enabled coverage sampling, quality level %d", MultisampleQuality);
+				SDLOG(2, "[FF13]: Enabled coverage sampling, quality level %d\n", MultisampleQuality);
 			}
 		}
 	}
+	SDLOG(4, " -> [FF13] setting depth stencil surface to %dx%d\n", Settings::get().getRenderWidth(), Settings::get().getRenderHeight());
 	return GenericPlugin::redirectCreateDepthStencilSurface(Settings::get().getRenderWidth(), Settings::get().getRenderHeight(), Format, MultiSample, MultisampleQuality, Discard, ppSurface, pSharedHandle);
 }
 
@@ -115,6 +122,7 @@ HRESULT FF13Plugin::redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
 		D3DVIEWPORT9 vp = *pViewport;
 		vp.Width *= Settings::get().getShadowScale();
 		vp.Height *= Settings::get().getShadowScale();
+		SDLOG(4, " -> [FF13] adjusting shadow VP\n");
 		return GenericPlugin::redirectSetViewport(&vp);
 	}
 	// mein rendering
@@ -122,6 +130,7 @@ HRESULT FF13Plugin::redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
 		D3DVIEWPORT9 vp = *pViewport;
 		vp.Width = Settings::get().getRenderWidth();
 		vp.Height = Settings::get().getRenderHeight();
+		SDLOG(4, " -> [FF13] adjusting main VP\n");
 		return GenericPlugin::redirectSetViewport(&vp);
 	}
 	return GenericPlugin::redirectSetViewport(pViewport);
@@ -130,6 +139,7 @@ HRESULT FF13Plugin::redirectSetViewport(CONST D3DVIEWPORT9 * pViewport) {
 HRESULT FF13Plugin::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST RECT* pSourceRect, IDirect3DSurface9* pDestSurface, CONST RECT* pDestRect, D3DTEXTUREFILTERTYPE Filter) {
 	// StretchRect src->dest, sR->dR : 05A4DAE0 -> 05A4D360, RECT[0 / 0 / 1280 / 720]->RECT[0 / 0 / 5120 / 2880]
 	if(pSourceRect != NULL && pSourceRect->right == 1280 && pSourceRect->bottom == 720) {
+		SDLOG(4, " -> [FF13] adjusting source rectangle\n");
 		RECT source = { 0, 0, Settings::get().getRenderWidth(), Settings::get().getRenderHeight() };
 		return GenericPlugin::redirectStretchRect(pSourceSurface, &source, pDestSurface, NULL, Filter);
 	}
@@ -140,12 +150,13 @@ HRESULT FF13Plugin::redirectScissorRect(CONST RECT* pRect) {
 	// adjust
 	// [   0/ 165/1279/ 556]
 	// [ 501/ 199/1812/ 562]
-	if(pRect != NULL /*&& pRect->bottom == 556 && pRect->right == 1279*/) {
+	if(pRect != NULL) {
 		RECT newRect = *pRect;
 		newRect.left = newRect.left * Settings::get().getRenderWidth() / 1280;
 		newRect.right = newRect.right * Settings::get().getRenderWidth() / 1280;
 		newRect.top = newRect.top * Settings::get().getRenderHeight() / 720;
 		newRect.bottom = newRect.bottom * Settings::get().getRenderHeight() / 720;
+		SDLOG(4, " -> [FF13] set scissor rect to %s\n", RectToString(&newRect));
 		return GenericPlugin::redirectScissorRect(&newRect);
 	}
 	return GenericPlugin::redirectScissorRect(pRect);

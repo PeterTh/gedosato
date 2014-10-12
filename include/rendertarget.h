@@ -33,7 +33,12 @@ public:
 	}
 
 	~RenderTarget() {
-		SAFERELEASE(surf9);
+		//SAFERELEASE(surf9);
+		// FF13 hack -- [TODO] investigate what happens with that dangling backbuffer reference
+		if(surf9 != NULL) {
+			while(surf9->Release()>1);
+			surf9 = NULL;
+		}
 		SAFERELEASE(tex9);
 	}
 

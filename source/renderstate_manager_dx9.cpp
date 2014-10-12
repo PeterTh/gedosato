@@ -545,7 +545,6 @@ namespace {
 		if(Settings::getResSettings().setDSRes(pPresentationParameters->BackBufferWidth, pPresentationParameters->BackBufferHeight)
 			|| (pFullscreenDisplayMode && Settings::getResSettings().setDSRes(pFullscreenDisplayMode->Width, pFullscreenDisplayMode->Height))) {
 			SDLOG(0, "===================\n!!!!! requested downsampling resolution!\n");
-
 			return true;
 		}
 		return false;

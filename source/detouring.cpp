@@ -585,7 +585,7 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 // Time ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(QueryPerformanceCounter, BOOL, WINAPI, _Out_ LARGE_INTEGER *lpPerformanceCount) {
-	SDLOG(40, "DetouredQueryPerformanceCounter\n");
+	SDLOG(55, "DetouredQueryPerformanceCounter\n");
 	BOOL ret = TimeManager::get().redirectQueryPerformanceCounter(lpPerformanceCount);
 	return ret;
 }
