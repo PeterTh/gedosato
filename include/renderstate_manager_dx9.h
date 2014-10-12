@@ -38,7 +38,7 @@ class RSManagerDX9 : public RSManager {
 	IDirect3DStateBlock9* initStateBlock = NULL;
 	
 	void prePresent(bool doNotFlip);
-
+	
 public:
 	RSManagerDX9(IDirect3DDevice9* d3ddev) : RSManager(), d3ddev(d3ddev) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
@@ -50,7 +50,7 @@ public:
 	~RSManagerDX9() {
 		releaseResources();
 	}
-
+	
 	D3DFORMAT getBackBufferFormat() { return backbufferFormat; }
 	bool usingMultisampling() { return multisampling; }
 

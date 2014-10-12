@@ -14,6 +14,7 @@ using namespace std;
 #include "window_manager.h"
 #include "settings.h"
 #include "renderstate_manager.h"
+#include "renderstate_manager_dx9.h"
 #include "scaling.h"
 #include "time_manager.h"
 

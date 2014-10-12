@@ -146,6 +146,19 @@ GENERATE_INTERCEPT_HEADER(Direct3DCreate9Ex, HRESULT, APIENTRY, UINT SDKVersion,
 
 // D3DX Textures & Shaders /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace {
+	// get size if the game sucks
+	D3DSURFACE_DESC getTexInfo(LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData) {
+		IDirect3DTexture9* tex;
+		D3DSURFACE_DESC ret;
+		if(SUCCEEDED(TrueD3DXCreateTextureFromFileInMemory(pDevice, pSrcData, 4294967295, &tex))) {
+			tex->GetLevelDesc(0, &ret);
+			tex->Release();
+		}
+		return ret;
+	}
+}
+
 GENERATE_INTERCEPT_HEADER(D3DXCreateTexture, HRESULT, WINAPI, _In_ LPDIRECT3DDEVICE9 pDevice, _In_ UINT Width, _In_ UINT Height, 
 						  _In_ UINT MipLevels, _In_ DWORD Usage, _In_ D3DFORMAT Format, _In_ D3DPOOL Pool, _Out_ LPDIRECT3DTEXTURE9 *ppTexture) {
 	SDLOG(4, "DetouredD3DXCreateTexture\n");
@@ -155,15 +168,20 @@ GENERATE_INTERCEPT_HEADER(D3DXCreateTexture, HRESULT, WINAPI, _In_ LPDIRECT3DDEV
 GENERATE_INTERCEPT_HEADER(D3DXCreateTextureFromFileInMemory, HRESULT, WINAPI, _In_ LPDIRECT3DDEVICE9 pDevice, _In_ LPCVOID pSrcData, _In_ UINT SrcDataSize, _Out_ LPDIRECT3DTEXTURE9 *ppTexture) {
 	SDLOG(4, "DetouredD3DXCreateTextureFromFileInMemory\n");
 	HRESULT res = TrueD3DXCreateTextureFromFileInMemory(pDevice, pSrcData, SrcDataSize, ppTexture);
-	RSManager::getDX9().registerD3DXCreateTextureFromFileInMemory(pSrcData, (SrcDataSize == 2147483647u) ? 256 : SrcDataSize, *ppTexture);
+	RSManager::getDX9().registerD3DXCreateTextureFromFileInMemory(pSrcData, (SrcDataSize == 2147483647u || SrcDataSize == 4294967295u) ? 256 : SrcDataSize, *ppTexture);
 	return res;
 }
 GENERATE_INTERCEPT_HEADER(D3DXCreateTextureFromFileInMemoryEx, HRESULT, WINAPI, LPDIRECT3DDEVICE9 pDevice, LPCVOID pSrcData, UINT SrcDataSize, UINT Width, UINT Height, 
 						  UINT MipLevels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, DWORD Filter, DWORD MipFilter, D3DCOLOR ColorKey, D3DXIMAGE_INFO *pSrcInfo, PALETTEENTRY *pPalette, LPDIRECT3DTEXTURE9 *ppTexture) {
 	SDLOG(4, "DetouredD3DXCreateTextureFromFileInMemoryEx: \n -- pDevice %p, pSrcData %p, SrcDataSize %u, Width %u, Height %u, MipLevels %u, Usage %d, Format %s\n",
 		pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, D3DFormatToString(Format));
+	if(SrcDataSize == 4294967295u && Width == 4294967295u && Height == 4294967295u) {
+		D3DSURFACE_DESC d = getTexInfo(pDevice, pSrcData);
+		Width = d.Width;
+		Height = d.Height;
+	}
 	HRESULT res = RSManager::getDX9().redirectD3DXCreateTextureFromFileInMemoryEx(pDevice, pSrcData, SrcDataSize, Width, Height, MipLevels, Usage, Format, Pool, Filter, MipFilter, ColorKey, pSrcInfo, pPalette, ppTexture);
-	if(SrcDataSize == 2147483647u) SrcDataSize = Width*Height/2;
+	if(SrcDataSize == 2147483647u || SrcDataSize == 4294967295u) SrcDataSize = Width*Height / 2;
 	RSManager::getDX9().registerD3DXCreateTextureFromFileInMemory(pSrcData, SrcDataSize, *ppTexture); 
 	return res;
 }

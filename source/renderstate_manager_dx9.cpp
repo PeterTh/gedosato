@@ -327,7 +327,6 @@ void RSManagerDX9::dumpTexture(const char* name, IDirect3DTexture9* tex) {
 }
 
 HRESULT RSManagerDX9::redirectSetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9* pRenderTarget) {
-
 	if(dumpingFrame) {
 		IDirect3DSurface9* rt;
 		d3ddev->GetRenderTarget(RenderTargetIndex, &rt);
@@ -358,18 +357,30 @@ void RSManagerDX9::registerD3DXCreateTextureFromFileInMemory(LPCVOID pSrcData, U
 		UINT32 hash = SuperFastHash((char*)const_cast<void*>(pSrcData), SrcDataSize);
 		SDLOG(1, " - size: %8u, hash: %8x\n", SrcDataSize, hash);
 
-		IDirect3DSurface9* surf;
+		IDirect3DSurface9* surf = NULL;
 		((IDirect3DTexture9*)pTexture)->GetSurfaceLevel(0, &surf);
-		string directory = getInstalledFileName(format("textures\\%s\\dump\\", getExeFileName().c_str()));
-		SDLOG(0, "%s\n", boost::filesystem::path(directory).string().c_str())
-			try {
-			boost::filesystem::create_directories(boost::filesystem::path(directory));
-			D3DXSaveSurfaceToFile(format("%s%08x.tga", directory.c_str(), hash).c_str(), D3DXIFF_TGA, surf, NULL, NULL);
+		if(surf != NULL) {
+			string directory = getInstalledFileName(format("textures\\%s\\dump\\", getExeFileName().c_str()));
+			SDLOG(1, "%s\n", boost::filesystem::path(directory).string().c_str())
+				try {
+				boost::filesystem::create_directories(boost::filesystem::path(directory));
+				string fn = format("%s%08x.tga", directory.c_str(), hash);
+				SDLOG(1, " - dumping texture to %s\n", fn);
+				if(SUCCEEDED(D3DXSaveSurfaceToFile(fn.c_str(), D3DXIFF_TGA, surf, NULL, NULL))) {
+					SDLOG(1, " - texture dumped\n");
+				}
+				else {
+					SDLOG(-1, "ERROR while texture dumping (D3DX)\n");
+				}
+			}
+			catch(boost::filesystem::filesystem_error e) {
+				SDLOG(-1, "ERROR - Filesystem error while trying to create directory:\n%s\n", e.what());
+			}
+			surf->Release();
 		}
-		catch(boost::filesystem::filesystem_error e) {
-			SDLOG(0, "ERROR - Filesystem error while trying to create directory:\n%s\n", e.what());
+		else {
+			SDLOG(-1, "ERROR - texture dumping failed, could not get level 0 surface from texture %p\n", pTexture);
 		}
-		SAFERELEASE(surf);
 	}
 	registerKnowTexture(pSrcData, SrcDataSize, pTexture);
 }
