@@ -123,4 +123,5 @@ TWFC                         || Transformers: War for Cybertron
 Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
 WL2                          || Wastelands 2
+Wolverine                    || X-Men Origins: Wolverine
 yso_win                      || Ys Origin
