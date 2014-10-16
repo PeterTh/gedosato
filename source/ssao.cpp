@@ -14,14 +14,23 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	: Effect(device), width(width), height(height), strength(strength), type(type), blur(blur), useSRGB(useSRGB), readHWDepth(readHWDepth),
 	  blurPasses(blur==BLUR_SHARP ? 3 : 1) {
 
+	// Create buffers
+	if(type == SSAO::SAO) { 
+		if(Settings::get().getSsaoScale() == 2 && (width > Settings::get().getPresentWidth() && height > Settings::get().getPresentHeight())) { 
+			dwidth = width / 2; dheight = height / 2;
+		}
+		else { 
+			dwidth = width; dheight = height;
+		}
+		CSZBuffer = RSManager::getRTMan().createTexture(dwidth, dheight, RenderTarget::FMT_R32F);
+	}
+	else { dwidth = width; dheight = height; }
+
 	reloadShader();
 
-	// Create buffers
-	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
-	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	buffer1 = RSManager::getRTMan().createTexture(dwidth, dheight, RenderTarget::FMT_ARGB_8);
+	buffer2 = RSManager::getRTMan().createTexture(dwidth, dheight, RenderTarget::FMT_ARGB_8);
 	hdrBuffer = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_FP16);
-
-	if(type == SSAO::SAO) halfZBuffer = RSManager::getRTMan().createTexture(width / 2, height / 2, RenderTarget::FMT_R32F);
 }
 
 SSAO::~SSAO() {
@@ -35,13 +44,13 @@ void SSAO::reloadShader() {
 
 	// Setup pixel size macro
 	stringstream sp;
-	sp << "float2(1.0 / " << width << ", 1.0 / " << height << ")";
+	sp << "float2(1.0 / " << dwidth << ", 1.0 / " << dheight << ")";
 	string pixelSizeText = sp.str();
 	D3DXMACRO pixelSizeMacro = { "PIXEL_SIZE", pixelSizeText.c_str() };
 	defines.push_back(pixelSizeMacro);
 
 	// Setup screen size macro
-	string screenSizeText = format("float2(%d,%d)", width, height);
+	string screenSizeText = format("float2(%d,%d)", dwidth, dheight);
 	D3DXMACRO screenSizeMacro = { "SCREEN_SIZE", screenSizeText.c_str() };
 	defines.push_back(screenSizeMacro);
 
@@ -108,15 +117,35 @@ void SSAO::reloadShader() {
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex2D");
 	frameTexHandle = effect->GetParameterByName(NULL, "frameTex2D");
 	prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
-	isBlurHorizontalHandle = effect->GetParameterByName(NULL, "isBlurHorizontal");
 
-	if(type == SSAO::SAO) blurPasses = 2;
+	if(type == SSAO::SAO) {
+		isBlurHorizontalHandle = effect->GetParameterByName(NULL, "isBlurHorizontal");
+		projInfoHandle = effect->GetParameterByName(NULL, "projInfo");
+
+		// 1 iteration is not enough imo
+		blurPasses = 2;
+
+		D3DXMATRIX matProjection;
+		D3DXVECTOR4 projInfo;
+		//width = 1280; height = 720;
+		// values from http://www.rjdown.co.uk/projects/bfbc2/fovcalculator.php. 16/9 : 59, 16/10 : 65
+		// D3DX_PI/2 or D3DX_PI/4 could suffice I don't know for sure
+		int FOV = dheight * 16 > dwidth * 9 ? 65 : 59;
+		D3DXMatrixPerspectiveFovLH(&matProjection, (FLOAT)D3DXToRadian(FOV), ((FLOAT)dwidth / (FLOAT)dheight), (FLOAT)0.01, (FLOAT)100.0); // Dummy nearZ/farZ
+	
+		projInfo.x = -2.0f / ((float)dwidth * matProjection._11);
+		projInfo.y = -2.0f / ((float)dheight * matProjection._22),
+		projInfo.z = ((1.0f - matProjection._13) / matProjection._11) + projInfo.x * 0.5f;
+		projInfo.w = ((1.0f + matProjection._23) / matProjection._22) + projInfo.y * 0.5f;
+
+		effect->SetVector(projInfoHandle, &projInfo);
+	}
 }
 
-void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
+void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst, bool scaleToCustomAR) {
 	device->SetVertexDeclaration(vertexDeclaration);
 	
-    mainSsaoPass(depth, buffer1->getSurf());
+    mainSsaoPass(depth, buffer1->getSurf(), scaleToCustomAR);
 	
 	for(size_t i = 0; i<blurPasses; ++i) {
 		blurPass(depth, buffer1->getTex(), buffer2->getSurf(), true);
@@ -128,7 +157,7 @@ void SSAO::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurfa
 	dumping = false;
 }
 
-void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {
+void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst, bool scaleToCustomAR) {
 	device->SetVertexDeclaration(vertexDeclaration);
 
 	if(dumping) {
@@ -138,11 +167,11 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	}
 
 	if(type == SSAO::SAO) {
-		downsamplePass(depth, halfZBuffer->getSurf());
-		mainSsaoPass(halfZBuffer->getTex(), buffer1->getSurf());
+		reconstructCSZPass(depth, CSZBuffer->getSurf());
+		mainSsaoPass(CSZBuffer->getTex(), buffer1->getSurf(), scaleToCustomAR);
 	}
 	else {
-		mainSsaoPass(depth, buffer1->getSurf());
+		mainSsaoPass(depth, buffer1->getSurf(), scaleToCustomAR);
 	}
 
 	if(dumping) {
@@ -168,7 +197,7 @@ void SSAO::goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSu
 	dumping = false;
 }
 
-void SSAO::downsamplePass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst) {
+void SSAO::reconstructCSZPass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst) {
 	device->SetRenderTarget(0, dst);
 
 	// Setup variables.
@@ -178,12 +207,12 @@ void SSAO::downsamplePass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst) {
 	UINT passes;
 	effect->Begin(&passes, 0);
 	effect->BeginPass(0);
-	quad(width / 2, height / 2);
+	quad(dwidth, dheight);
 	effect->EndPass();
 	effect->End();
 }
 
-void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
+void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst, bool scaleToCustomAR) {
 	device->SetRenderTarget(0, dst);
 
 	// Setup variables.
@@ -192,8 +221,19 @@ void SSAO::mainSsaoPass(IDirect3DTexture9* depth, IDirect3DSurface9* dst) {
     // Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(type == SSAO::SAO ? 2 : 0);
-	quad(width, height);
+	effect->BeginPass(type == SSAO::SAO ? 1 : 0);
+	if(scaleToCustomAR) {
+		unsigned fixedHeight = width * 9 / 16;
+		D3DVIEWPORT9 vp;
+		vp.Width = dwidth;
+		vp.Height = dheight;
+		vp.X = 0;
+		vp.Y = (height - fixedHeight) / (dwidth != width ? 4 : 2);
+		vp.MinZ = 0;
+		vp.MaxZ = 1;
+		device->SetViewport(&vp);
+	}
+	quad(dwidth, dheight);
 	effect->EndPass();
 	effect->End();
 }
@@ -209,8 +249,8 @@ void SSAO::blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DS
     // Do it!
 	UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(type == SSAO::SAO ? 3 : horizontal ? 1 : 2);
-	quad(width, height);
+	effect->BeginPass(type == SSAO::SAO ? 2 : horizontal ? 1 : 2);
+	quad(dwidth, dheight);
 	effect->EndPass();
 	effect->End();
 }
@@ -225,7 +265,7 @@ void SSAO::combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3
     // Do it!
     UINT passes;
 	effect->Begin(&passes, 0);
-	effect->BeginPass(type == SSAO::SAO ? 4 : 3);
+	effect->BeginPass(type == SSAO::SAO ? 3 : 3);
 	quad(width, height);
 	effect->EndPass();
 	effect->End();
