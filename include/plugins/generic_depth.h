@@ -10,6 +10,7 @@ class GenericDepthPlugin : public GenericPlugin {
 	bool doAO = true;
 	bool isOrigDssRestored = false;
 	bool isOrigDssReplaced = false;
+	bool isAspectRatioFixNeeded = false;
 
 	unsigned countClear;
 	unsigned drw, drh, dssw, dssh;

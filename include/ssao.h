@@ -16,14 +16,14 @@ public:
 	SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, Type type, Blur blur, bool useSRGB, bool readHWDepth);
     virtual ~SSAO();
 
-	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
-	void goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
+	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst, bool scaleToCustomAR);
+	void goHDR(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst, bool scaleToCustomAR);
 
 	void dumpFrame();
 	void reloadShader();
 
 private:
-	int width, height;
+	int width, height, dwidth, dheight;
 	size_t blurPasses;
 	bool dumping = false;
 	unsigned strength;
@@ -33,12 +33,12 @@ private:
 
 	ID3DXEffect *effect = NULL;
 	
-	RenderTargetPtr buffer1, buffer2, hdrBuffer, halfZBuffer;
+	RenderTargetPtr buffer1, buffer2, hdrBuffer, CSZBuffer;
 
-	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle, noiseTexHandle, isBlurHorizontalHandle;
+	D3DXHANDLE depthTexHandle, frameTexHandle, prevPassTexHandle, noiseTexHandle, isBlurHorizontalHandle, projInfoHandle;
 	
-	void downsamplePass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst);
-	void mainSsaoPass(IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
+	void reconstructCSZPass(IDirect3DTexture9 *depth, IDirect3DSurface9* dst);
+	void mainSsaoPass(IDirect3DTexture9 *depth, IDirect3DSurface9 *dst, bool scaleToCustomAR);
 	void blurPass(IDirect3DTexture9 *depth, IDirect3DTexture9* src, IDirect3DSurface9* dst, bool horizontal);
 	void combinePass(IDirect3DTexture9* frame, IDirect3DTexture9* ao, IDirect3DSurface9* dst);
 };
