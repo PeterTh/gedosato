@@ -31,6 +31,7 @@ Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 Crysis                       || Crysis & Crysis Warhead
 Crysis2                      || Crysis 2
+csgo                         || Counter-Strike: Global Offensive
 DAOrigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
