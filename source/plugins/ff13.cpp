@@ -1,6 +1,7 @@
 #include "plugins/ff13.h"
 
 #include "renderstate_manager_dx9.h"
+#include "d3d9/d3d9tex.h"
 #include "utils/d3d9_utils.h"
 
 #include "utils/win_utils.h"
@@ -48,12 +49,17 @@ HRESULT FF13Plugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, 
 		SDLOG(4, " -> [FF13] scaling shadow buffer to %dx%d\n", Width, Height);
 	}
 	// other rendertargets and buffers
-	if(Pool != D3DPOOL_MANAGED) {
-		if((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720)) {
-			Width = Settings::get().getRenderWidth();
-			Height = Settings::get().getRenderHeight();
-			SDLOG(4, " -> [FF13] scaling render texture to %dx%d\n", Width, Height);
+	else if(Pool != D3DPOOL_MANAGED && ((Width == Settings::get().getPresentWidth() && Height == Settings::get().getPresentHeight()) || (Width == 1280 && Height == 720))) {
+		Width = Settings::get().getRenderWidth();
+		Height = Settings::get().getRenderHeight();
+		SDLOG(4, " -> [FF13] scaling render texture to %dx%d\n", Width, Height);
+	}
+	else if(Settings::get().getEnableAlternativeTextureDumping() && !(Usage & D3DUSAGE_RENDERTARGET) && Width > 1 && Height > 1) {
+		HRESULT hr = GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+		if(SUCCEEDED(hr)) {
+			new hkIDirect3DTexture9(ppTexture);
 		}
+		return hr;
 	}
 	return GenericPlugin::redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }

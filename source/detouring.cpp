@@ -230,7 +230,7 @@ namespace {
 			lpDevMode->dmPelsHeight = res.height;
 			lpDevMode->dmDisplayFlags = 0;
 			lpDevMode->dmDisplayFrequency = res.hz;
-			SDLOG(2, "-> Fake\n");
+			SDLOG(2, "-> Fake %ux%u\n", res.width, res.height);
 			return TRUE;
 		}
 		if(ret && lpDevMode->dmPelsWidth == Settings::get().getOverrideWidth() && lpDevMode->dmPelsHeight == Settings::get().getOverrideHeight()) {

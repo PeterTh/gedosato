@@ -60,7 +60,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type,
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinIndex, UINT NumVertices, UINT PrimitiveCount, CONST void *pIndexData, D3DFORMAT IndexDataFormat, CONST void *pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	RSManager::setLatest(rsMan);
-	SDLOG(9, "DrawIndexedPrimitiveUP(%d, %u, %u, %u, %u, %p, %d, %p, %d)\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
+	SDLOG(9, "DrawIndexedPrimitiveUP(%d, %u, %u, %u, %p, %d, %p, %u)\n", PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 	return rsMan->redirectDrawIndexedPrimitiveUP(PrimitiveType, MinIndex, NumVertices, PrimitiveCount, pIndexData, IndexDataFormat, pVertexStreamZeroData, VertexStreamZeroStride);
 }
 
@@ -652,9 +652,18 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT 
 	return m_pD3Ddev->SetStreamSourceFreq(StreamNumber, Divider);
 }
 
+#include "d3d9/d3d9tex.h"
+
 HRESULT APIENTRY hkIDirect3DDevice9::SetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTexture) {
 	RSManager::setLatest(rsMan);
 	SDLOG(6, "setTexture %d, %p\n", Stage, pTexture);
+	if(pTexture != NULL && Settings::get().getEnableAlternativeTextureDumping()) {
+		void *unused;
+		if(pTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
+			pTexture = reinterpret_cast<hkIDirect3DTexture9*>(pTexture)->m_pWrapped;
+			SDLOG(6, " - wrapper for %p\n", pTexture);
+		}
+	}
 	if(Settings::get().getLogLevel() > 10 && pTexture) {
 		IDirect3DTexture9 *tex;
 		if(pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex) == S_OK) {
@@ -735,6 +744,21 @@ HRESULT APIENTRY hkIDirect3DDevice9::UpdateSurface(IDirect3DSurface9* pSourceSur
 HRESULT APIENTRY hkIDirect3DDevice9::UpdateTexture(IDirect3DBaseTexture9 *pSourceTexture, IDirect3DBaseTexture9 *pDestinationTexture) {
 	RSManager::setLatest(rsMan);
 	SDLOG(6, "UpdateTexture source: %p    dest: %p\n", pSourceTexture, pDestinationTexture);
+	if(Settings::get().getEnableAlternativeTextureDumping()) {
+		void *unused;
+		if(pSourceTexture != NULL) {
+			if(pSourceTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
+				pSourceTexture = reinterpret_cast<hkIDirect3DTexture9*>(pSourceTexture)->m_pWrapped;
+				SDLOG(6, " - source wrapper for %p\n", pSourceTexture);
+			}
+		}
+		if(pDestinationTexture != NULL) {
+			if(pDestinationTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
+				pDestinationTexture = reinterpret_cast<hkIDirect3DTexture9*>(pDestinationTexture)->m_pWrapped;
+				SDLOG(6, " - destination wrapper for %p\n", pDestinationTexture);
+			}
+		}
+	}
 	return m_pD3Ddev->UpdateTexture(pSourceTexture, pDestinationTexture);
 }
 

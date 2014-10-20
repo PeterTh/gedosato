@@ -32,6 +32,7 @@ SETTING(bool, EnableDX11, "enableDX11", false)
 
 // Texture options
 SETTING(bool, EnableTextureDumping, "enableTextureDumping", false)
+SETTING(bool, EnableAlternativeTextureDumping, "enableAlternativeTextureDumping", false)
 SETTING(bool, EnableTextureOverride, "enableTextureOverride", false)
 SETTING(bool, EnableTextureMarking, "enableTextureMarking", false)
 
