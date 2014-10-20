@@ -16,15 +16,15 @@ changelog:
 
 //make sure that these two values are the same for your camera, otherwise distances will be wrong.
 
-float nearZ = 0.001; //Z-near
-float farZ = 1.0; //Z-far
+float nearZ = 0.01; //Z-near
+float farZ = 30.0; //Z-far
 
 //user variables
 int samples = 8; //ao sample count
 
-float radius = 6.0; //ao radius
+float radius = 10.0; //ao radius
 float haloReduce = 0.26; //depth clamp - reduces haloing at screen edges
-bool noise = true; //use noise instead of pattern for sample dithering
+bool noise = false; //use noise instead of pattern for sample dithering
 float noiseamount = 0.0002; //dithering amount
 
 float diffarea = 0.4; //self-shadowing reduction
@@ -33,9 +33,6 @@ float gdisplace = 0.4; //gauss bell center
 bool mist = true; //use mist?
 float miststart = 0.0; //mist start
 float mistend = 16.0; //mist end
-
-bool onlyAO = true; //use only ambient occlusion pass?
-float lumInfluence = 0.0; //how much luminance affects occlusion
 
 extern float aoClamp = 0.0;
 

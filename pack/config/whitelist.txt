@@ -31,6 +31,7 @@ Configurator                 || Configurator (multiple)
 consortium                   || Consortium
 Crysis                       || Crysis & Crysis Warhead
 Crysis2                      || Crysis 2
+csgo                         || Counter-Strike: Global Offensive
 DAOrigins                    || Dragon Age: Origins
 DAOriginsConfig              || Dragon Age: Origins Configurator
 Darksiders2                  || Darksiders 2
@@ -44,8 +45,8 @@ DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
-EoCApp                       || Divinity: Original Sin
 Earth2160*                   || Earth 2160
+EoCApp                       || Divinity: Original Sin
 Fallout3                     || Fallout 3
 FalloutLauncher              || Fallout 3 Launcher
 fear                         || F.E.A.R.
@@ -55,14 +56,15 @@ FEARXP2                      || F.E.A.R. Perseus Mandate
 ffxiiiimg                    || Fianl Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
+FirefallClient               || Firefall
 fr-041_debris                || "Debris" by Farbrausch
 grimrock                     || Legend of Grimrock
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
 GTAIV                        || Grand Theft Auto 4
 halo                         || Halo: Combat Evolved
-haloce                       || Halo: Custom Edition
 halo2                        || Halo 2
+haloce                       || Halo: Custom Edition
 hardreset                    || Hard Reset
 HawkenGame-Win32-Shipping    || Hawken
 HitmanBloodMoney             || Hitman: Blood Money
@@ -122,4 +124,5 @@ TWFC                         || Transformers: War for Cybertron
 Valiant Hearts               || Valiant Hearts
 witcher2                     || The Witcher 2
 WL2                          || Wasteland 2
+Wolverine                    || X-Men Origins: Wolverine
 yso_win                      || Ys Origin

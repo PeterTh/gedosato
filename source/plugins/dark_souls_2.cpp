@@ -166,7 +166,7 @@ HRESULT DS2Plugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 		frameTex = D3DGetSurfTexture(hdrRT);
 		if(depth && frameTex) {
 			SDLOG(2, "- AO ready to go\n")
-			ssao->goHDR(frameTex, depth, hdrRT);
+			ssao->goHDR(frameTex, depth, hdrRT, false);
 			SDLOG(2, "- AO done\n")
 		}
 		else {
