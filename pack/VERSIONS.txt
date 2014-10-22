@@ -1,9 +1,16 @@
-??-10-2014 -- beta 14 - "Barrage am Ring"
+??-11-2014 -- beta 15 - "Tokikagura"
+====================================
+General:
+- Adjust reported monitor native resolution
+- Limit window size for game-side borderless fullscreen when downsampling
+- Fix mouse cursor in windowed downsampling modes
+
+22-10-2014 -- beta 14 - "Barrage am Ring"
 =========================================
 General:
 - Added "clearRenderResolutions" pseudo-setting to clear render resolution 
   list in user- or game-specific settings
-- Detoured many more DX9 functions
+- Detoured many more DX11 functions
 Final Fantasy 13 Plugin:
 - Added initial version, resolution unlocking
 - Fixed crash on alt-tab
