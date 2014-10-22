@@ -59,6 +59,7 @@ ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
 fr-041_debris                || "Debris" by Farbrausch
 grimrock                     || Legend of Grimrock
+grimrock2                    || Legend of Grimrock 2
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
 GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
 GTAIV                        || Grand Theft Auto 4
