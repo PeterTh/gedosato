@@ -15,16 +15,16 @@ SSAO::SSAO(IDirect3DDevice9 *device, int width, int height, unsigned strength, T
 	  blurPasses(blur==BLUR_SHARP ? 3 : 1) {
 
 	// Create buffers
+	dwidth = width; 
+	dheight = height;
 	if(type == SSAO::SAO) { 
-		if(Settings::get().getSsaoScale() == 2 && (width > Settings::get().getPresentWidth() && height > Settings::get().getPresentHeight())) { 
-			dwidth = width / 2; dheight = height / 2;
-		}
-		else { 
-			dwidth = width; dheight = height;
+		if(Settings::get().getSsaoScale() == 2 
+				&& (width > static_cast<int>(Settings::get().getPresentWidth()) && height > static_cast<int>(Settings::get().getPresentHeight()))) {
+			dwidth = width / 2; 
+			dheight = height / 2;
 		}
 		CSZBuffer = RSManager::getRTMan().createTexture(dwidth, dheight, RenderTarget::FMT_R32F);
 	}
-	else { dwidth = width; dheight = height; }
 
 	reloadShader();
 

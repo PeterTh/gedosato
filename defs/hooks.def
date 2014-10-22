@@ -24,11 +24,13 @@ HOOK(GetMonitorInfoW, "User32.dll")
 
 HOOK(GetClientRect, "User32.dll")
 HOOK(GetWindowRect, "User32.dll")
+HOOK(WindowFromPoint, "User32.dll")
 
 HOOK(GetCursorPos, "User32.dll")
 HOOK(SetCursorPos, "User32.dll")
 HOOK(SetCursor, "User32.dll")
 HOOK(ShowCursor, "User32.dll")
+HOOK(ClipCursor, "User32.dll")
 
 HOOK(PeekMessageA, "User32.dll")
 HOOK(GetMessageA, "User32.dll")
@@ -39,7 +41,7 @@ HOOK(SetWindowLongW, "User32.dll")
 HOOK(GetWindowLongA, "User32.dll")
 HOOK(GetWindowLongW, "User32.dll")
 
-//HOOK(SetWindowPos, "User32.dll")
+HOOK(SetWindowPos, "User32.dll")
 
 HOOK(DirectInput8Create, "dinput8.dll")
 HOOK(DirectInputCreateEx, "dinput.dll");
