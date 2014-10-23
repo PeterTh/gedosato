@@ -91,11 +91,10 @@ Texture2D thisframeTex;
 SamplerState s0
 {
     Texture = <thisframeTex>;
-    Filter = Anisotropic;
+    Filter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
-    MaxAnisotropy = 16;
 };
 
 cbuffer ConstBuffer
@@ -306,7 +305,7 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 {
-	float4 bloom = PyramidFilter(s0, texcoord, PIXEL_SIZE * Defocus);
+    float4 bloom = PyramidFilter(s0, texcoord, PIXEL_SIZE * Defocus);
 
     float2 dx = float2(InvDefocusSize.x * float(BlendSpread), 0.0);
     float2 dy = float2(0.0, InvDefocusSize.y * float(BlendSpread));
