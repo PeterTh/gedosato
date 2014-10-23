@@ -68,7 +68,6 @@
 
 //##[GAMMA OPTIONS]##
 #define Gamma 2.23                          //[1.5 to 4.0] Gamma correction. Lower Values = more gamma toning(darker), higher Values = brighter (2.2 correction is generally recommended)
-#define GammaConst 2.233333333
 
 //##[VIBRANCE OPTIONS]##
 #define Vibrance -0.05                      //[-1.00 to 1.00] Adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
@@ -90,9 +89,10 @@ Texture2D thisframeTex;
 SamplerState s0
 {
 	Texture = <thisframeTex>;
-	Filter = POINT;
+	Filter = Anisotropic;
 	AddressU = Clamp; AddressV = Clamp;
 	SRGBTexture = USE_SRGB;
+	MaxAnisotropy = 16;
 };
 
 float3 RGBGammaToLinear(float3 color, float gamma)
@@ -154,32 +154,53 @@ float3 LinearToRGBGamma(float3 RGB, float gamma)
 }
 */
 
+struct VS_INPUT
+{
+	float4 Position : POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float3 Normal : NORMAL;
+	float4 Color : COLOR0;
+};
+
+struct VS_OUTPUT
+{
+	float4 Position : SV_POSITION;
+	float2 TexCoord : TEXCOORD0;
+	float3 Normal : NORMAL;
+	float4 Color : COLOR0;
+};
+
+cbuffer ConstBuffer : register(b0)
+{
+	matrix World : WORLD;
+	matrix View : VIEW;
+	matrix Projection : PROJECTION;
+	static const float GammaConst = 2.233333333;
+};
+
+static float2 BufferSize = float2(3840.0, 2160.0);
+static float2 rcpres = float2(1.0 / BufferSize.x, 1.0 / BufferSize.y);
+
 /*------------------------------------------------------------------------------
                             [VERTEX CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-struct VSOUT
+VS_OUTPUT VS_Shader(VS_INPUT Input)
 {
-	float4 vertPos : POSITION;
-	float2 UVCoord : TEXCOORD0;
-};
+	VS_OUTPUT Output;
 
-struct VSIN
-{
-	float4 vertPos : POSITION0;
-	float2 UVCoord : TEXCOORD0;
-};
+	Output.Position = mul(Input.Position, World);
+	Output.Position = mul(Output.Position, View);
+	Output.Position = mul(Output.Position, Projection);
+	Output.Position = Input.Position;
 
-VSOUT FrameVS(VSIN IN)
-{
-	VSOUT OUT;
-	OUT.vertPos = IN.vertPos;
-	OUT.UVCoord = IN.UVCoord;
-	return OUT;
+	Output.TexCoord = Input.TexCoord;
+	Output.Normal = mul(Input.Normal, (float3x3)World);
+	Output.Normal = normalize(Output.Normal);
+	Output.Color = Input.Color;
+
+	return Output;
 }
-
-static float2 BufferSize = SCREEN_SIZE;
-static float2 rcpres = PIXEL_SIZE;
 
 /*------------------------------------------------------------------------------
                        [GAMMA CORRECTION CODE SECTION]
@@ -599,9 +620,9 @@ float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
                               [MAIN/COMBINE]
 ------------------------------------------------------------------------------*/
 
-float4 postProcessing(VSOUT IN) : COLOR0
+float4 postProcessing(VS_OUTPUT Input) : COLOR0
 {
-	float2 tex = IN.UVCoord;
+	float2 tex = Input.TexCoord;
 	float4 c0 = tex2D(s0, tex);
 
 	#if (GAMMA_CORRECTION == 1)
@@ -639,9 +660,13 @@ technique t0
 {
 	pass P0
 	{
-		VertexShader = compile vs_3_0 FrameVS();
+		VertexShader = compile vs_3_0 VS_Shader();
 		PixelShader = compile ps_3_0 postProcessing();
-		ZEnable = false;        
+		ZEnable = false;
+		Lighting = true;
+		ShadeMode = Phong;
+		SpecularEnable = true;
+		LightEnable[0] = true;
 		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
 		AlphaTestEnable = false;
