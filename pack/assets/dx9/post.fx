@@ -52,7 +52,7 @@
 
 // Curves settings
     #define Curves_mode     0   //[0|1|2] Choose what to apply contrast to. 0 = Luma, 1 = Chroma, 2 = both Luma and Chroma. Default is 0 (Luma)
-	#define Curves_contrast 1.0 //[-1.00 to 1.00] The amount of contrast you want
+    #define Curves_contrast 0.15 //[-1.00 to 1.00] The amount of contrast you want
 
 // -- Advanced curve settings --
     #define Curves_formula     10 //[1|2|3|4|5|6|7|8|9|10] The contrast s-curve you want to use.
@@ -1349,7 +1349,7 @@ float pnoise3D(in float3 p)
 {
     float3 pi = permTexUnit*floor(p)+permTexUnitHalf; // Integer part, scaled so +1 moves permTexUnit texel
     // and offset 1/2 texel to sample texel centers
-	float3 pf = frac(p);     // Fractional part for interpolation
+    float3 pf = frac(p);     // Fractional part for interpolation
 
     // Noise contributions from (x=0, y=0), z=0 and z=1
     float perm00 = rnm(pi.xy).a ;
