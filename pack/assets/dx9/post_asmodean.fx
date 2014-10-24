@@ -95,6 +95,7 @@ SamplerState s0
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
+    MaxAnisotropy = 16;
 };
 
 cbuffer ConstBuffer
@@ -111,14 +112,14 @@ float RGBLuminance(float3 color)
 
 struct VS_INPUT
 {
-	float4 vertPos : POSITION;
-	float2 UVCoord : TEXCOORD0;
+    float4 vertPos : POSITION;
+    float2 UVCoord : TEXCOORD0;
 };
 
 struct VS_OUTPUT
 {
-	float4 vertPos : SV_POSITION;
-	float2 UVCoord : TEXCOORD0;
+    float4 vertPos : SV_POSITION;
+    float2 UVCoord : TEXCOORD0;
 };
 
 static float2 BufferSize = float2(3840.0, 2160.0);
@@ -132,8 +133,8 @@ VS_OUTPUT FrameVS(VS_INPUT Input)
 {
     VS_OUTPUT Output;
 
-	Output.vertPos = Input.vertPos;
-	Output.UVCoord = Input.UVCoord;
+    Output.vertPos = Input.vertPos;
+    Output.UVCoord = Input.UVCoord;
 
     return Output;
 }
@@ -178,79 +179,6 @@ float4 GammaPass(float4 color, float2 texcoord) : COLOR0
 }
 
 /*------------------------------------------------------------------------------
-                       [TEXTURE SHARPEN CODE SECTION]
-------------------------------------------------------------------------------*/
-
-float Cubic(float x)
-{
-    float x2 = x * x;
-    float x3 = x2 * x;
-
-    float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
-    float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
-    float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
-    float cw = x3;
-
-    return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
-}
-
-float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
-{
-    float texelSizeX = rcpres.x * float(SharpenBias);
-    float texelSizeY = rcpres.y * float(SharpenBias);
-
-    float4 nSum = (float4)0.0;
-    float4 nDenom = (float4)0.0;
-
-    float a = frac(TexCoord.x * BufferSize.x);
-    float b = frac(TexCoord.y * BufferSize.y);
-
-    int nX = int(TexCoord.x * BufferSize.x);
-    int nY = int(TexCoord.y * BufferSize.y);
-
-    float2 uvCoord = float2(float(nX) / BufferSize.x, float(nY) / BufferSize.y);
-
-    for (int m = -1; m <= 2; m++)
-    {
-        for (int n = -1; n <= 2; n++)
-        {
-            float4 Samples = tex2D(texSample, uvCoord +
-            float2(texelSizeX * float(m), texelSizeY * float(n)));
-
-            float vc1 = Cubic(float(m) - a);
-            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
-
-            float vc2 = Cubic(-(float(n) - b));
-            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
-
-            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
-            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
-        }
-    }
-    return nSum / nDenom;
-}
-
-float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
-{
-    float3 calcSharpen = lumCoeff * float(SharpenStrength);
-
-    float4 blurredColor = SampleBiCubic(s0, texcoord);
-    float3 sharpenedColor = (color.rgb - blurredColor.rgb);
-
-    float sharpenLuma = dot(sharpenedColor, calcSharpen);
-    sharpenLuma = clamp(sharpenLuma, -float(SharpenClamp), float(SharpenClamp));
-
-    color.rgb = color.rgb + sharpenLuma;
-    color.a = RGBLuminance(color.rgb);
-
-    #if (DebugSharpen == 1)
-        color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
-    #endif
-
-    return saturate(color);
-}
-
-/*------------------------------------------------------------------------------
                           [BLOOM PASS CODE SECTION]
 ------------------------------------------------------------------------------*/
 
@@ -284,7 +212,7 @@ float4 PyramidFilter(sampler2D tex, float2 texcoord, float2 width)
     color += tex2D(tex, texcoord + float2(-0.5,  0.5) * width);
     color += tex2D(tex, texcoord + float2(0.5, -0.5) * width);
     color += tex2D(tex, texcoord + float2(-0.5, -0.5) * width);
-	color *= 0.25;
+    color *= 0.25;
 
     return color;
 }
@@ -304,10 +232,10 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 {
-	float4 bloom = PyramidFilter(s0, texcoord, PIXEL_SIZE * Defocus);
+    float4 bloom = PyramidFilter(s0, texcoord, PIXEL_SIZE * Defocus);
 
-	float2 dx = float2(rcpres.x * float(BlendSpread), 0.0);
-	float2 dy = float2(0.0, rcpres.y * float(BlendSpread));
+    float2 dx = float2(rcpres.x * float(BlendSpread), 0.0);
+    float2 dy = float2(0.0, rcpres.y * float(BlendSpread));
 
     float2 dx2 = 2.0 * dx;
     float2 dy2 = 2.0 * dy;
@@ -462,6 +390,80 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
 
     return saturate(color);
 }
+
+/*------------------------------------------------------------------------------
+                       [TEXTURE SHARPEN CODE SECTION]
+------------------------------------------------------------------------------*/
+
+float Cubic(float x)
+{
+    float x2 = x * x;
+    float x3 = x2 * x;
+
+    float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
+    float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
+    float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
+    float cw = x3;
+
+    return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
+}
+
+float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
+{
+    float texelSizeX = rcpres.x * float(SharpenBias);
+    float texelSizeY = rcpres.y * float(SharpenBias);
+
+    float4 nSum = (float4)0.0;
+    float4 nDenom = (float4)0.0;
+
+    float a = frac(TexCoord.x * BufferSize.x);
+    float b = frac(TexCoord.y * BufferSize.y);
+
+    int nX = int(TexCoord.x * BufferSize.x);
+    int nY = int(TexCoord.y * BufferSize.y);
+
+    float2 uvCoord = float2(float(nX) / BufferSize.x, float(nY) / BufferSize.y);
+
+    for (int m = -1; m <= 2; m++)
+    {
+        for (int n = -1; n <= 2; n++)
+        {
+            float4 Samples = tex2D(texSample, uvCoord +
+            float2(texelSizeX * float(m), texelSizeY * float(n)));
+
+            float vc1 = Cubic(float(m) - a);
+            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
+
+            float vc2 = Cubic(-(float(n) - b));
+            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
+
+            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
+            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
+        }
+    }
+    return nSum / nDenom;
+}
+
+float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
+{
+    float3 calcSharpen = lumCoeff * float(SharpenStrength);
+
+    float4 blurredColor = SampleBiCubic(s0, texcoord);
+    float3 sharpenedColor = (color.rgb - blurredColor.rgb);
+
+    float sharpenLuma = dot(sharpenedColor, calcSharpen);
+    sharpenLuma = clamp(sharpenLuma, -float(SharpenClamp), float(SharpenClamp));
+
+    color.rgb = color.rgb + sharpenLuma;
+    color.a = RGBLuminance(color.rgb);
+
+    #if (DebugSharpen == 1)
+        color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
+    #endif
+
+    return saturate(color);
+}
+
 /*------------------------------------------------------------------------------
                        [S_CURVE CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
@@ -520,7 +522,7 @@ float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
 
 float4 postProcessing(VS_OUTPUT Input) : COLOR0
 {
-	float2 tex = Input.UVCoord;
+    float2 tex = Input.UVCoord;
     float4 c0 = tex2D(s0, tex);
 
     #if (GAMMA_CORRECTION == 1)
