@@ -63,19 +63,19 @@
 
 //##[SHARPEN OPTIONS]##
 #define SharpeningType 2                    //[1 or 2] The type of sharpening to use. Type 1 is a High Pass Gaussian. Type 2 is a higher quality(slightly slower) Bicubic Sampling type.
-#define SharpenStrength 0.50                //[0.10 to 2.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
+#define SharpenStrength 0.60                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
 #define SharpenClamp 0.012                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
-#define SharpenBias 1.25                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
+#define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
 
 //##[GAMMA OPTIONS]##
 #define Gamma 2.20                          //[1.5 to 4.0] Gamma correction. Lower Values = more gamma toning(darker), higher Values = brighter (2.2 correction is generally recommended)
 
 //##[VIBRANCE OPTIONS]##
-#define Vibrance 0.00                       //[-1.00 to 1.00] Adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
+#define Vibrance 0.10                       //[-1.00 to 1.00] Adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
 
 //##[CONTRAST OPTIONS]##
-#define CurvesContrast 0.35                 //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
+#define Contrast 0.35                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
 
 //[END OF USER OPTIONS]##
 
@@ -87,28 +87,21 @@
                              [GLOBALS/FUNCTIONS]
 ------------------------------------------------------------------------------*/
 
+static float2 pixelSize = PIXEL_SIZE;
+static float2 screenSize = SCREEN_SIZE;
+static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
+static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+
 Texture2D thisframeTex;
 SamplerState s0
 {
     Texture = <thisframeTex>;
-    Filter = Linear;
+    Filter = Anisotropic;
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
     MaxAnisotropy = 16;
 };
-
-cbuffer ConstBuffer
-{
-    static const float GammaConst = 2.233333333;
-    static const float2 Defocus = float2(1.2, 1.0);
-    static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
-};
-
-float RGBLuminance(float3 color)
-{
-    return dot(color.rgb, lumCoeff);
-}
 
 struct VS_INPUT
 {
@@ -122,8 +115,10 @@ struct VS_OUTPUT
     float2 UVCoord : TEXCOORD0;
 };
 
-static float2 BufferSize = float2(3840.0, 2160.0);
-static float2 rcpres = float2(1.0/BufferSize.x, 1.0/BufferSize.y);
+float RGBLuminance(float3 color)
+{
+    return dot(color.rgb, lumCoeff);
+}
 
 /*------------------------------------------------------------------------------
                             [VERTEX CODE SECTION]
@@ -171,6 +166,7 @@ float3 LinearToRGBGamma(float3 color, float gamma)
 
 float4 GammaPass(float4 color, float2 texcoord) : COLOR0
 {
+    const float GammaConst = 2.233;
     color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
     color.rgb = LinearToRGBGamma(color.rgb, float(Gamma));
     color.a = RGBLuminance(color.rgb);
@@ -179,7 +175,7 @@ float4 GammaPass(float4 color, float2 texcoord) : COLOR0
 }
 
 /*------------------------------------------------------------------------------
-                          [BLOOM PASS CODE SECTION]
+                        [BLENDED BLOOM CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 float3 BlendAddLight(float3 color, float3 bloom)
@@ -232,10 +228,11 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 {
-    float4 bloom = PyramidFilter(s0, texcoord, PIXEL_SIZE * Defocus);
+    float defocus = 1.2;
+    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
-    float2 dx = float2(rcpres.x * float(BlendSpread), 0.0);
-    float2 dy = float2(0.0, rcpres.y * float(BlendSpread));
+    float2 dx = float2(invDefocus.x * float(BlendSpread), 0.0);
+    float2 dy = float2(0.0, invDefocus.y * float(BlendSpread));
 
     float2 dx2 = 2.0 * dx;
     float2 dy2 = 2.0 * dy;
@@ -278,13 +275,13 @@ float4 BloomPass(float4 color, float2 texcoord) : COLOR0
     color.a = RGBLuminance(color.rgb);
     bloom.a = RGBLuminance(bloom.rgb);
 
-	color = lerp(color, bloom, float(BloomStrength));
+    color = lerp(color, bloom, float(BloomStrength));
 
     return color;
 }
 
 /*------------------------------------------------------------------------------
-              [COLOR CORRECTION/TONE MAPPING PASS CODE SECTION]
+                [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 float3 FilmicTonemap(float3 color)
@@ -410,19 +407,19 @@ float Cubic(float x)
 
 float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
 {
-    float texelSizeX = rcpres.x * float(SharpenBias);
-    float texelSizeY = rcpres.y * float(SharpenBias);
+    float texelSizeX = pixelSize.x * float(SharpenBias);
+    float texelSizeY = pixelSize.y * float(SharpenBias);
 
     float4 nSum = (float4)0.0;
     float4 nDenom = (float4)0.0;
 
-    float a = frac(TexCoord.x * BufferSize.x);
-    float b = frac(TexCoord.y * BufferSize.y);
+    float a = frac(TexCoord.x * screenSize.x);
+    float b = frac(TexCoord.y * screenSize.y);
 
-    int nX = int(TexCoord.x * BufferSize.x);
-    int nY = int(TexCoord.y * BufferSize.y);
+    int nX = int(TexCoord.x * screenSize.x);
+    int nY = int(TexCoord.y * screenSize.y);
 
-    float2 uvCoord = float2(float(nX) / BufferSize.x, float(nY) / BufferSize.y);
+    float2 uvCoord = float2(float(nX) / screenSize.x, float(nY) / screenSize.y);
 
     for (int m = -1; m <= 2; m++)
     {
@@ -465,7 +462,7 @@ float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
 }
 
 /*------------------------------------------------------------------------------
-                       [S_CURVE CONTRAST CODE SECTION]
+                          [CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 float4 ContrastPass(float4 color, float2 texcoord) : COLOR0
@@ -488,7 +485,7 @@ float4 ContrastPass(float4 color, float2 texcoord) : COLOR0
     float3 dest = lerp(abbc, bccd, x);  //point on the bezier-curve (black)
 
     x = dest;
-    x = lerp(luma, x, CurvesContrast);
+    x = lerp(luma, x, float(Contrast));
 
     color.rgb = x + chroma;
     color.a = RGBLuminance(color.rgb);
@@ -569,3 +566,4 @@ technique t0
         ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
     }
 }
+
