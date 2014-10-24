@@ -103,6 +103,22 @@ SamplerState s0
     SRGBTexture = USE_SRGB;
 };
 
+Texture2D paletteTex
+<
+    string type = "texture";
+    string path = "palette.bmp";
+    string format = "D3DFMT_X8R8G8B8";
+>;
+SamplerState s1
+{
+    Texture = <paletteTex>;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    SRGBTexture = false;
+};
+
 struct VS_INPUT
 {
     float4 vertPos : POSITION;
@@ -516,6 +532,19 @@ float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
 /*------------------------------------------------------------------------------
                               [MAIN/COMBINE]
 ------------------------------------------------------------------------------*/
+
+float4 ColorCorrectionPS(VS_OUTPUT Input) : COLOR0
+{
+    float2 tex = Input.UVCoord;
+    float4 c0 = tex2D(s0, tex);
+	
+    c0.r = tex1D(s1, c0.r).r;
+    c0.g = tex1D(s1, c0.g).g;
+    c0.b = tex1D(s1, c0.b).b;
+    c0.a = RGBLuminance(c0.rgb);
+
+    return c0;
+}
 
 float4 postProcessing(VS_OUTPUT Input) : COLOR0
 {
