@@ -96,11 +96,11 @@ Texture2D thisframeTex;
 SamplerState s0
 {
     Texture = <thisframeTex>;
-    Filter = Anisotropic;
+    MinFilter = Linear;
+    MagFilter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
-    MaxAnisotropy = 16;
 };
 
 struct VS_INPUT
