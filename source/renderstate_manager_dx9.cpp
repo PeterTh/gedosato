@@ -560,7 +560,7 @@ namespace {
 		}
 		return false;
 	}
-	void adjustPresentInterval(D3DPRESENT_PARAMETERS* pPresentationParameters) {
+	void adjustPresentParameters(D3DPRESENT_PARAMETERS* pPresentationParameters) {
 		switch(Settings::get().getPresentInterval()) {
 		case 0: pPresentationParameters->PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE; break;
 		case 1: pPresentationParameters->PresentationInterval = D3DPRESENT_INTERVAL_ONE; break;
@@ -584,6 +584,10 @@ namespace {
 			pPresentationParameters->Windowed = TRUE;
 			pPresentationParameters->FullScreen_RefreshRateInHz = 0;
 			pPresentationParameters->hDeviceWindow = ::GetActiveWindow();
+		}
+		if(Settings::get().getForceFullscreenMode()) {
+			pPresentationParameters->Windowed = FALSE;
+			pPresentationParameters->FullScreen_RefreshRateInHz = Settings::get().getPresentHz();
 		}
 	}
 	void initPresentationParams(D3DPRESENT_PARAMETERS* pPresentationParameters, D3DPRESENT_PARAMETERS* copy) {
@@ -644,7 +648,7 @@ HRESULT RSManagerDX9::redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDE
 
 	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
 	pPresentationParameters = &params;
-	adjustPresentInterval(pPresentationParameters);
+	adjustPresentParameters(pPresentationParameters);
 	bool fs = forceBorderlessFS(pPresentationParameters);
 
 	if(isDownsamplingRequest(pPresentationParameters)) {
@@ -681,7 +685,7 @@ HRESULT RSManagerDX9::redirectCreateDeviceEx(IDirect3D9Ex* d3d9ex, UINT Adapter,
 
 	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
 	pPresentationParameters = &params;
-	adjustPresentInterval(pPresentationParameters);
+	adjustPresentParameters(pPresentationParameters);
 	bool fs = forceBorderlessFS(pPresentationParameters);
 
 	if(isDownsamplingRequest(pPresentationParameters, pFullscreenDisplayMode)) {
@@ -719,7 +723,7 @@ HRESULT RSManagerDX9::redirectReset(D3DPRESENT_PARAMETERS * pPresentationParamet
 
 	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
 	pPresentationParameters = &params;
-	adjustPresentInterval(pPresentationParameters);
+	adjustPresentParameters(pPresentationParameters);
 	bool fs = forceBorderlessFS(pPresentationParameters);
 
 	releaseResources();
@@ -758,7 +762,7 @@ HRESULT RSManagerDX9::redirectResetEx(D3DPRESENT_PARAMETERS* pPresentationParame
 
 	D3DPRESENT_PARAMETERS params = *pPresentationParameters;
 	pPresentationParameters = &params;
-	adjustPresentInterval(pPresentationParameters);
+	adjustPresentParameters(pPresentationParameters);
 	bool fs = forceBorderlessFS(pPresentationParameters);
 
 	releaseResources();

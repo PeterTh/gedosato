@@ -51,6 +51,7 @@ SETTING(int, LogLevel, "logLevel", 0)
 SETTING(bool, ForceBorderlessFullscreen, "forceBorderlessFullscreen", false)
 SETTING(bool, HideMouseCursor, "hideMouseCursor", false)
 SETTING(bool, ForceWindowedMode, "forceWindowedMode", false)
+SETTING(bool, ForceFullscreenMode, "forceFullscreenMode", false)
 
 // Injection options
 SETTING(string, InjectPSHash, "injectPSHash", "")

@@ -4,6 +4,7 @@ General:
 - Adjust reported monitor native resolution
 - Limit window size for game-side borderless fullscreen when downsampling
 - Fix mouse cursor in windowed downsampling modes
+- Added "forceFullscreenMode" option
 
 22-10-2014 -- beta 14 - "Barrage am Ring"
 =========================================
