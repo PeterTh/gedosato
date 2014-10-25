@@ -24,13 +24,13 @@
 //-#[LIGHTING & COLOUR]         [1=ON|0=OFF]
 #define BLENDED_BLOOM                1      //#High Quality Bloom, using blend techniques. Blooms naturally, per environment.
 #define SCENE_TONEMAPPING            1      //#Scene Tonemapping & RGB Colour Correction. Corrects colour, and tone maps the scene.
-#define GAMMA_CORRECTION             0      //#RGB Post Gamma Correction Curve. sRGB->Linear->sRGB correction curve. 
-#define TEXTURE_SHARPEN              0      //#HQ Luma-Based Texture Sharpen. Looks similar to a negative LOD Bias. Enhances texture fidelity.
+#define GAMMA_CORRECTION             1      //#RGB Post Gamma Correction Curve. sRGB->Linear->sRGB correction curve. 
+#define TEXTURE_SHARPEN              0      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative LOD bias. Enhances texture fidelity.
 #define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
-#define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Naturally adjusts contrast using S-curves. (NTS: Not happy with current algo)
+#define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
 
 /*------------------------------------------------------------------------------
-                         [SHADER FX CONFIG OPTIONS]
+                          [EFFECT CONFIG OPTIONS]
 ------------------------------------------------------------------------------*/
 
 //##[BLOOM OPTIONS]##
@@ -38,17 +38,17 @@
 #define BloomStrength 0.200                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BlendSpread 4.000                   //[1.000 to 8.000] Width of the bloom 'glow' spread. 0.000 = off. Scales with BloomStrength. (Default: 4.000).
-#define BloomReds 1.00                      //[1.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
-#define BloomGreens 1.00                    //[1.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
-#define BloomBlues 1.00                     //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
+#define BloomReds 1.00                      //[0.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
+#define BloomGreens 1.00                    //[0.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
+#define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 1                       //[1 or 2] Type of tone mapping operator. 1 is natural, 2 is cinematic. You may want to readjust BlackLevels to compensate for diff types.
-#define ToneAmount 2.20                     //[1.00 to 4.00] Gamma curve (tone correction) lower: darker tones, higher: lighter tones. (Default: ~ 2.20)
-#define BlackLevels 0.25                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.25).
-#define Exposure 1.00                       //[0.10 to 2.00] White Correction (brightness) Higher values for more Exposure, lower for less.
-#define Luminance 1.02                      //[0.10 to 2.00] Luminance Average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
-#define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint Avg (lum correction) Use to alter the whitepoint average. Raising can give a cinema look.
+#define ToneAmount 0.25                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.25)
+#define BlackLevels 0.30                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.30).
+#define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
+#define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
+#define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint avg (lum correction) Use to alter the scene whitepoint average. Raising can give a cinema look.
 
 //##[CORRECTION OPTIONS]##
 #define CorrectionPalette 1                 //[0|1|2|3] The colour correction palette type. 1: RGB, 2: YUV, 3: XYZ, 0: off. 1 is default. This requires tone mapping enabled.
@@ -56,26 +56,26 @@
 #define GreenCurve 1.00                     //[1.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
 #define BlueCurve 1.00                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 #define FilmicShift 1                       //[0 or 1] Filmic cross processing. Shifts colour balance to alter the mood of the scene. For a more filmic look.
-#define RedShift 0.66                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicShift.
-#define GreenShift 0.44                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicShift.
-#define BlueShift 0.55                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicShift.
+#define RedShift 0.60                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicShift.
+#define GreenShift 0.40                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicShift.
+#define BlueShift 0.50                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicShift.
 #define ShiftRatio 0.15                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicShift.
 
 //##[SHARPEN OPTIONS]##
 #define SharpeningType 2                    //[1 or 2] The type of sharpening to use. Type 1 is a High Pass Gaussian. Type 2 is a higher quality(slightly slower) Bicubic Sampling type.
-#define SharpenStrength 0.50                //[0.10 to 2.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
+#define SharpenStrength 0.60                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
 #define SharpenClamp 0.012                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
-#define SharpenBias 1.25                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
+#define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
 
 //##[GAMMA OPTIONS]##
 #define Gamma 2.20                          //[1.5 to 4.0] Gamma correction. Lower Values = more gamma toning(darker), higher Values = brighter (2.2 correction is generally recommended)
 
 //##[VIBRANCE OPTIONS]##
-#define Vibrance 0.00                       //[-1.00 to 1.00] Adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
+#define Vibrance 0.10                       //[-1.00 to 1.00] Adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
 
 //##[CONTRAST OPTIONS]##
-#define CurvesContrast 0.35                 //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
+#define Contrast 0.35                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
 
 //[END OF USER OPTIONS]##
 
@@ -87,22 +87,71 @@
                              [GLOBALS/FUNCTIONS]
 ------------------------------------------------------------------------------*/
 
+static float2 pixelSize = PIXEL_SIZE;
+static float2 screenSize = SCREEN_SIZE;
+static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
+static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+
 Texture2D thisframeTex;
 SamplerState s0
 {
     Texture = <thisframeTex>;
-    Filter = Linear;
+    MinFilter = Linear;
+    MagFilter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
 };
 
-cbuffer ConstBuffer
+Texture2D paletteTex
+<
+    string path = "palette.bmp";
+    string format = "D3DFMT_X8R8G8B8";
+>;
+SamplerState s1
 {
-    static const float GammaConst = 2.233333333;
-    static const float2 Defocus = float2(1.2, 1.0);
-    static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+    Texture = <paletteTex>;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    SRGBTexture = false;
 };
+
+struct VS_INPUT
+{
+    float4 vertPos : POSITION;
+    float2 UVCoord : TEXCOORD0;
+};
+
+struct VS_OUTPUT
+{
+    float4 vertPos : SV_POSITION;
+    float2 UVCoord : TEXCOORD0;
+};
+
+float RGBLuminance(float3 color)
+{
+    return dot(color.rgb, lumCoeff);
+}
+
+/*------------------------------------------------------------------------------
+                            [VERTEX CODE SECTION]
+------------------------------------------------------------------------------*/
+
+VS_OUTPUT FrameVS(VS_INPUT Input)
+{
+    VS_OUTPUT Output;
+
+    Output.vertPos = Input.vertPos;
+    Output.UVCoord = Input.UVCoord;
+
+    return Output;
+}
+
+/*------------------------------------------------------------------------------
+                       [GAMMA CORRECTION CODE SECTION]
+------------------------------------------------------------------------------*/
 
 float3 RGBGammaToLinear(float3 color, float gamma)
 {
@@ -130,46 +179,9 @@ float3 LinearToRGBGamma(float3 color, float gamma)
     return color;
 }
 
-float RGBLuminance(float3 color)
-{
-    return dot(color.rgb, lumCoeff);
-}
-
-struct VS_INPUT
-{
-    float4 Position : POSITION;
-    float2 TexCoord : TEXCOORD0;
-};
-
-struct VS_OUTPUT
-{
-    float4 Position : SV_POSITION;
-    float2 TexCoord : TEXCOORD0;
-};
-
-static float2 BufferSize = float2(3840.0, 2160.0);
-static float2 rcpres = float2(1.0 / BufferSize.x, 1.0 / BufferSize.y);
-
-/*------------------------------------------------------------------------------
-                            [VERTEX CODE SECTION]
-------------------------------------------------------------------------------*/
-
-VS_OUTPUT FrameVS(VS_INPUT Input)
-{
-    VS_OUTPUT Output;
-
-    Output.Position = Input.Position;
-    Output.TexCoord = Input.TexCoord;
-
-    return Output;
-}
-
-/*------------------------------------------------------------------------------
-                       [GAMMA CORRECTION CODE SECTION]
-------------------------------------------------------------------------------*/
-
 float4 GammaPass(float4 color, float2 texcoord) : COLOR0
 {
+    const float GammaConst = 2.233;
     color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
     color.rgb = LinearToRGBGamma(color.rgb, float(Gamma));
     color.a = RGBLuminance(color.rgb);
@@ -178,83 +190,8 @@ float4 GammaPass(float4 color, float2 texcoord) : COLOR0
 }
 
 /*------------------------------------------------------------------------------
-                       [TEXTURE SHARPEN CODE SECTION]
+                        [BLENDED BLOOM CODE SECTION]
 ------------------------------------------------------------------------------*/
-
-float Cubic(float x)
-{
-    float x2 = x * x;
-    float x3 = x2 * x;
-
-    float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
-    float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
-    float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
-    float cw = x3;
-
-    return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
-}
-
-float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
-{
-    float texelSizeX = rcpres.x * float(SharpenBias);
-    float texelSizeY = rcpres.y * float(SharpenBias);
-
-    float4 nSum = (float4)0.0;
-    float4 nDenom = (float4)0.0;
-
-    float a = frac(TexCoord.x * BufferSize.x);
-    float b = frac(TexCoord.y * BufferSize.y);
-
-    int nX = int(TexCoord.x * BufferSize.x);
-    int nY = int(TexCoord.y * BufferSize.y);
-
-    float2 uvCoord = float2(float(nX) / BufferSize.x, float(nY) / BufferSize.y);
-
-    for (int m = -1; m <= 2; m++)
-    {
-        for (int n = -1; n <= 2; n++)
-        {
-            float4 Samples = tex2D(texSample, uvCoord +
-            float2(texelSizeX * float(m), texelSizeY * float(n)));
-
-            float vc1 = Cubic(float(m) - a);
-            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
-
-            float vc2 = Cubic(-(float(n) - b));
-            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
-
-            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
-            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
-        }
-    }
-    return nSum / nDenom;
-}
-
-float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
-{
-    float3 calcSharpen = lumCoeff * float(SharpenStrength);
-
-    float4 blurredColor = SampleBiCubic(s0, texcoord);
-    float3 sharpenedColor = (color.rgb - blurredColor.rgb);
-
-    float sharpenLuma = dot(sharpenedColor, calcSharpen);
-    sharpenLuma = clamp(sharpenLuma, -float(SharpenClamp), float(SharpenClamp));
-
-    color.rgb = color.rgb + sharpenLuma;
-    color.a = RGBLuminance(color.rgb);
-
-    #if (DebugSharpen == 1)
-        color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
-    #endif
-
-    return saturate(color);
-}
-
-/*------------------------------------------------------------------------------
-                          [BLOOM PASS CODE SECTION]
-------------------------------------------------------------------------------*/
-
-#define InvDefocusSize float2(1.0/3840.0, 1.0/2160.0)
 
 float3 BlendAddLight(float3 color, float3 bloom)
 {
@@ -286,8 +223,9 @@ float4 PyramidFilter(sampler2D tex, float2 texcoord, float2 width)
     color += tex2D(tex, texcoord + float2(-0.5,  0.5) * width);
     color += tex2D(tex, texcoord + float2(0.5, -0.5) * width);
     color += tex2D(tex, texcoord + float2(-0.5, -0.5) * width);
+    color *= 0.25;
 
-    return 0.25 * color;
+    return color;
 }
 
 float3 BloomCorrection(float3 color)
@@ -305,10 +243,11 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 {
-    float4 bloom = PyramidFilter(s0, texcoord, PIXEL_SIZE * Defocus);
+    float defocus = 1.2;
+    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
-    float2 dx = float2(InvDefocusSize.x * float(BlendSpread), 0.0);
-    float2 dy = float2(0.0, InvDefocusSize.y * float(BlendSpread));
+    float2 dx = float2(invDefocus.x * float(BlendSpread), 0.0);
+    float2 dy = float2(0.0, invDefocus.y * float(BlendSpread));
 
     float2 dx2 = 2.0 * dx;
     float2 dy2 = 2.0 * dy;
@@ -343,7 +282,7 @@ float4 BloomPass(float4 color, float2 texcoord) : COLOR0
     bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - dy2);
     bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx - dy2);
     bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + dx2 - dy2);
-    bloomBlend = lerp(color, bloomBlend, BlendStrength);
+    bloomBlend = lerp(color, bloomBlend, float(BlendStrength));
 
     bloom.rgb = BloomType(bloom.rgb, bloomBlend.rgb);
     bloom.rgb = BloomCorrection(bloom.rgb);
@@ -351,13 +290,13 @@ float4 BloomPass(float4 color, float2 texcoord) : COLOR0
     color.a = RGBLuminance(color.rgb);
     bloom.a = RGBLuminance(bloom.rgb);
 
-    color = lerp(color, bloom, BloomStrength);
+    color = lerp(color, bloom, float(BloomStrength));
 
     return color;
 }
 
 /*------------------------------------------------------------------------------
-              [COLOR CORRECTION/TONE MAPPING PASS CODE SECTION]
+                [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
 float3 FilmicTonemap(float3 color)
@@ -367,7 +306,7 @@ float3 FilmicTonemap(float3 color)
     float A = 0.10;
     float B = float(BlackLevels);
     float C = 0.10;
-    float D = 0.20;
+    float D = float(ToneAmount);
     float E = 0.02;
     float F = 0.30;
     float W = float(WhitePoint);
@@ -459,18 +398,89 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
                                0.0556434,-0.2040259, 1.0572252 };
 
     color.rgb = mul(XYZ2RGB, XYZ);
-
-    color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-    color.rgb = LinearToRGBGamma(color.rgb, float(ToneAmount));
     color.a = RGBLuminance(color.rgb);
 
     return saturate(color);
 }
+
 /*------------------------------------------------------------------------------
-                       [S_CURVE CONTRAST CODE SECTION]
+                       [TEXTURE SHARPEN CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float4 ContrastCurvePass(float4 color, float2 texcoord) : COLOR0
+float Cubic(float x)
+{
+    float x2 = x * x;
+    float x3 = x2 * x;
+
+    float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
+    float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
+    float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
+    float cw = x3;
+
+    return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
+}
+
+float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
+{
+    float texelSizeX = pixelSize.x * float(SharpenBias);
+    float texelSizeY = pixelSize.y * float(SharpenBias);
+
+    float4 nSum = (float4)0.0;
+    float4 nDenom = (float4)0.0;
+
+    float a = frac(TexCoord.x * screenSize.x);
+    float b = frac(TexCoord.y * screenSize.y);
+
+    int nX = int(TexCoord.x * screenSize.x);
+    int nY = int(TexCoord.y * screenSize.y);
+
+    float2 uvCoord = float2(float(nX) / screenSize.x, float(nY) / screenSize.y);
+
+    for (int m = -1; m <= 2; m++)
+    {
+        for (int n = -1; n <= 2; n++)
+        {
+            float4 Samples = tex2D(texSample, uvCoord +
+            float2(texelSizeX * float(m), texelSizeY * float(n)));
+
+            float vc1 = Cubic(float(m) - a);
+            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
+
+            float vc2 = Cubic(-(float(n) - b));
+            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
+
+            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
+            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
+        }
+    }
+    return nSum / nDenom;
+}
+
+float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
+{
+    float3 calcSharpen = lumCoeff * float(SharpenStrength);
+
+    float4 blurredColor = SampleBiCubic(s0, texcoord);
+    float3 sharpenedColor = (color.rgb - blurredColor.rgb);
+
+    float sharpenLuma = dot(sharpenedColor, calcSharpen);
+    sharpenLuma = clamp(sharpenLuma, -float(SharpenClamp), float(SharpenClamp));
+
+    color.rgb = color.rgb + sharpenLuma;
+    color.a = RGBLuminance(color.rgb);
+
+    #if (DebugSharpen == 1)
+        color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
+    #endif
+
+    return saturate(color);
+}
+
+/*------------------------------------------------------------------------------
+                          [CONTRAST CODE SECTION]
+------------------------------------------------------------------------------*/
+
+float4 ContrastPass(float4 color, float2 texcoord) : COLOR0
 {
     float3 luma = (float3)RGBLuminance(color.rgb);
     float3 chroma = color.rgb - luma;
@@ -490,7 +500,7 @@ float4 ContrastCurvePass(float4 color, float2 texcoord) : COLOR0
     float3 dest = lerp(abbc, bccd, x);  //point on the bezier-curve (black)
 
     x = dest;
-    x = lerp(luma, x, CurvesContrast);
+    x = lerp(luma, x, float(Contrast));
 
     color.rgb = x + chroma;
     color.a = RGBLuminance(color.rgb);
@@ -522,9 +532,22 @@ float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
                               [MAIN/COMBINE]
 ------------------------------------------------------------------------------*/
 
+float4 ColorCorrectionPS(VS_OUTPUT Input) : COLOR0
+{
+    float2 tex = Input.UVCoord;
+    float4 c0 = tex2D(s0, tex);
+	
+    c0.r = tex1D(s1, c0.r).r;
+    c0.g = tex1D(s1, c0.g).g;
+    c0.b = tex1D(s1, c0.b).b;
+    c0.a = RGBLuminance(c0.rgb);
+
+    return c0;
+}
+
 float4 postProcessing(VS_OUTPUT Input) : COLOR0
 {
-    float2 tex = Input.TexCoord;
+    float2 tex = Input.UVCoord;
     float4 c0 = tex2D(s0, tex);
 
     #if (GAMMA_CORRECTION == 1)
@@ -548,7 +571,7 @@ float4 postProcessing(VS_OUTPUT Input) : COLOR0
     #endif
 
     #if (S_CURVE_CONTRAST == 1)
-        c0 = ContrastCurvePass(c0, tex);
+        c0 = ContrastPass(c0, tex);
     #endif
 
     return c0;
@@ -571,3 +594,4 @@ technique t0
         ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
     }
 }
+
