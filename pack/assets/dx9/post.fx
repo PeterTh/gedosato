@@ -1559,7 +1559,7 @@ float4 SinCityPass( float4 colorInput )
   float2 res = float2(320.0/1.0, 160.0/1.0);
 #else
   // Optimize for resize.
-  float2 res = SCREEN_SIZE / 3.0; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
+  float2 res = SCREEN_SIZE / 6.0; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
 #endif
 
 // Hardness of scanline.
