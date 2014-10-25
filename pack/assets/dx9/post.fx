@@ -20,6 +20,8 @@
 #define USE_SPLITSCREEN       0 //[0 or 1] Splitscreen : Enables the before-and-after splitscreen comparison mode.
 #define USE_SINCITY           0 //[0 or 1] SinCity : Make the game look like the movie Sin City. Use with Tonemap gamma, default value of 0.6.
 #define USE_LOTTES_CRT        0 //[0 or 1] Timothy Lottes' CRT (http://tinyurl.com/od5oyxn http://tinyurl.com/qboke3o)
+#define USE_CARTOON           0 //[0 or 1] Cartoon : "Toon"s the image(Interferes with SMAA, CRT, Bloom, HDR and Lumasharpen).
+#define USE_MONOCHROME        0 //[0 or 1] Monochrome : Monochrome makes the colors disappear.
 
 // Bloom settings
     #define BloomThreshold 20.25 // [0.00 to 50.00] Threshold for what is a bright light (that causes bloom) and what isn't.
@@ -135,6 +137,12 @@
 
 // SinCity settings 
     #define sincity_strength  1.00 //[0.00 to 1.00] This setting is a placeholder and does nothing at the moment.
+// Cartoon settings                          
+    #define CartoonPower      8.0  //[0.1 to 10.0] Amount of effect you want.
+    #define CartoonEdgeSlope  0.9  //[0.1 to 8.0]  Raise this to filter out fainter edges. You might need to increase the power to compensate. Whole numbers are faster.
+    
+// Monochrome settings                    
+    #define Monochrome_conversion_values  float3(0.18,0.41,0.41)  //[-1.00 to 1.00] Percentage of RGB to include (should sum up to 1.00)
     
 // -------------------- Interface -----------------------------------------------
 
@@ -1551,7 +1559,7 @@ float4 SinCityPass( float4 colorInput )
   float2 res = float2(320.0/1.0, 160.0/1.0);
 #else
   // Optimize for resize.
-  float2 res = SCREEN_SIZE / 3.0; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
+  float2 res = SCREEN_SIZE / 6.0; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
 #endif
 
 // Hardness of scanline.
@@ -1792,6 +1800,39 @@ float4 CRTLottesPass( float4 colorInput, float2 tex )
   return outColor;
 }
 
+//--------------------- Cartoon -------------------------------------------------
+
+float4 CartoonPass( float4 colorInput, float2 Tex )
+{
+  float3 CoefLuma2 = float3(0.2126, 0.7152, 0.0722);  //Values to calculate luma with
+  
+    float diff1 = dot(CoefLuma2,tex2D(s0, Tex + PIXEL_SIZE).rgb);
+//  float diff1 = dot(CoefLuma2,myTex2D(s0, Tex + pixel).rgb);
+  diff1 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex - PIXEL_SIZE).rgb , diff1));
+  
+  float diff2 = dot(CoefLuma2,tex2D(s0, Tex +float2(PIXEL_SIZE.x,-PIXEL_SIZE.y)).rgb);
+  diff2 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex +float2(-PIXEL_SIZE.x,PIXEL_SIZE.y)).rgb , diff2));
+    
+  float edge = dot(float2(diff1,diff2),float2(diff1,diff2));
+  
+  colorInput.rgb =  pow(edge,CartoonEdgeSlope) * -CartoonPower + colorInput.rgb;
+    
+  return saturate(colorInput);
+}
+
+//------------------------ Monochrome -----------------------------------
+
+//  by Christian Cann Schuldt Jensen ~ CeeJay.dk
+//      - Monochrome removes color and makes everything black and white.
+
+float4 MonochromePass( float4 colorInput )
+{
+    colorInput.rgb = dot(Monochrome_conversion_values, colorInput.rgb);
+    
+    return saturate(colorInput);
+}
+
+
 // -------------------- Main -----------------------------------------------
 
 float4 postProcessing(VSOUT IN) : COLOR0
@@ -1861,6 +1902,14 @@ float4 postProcessing(VSOUT IN) : COLOR0
 
 #if (USE_SINCITY == 1)
     c0 = SinCityPass(c0);
+#endif
+
+#if (USE_CARTOON == 1)
+    c0 = CartoonPass(c0, tex);
+#endif
+
+#if (USE_MONOCHROME == 1)
+    c0 = MonochromePass(c0);
 #endif
 
     c0.w = 1.0;
