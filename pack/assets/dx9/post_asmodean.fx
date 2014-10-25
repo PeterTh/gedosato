@@ -28,6 +28,7 @@
 #define TEXTURE_SHARPEN              0      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative LOD bias. Enhances texture fidelity.
 #define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
+#define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated-style games.
 
 /*------------------------------------------------------------------------------
                           [EFFECT CONFIG OPTIONS]
@@ -67,6 +68,15 @@
 #define SharpenClamp 0.012                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
 #define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
+
+//##[CSHADE OPTIONS]##
+#define EdgeStrength 1.50                   //[0.00 to 4.00] Overall strength of the cel edge outline effect.  0.00 = no outlines.
+#define EdgeFilter 0.60                     //[0.10 to 2.00] Filters out fainter cel edges. Use it for balancing the cel edge density. EG: for faces, foliage, etc. Raise to filter out more edges.
+#define EdgeThickness 1.25                  //[0.50 to 4.00] Thickness of the cel edges. Increase for thicker outlining.  Note: when downsampling, you may need to raise this further to keep the edges as noticeable.
+#define PaletteType 2                       //[1|2|3] The colour palette to use. 1 is Game Original, 2 is Animated Shading, 3 is Water Painting (Default is 2: Animated Shading). #!Options below don't affect palette 1.
+#define UseYuvLuma 0                        //[0 or 1] Uses YUV luma calculations, or base colour luma calculations. Yuv luma can produce a better shaded look, but if it looks odd, disable it for that game.
+#define LumaConversion 1                    //[0 or 1] Uses BT.601, or BT.709, RGB<-YUV->RGB conversions. Some games prefer 601, but most prefer 709. BT.709 is typically recommended. 
+#define ColorRounding 1                     //[0 or 1] Uses rounding methods on colors. This can emphasise shaded toon colors. Looks good in some games, and odd in others. Try it in-game and see.
 
 //##[GAMMA OPTIONS]##
 #define Gamma 2.20                          //[1.5 to 4.0] Gamma correction. Lower Values = more gamma toning(darker), higher Values = brighter (2.2 correction is generally recommended)
@@ -477,6 +487,132 @@ float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
 }
 
 /*------------------------------------------------------------------------------
+                        [CEL SHADING CODE SECTION]
+------------------------------------------------------------------------------*/
+
+static const int NUM = 9;
+static const float3 thresholds = float3(5.0, 8.0, 6.0);
+
+#if (LumaConversion == 1)
+#define celLumaCoef float3(0.2126729, 0.7151522, 0.0721750)
+#else
+#define celLumaCoef float3(0.299, 0.587, 0.114)
+#endif
+
+float3 GetYUV(float3 rgb)
+{
+#if (LumaConversion == 1)
+    float3x3 RGB2YUV = { 
+             0.2126, 0.7152, 0.0722,
+            -0.09991, -0.33609, 0.436,
+             0.615, -0.55861, -0.05639 };
+
+#else
+    float3x3 RGB2YUV = {
+             0.299, 0.587, 0.114,
+            -0.14713, -0.28886f, 0.436,
+             0.615, -0.51499, -0.10001 };
+#endif
+
+    return mul(RGB2YUV, rgb);
+}
+
+float3 GetRGB(float3 yuv)
+{
+#if (LumaConversion == 1)
+    float3x3 YUV2RGB = {
+             1.000, 0.000, 1.28033,
+             1.000, -0.21482, -0.38059,
+             1.000, 2.12798, 0.000 };
+
+#else
+    float3x3 YUV2RGB = {
+             1.000, 0.000, 1.13983,
+             1.000, -0.39465, -0.58060,
+             1.000, 2.03211, 0.000 };
+#endif
+
+    return mul(YUV2RGB, yuv);
+}
+
+float GetCelLuminance(float3 rgb)
+{
+    return dot(rgb, celLumaCoef);
+}
+
+float4 CelPass(float4 color, float2 uv0)
+{
+    float3 yuv;
+    float3 sum = color.rgb;
+    float2 pixel = pixelSize * EdgeThickness;
+    const float2 RoundingOffset = float2(0.20, 0.40);
+
+    float2 c[NUM] = {
+    float2(-0.0078125, -0.0078125),
+    float2(0.00, -0.0078125),
+    float2(0.0078125, -0.0078125),
+    float2(-0.0078125, 0.00),
+    float2(0.00, 0.00),
+    float2(0.0078125, 0.00),
+    float2(-0.0078125, 0.0078125),
+    float2(0.00, 0.0078125),
+    float2(0.0078125, 0.0078125) };
+
+    float3 col[NUM];
+    float lum[NUM];
+
+    for (int i = 0; i < NUM; i++)
+    {
+        col[i] = tex2D(s0, uv0 + c[i] * RoundingOffset).rgb;
+
+        #if (ColorRounding == 1)
+        col[i].r = saturate(round(col[i].r * thresholds.r) / thresholds.r);
+        col[i].g = saturate(round(col[i].g * thresholds.g) / thresholds.g);
+        col[i].b = saturate(round(col[i].b * thresholds.b) / thresholds.b);
+        #endif
+
+        lum[i] = GetCelLuminance(col[i].xyz);
+
+        yuv = GetYUV(col[i]);
+
+        if (UseYuvLuma == 0)
+        {
+            yuv.r = saturate(round(yuv.r * lum[i]) / thresholds.r + lum[i]);
+        }
+        else
+        {
+            yuv.r = saturate(round(yuv.r * thresholds.r) / thresholds.r + lum[i] / (255.0 / 5.0));
+        }
+
+        yuv = GetRGB(yuv);
+
+        sum += yuv;
+    }
+
+    float3 shadedColor = (sum / NUM);
+
+    float edgeX = dot(tex2D(s0, uv0 + pixel).rgb, celLumaCoef);
+    edgeX = dot(float4(tex2D(s0, uv0 - pixel).rgb, edgeX), float4(celLumaCoef, -1.0));
+
+    float edgeY = dot(tex2D(s0, uv0 + float2(pixel.x, -pixel.y)).rgb, celLumaCoef);
+    edgeY = dot(float4(tex2D(s0, uv0 + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(celLumaCoef, -1.0));
+
+    float edge = dot(float2(edgeX, edgeY), float2(edgeX, edgeY));
+
+    #if (PaletteType == 1)
+        color.rgb = lerp(color.rgb, color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, EdgeStrength);
+    #elif (PaletteType == 2)
+        color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.3);
+    #elif (PaletteType == 3)
+        color.rgb = lerp(shadedColor + edge * -EdgeStrength, pow(edge, EdgeFilter) * -EdgeStrength + color.rgb, 0.5);
+    #endif
+
+    color.a = RGBLuminance(color.rgb);
+
+    return saturate(color);
+}
+
+/*------------------------------------------------------------------------------
                           [CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
 
@@ -536,7 +672,7 @@ float4 ColorCorrectionPS(VS_OUTPUT Input) : COLOR0
 {
     float2 tex = Input.UVCoord;
     float4 c0 = tex2D(s0, tex);
-	
+
     c0.r = tex1D(s1, c0.r).r;
     c0.g = tex1D(s1, c0.g).g;
     c0.b = tex1D(s1, c0.b).b;
@@ -552,6 +688,10 @@ float4 postProcessing(VS_OUTPUT Input) : COLOR0
 
     #if (GAMMA_CORRECTION == 1)
         c0 = GammaPass(c0, tex);
+    #endif
+
+     #if (CEL_SHADING == 1)
+        c0 = CelPass(c0, tex);
     #endif
     
     #if (TEXTURE_SHARPEN == 1)
