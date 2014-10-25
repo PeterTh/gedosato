@@ -339,14 +339,25 @@ GENERATE_INTERCEPT_HEADER(GetDeviceCaps, int, WINAPI, _In_opt_ HDC hdc, _In_ int
 	return ret;
 }
 
+namespace {
+	void adjustMonitorInfo(LPMONITORINFO lpmi) {
+		if(RSManager::currentlyDownsampling()) {
+			lpmi->rcMonitor.right = lpmi->rcMonitor.left + Settings::get().getRenderWidth();
+			lpmi->rcMonitor.bottom = lpmi->rcMonitor.top + Settings::get().getRenderHeight();
+		}
+	}
+}
+
 GENERATE_INTERCEPT_HEADER(GetMonitorInfoA, BOOL, WINAPI, _In_ HMONITOR hMonitor, _Inout_ LPMONITORINFO lpmi) {
 	SDLOG(1, "DetouredGetMonitorInfoA %p\n", hMonitor);
 	BOOL ret = TrueGetMonitorInfoA(hMonitor, lpmi);
+	adjustMonitorInfo(lpmi);
 	return ret;	
 }
 GENERATE_INTERCEPT_HEADER(GetMonitorInfoW, BOOL, WINAPI, _In_ HMONITOR hMonitor, _Inout_ LPMONITORINFO lpmi) {
 	SDLOG(1, "DetouredGetMonitorInfoW %p\n", hMonitor);
 	BOOL ret = TrueGetMonitorInfoW(hMonitor, lpmi);
+	adjustMonitorInfo(lpmi);
 	return ret;
 }
 
@@ -384,6 +395,19 @@ GENERATE_INTERCEPT_HEADER(SetCursor, HCURSOR, WINAPI, _In_opt_ HCURSOR hCursor) 
 GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
 	SDLOG(2, "DetouredShowCursor %s\n", bShow ? "true" : "false");
 	return TrueShowCursor(Settings::get().getHideMouseCursor() ? false : bShow);
+}
+
+GENERATE_INTERCEPT_HEADER(ClipCursor, BOOL, WINAPI, __in_opt CONST RECT *lpRect) {
+	SDLOG(2, "ClipCursor %s\n", RectToString(lpRect));
+	return TrueClipCursor(lpRect);
+}
+
+GENERATE_INTERCEPT_HEADER(WindowFromPoint, HWND, WINAPI, _In_ POINT Point) {
+	if(RSManager::currentlyDownsampling() && Settings::get().getModifyGetCursorPos()) {
+		Point.x = Point.x * Settings::get().getPresentWidth() / Settings::get().getRenderWidth();
+		Point.y = Point.y * Settings::get().getPresentHeight() / Settings::get().getRenderHeight();
+	}
+	return TrueWindowFromPoint(Point);
 }
 
 // Messages /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,7 +458,8 @@ namespace {
 			//}
 		}
 		SDLOG(2, " -> calling original: %d\n", prevWndProcs[hwnd]);
-		return CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, lParam);
+		LRESULT res = CallWindowProc(prevWndProcs[hwnd], hwnd, uMsg, wParam, lParam);
+		return res;
 	}
 }
 
@@ -507,7 +532,20 @@ GENERATE_INTERCEPT_HEADER(AdjustWindowRectEx, BOOL, WINAPI, _Inout_ LPRECT lpRec
 	return TrueAdjustWindowRectEx(lpRect, dwStyle, bMenu, dwExStyle);
 }
 GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags) {
+	if(cx > static_cast<int>(Settings::get().getPresentWidth())) cx = Settings::get().getPresentWidth();
+	if(cy > static_cast<int>(Settings::get().getPresentHeight())) cy = Settings::get().getPresentHeight();
 	return TrueSetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
+}
+
+GENERATE_INTERCEPT_HEADER(CreateWindowExA, HWND, WINAPI,
+		_In_ DWORD dwExStyle, _In_opt_ LPCTSTR lpClassName, _In_opt_ LPCTSTR lpWindowName, _In_ DWORD dwStyle,
+		_In_ int x, _In_ int y, _In_ int nWidth, _In_ int nHeight, _In_opt_ HWND hWndParent, _In_opt_ HMENU hMenu, _In_opt_ HINSTANCE hInstance, _In_opt_ LPVOID lpParam) {
+	return TrueCreateWindowExA(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
+}
+GENERATE_INTERCEPT_HEADER(CreateWindowExW, HWND, WINAPI,
+	_In_ DWORD dwExStyle, _In_opt_ LPCWSTR lpClassName, _In_opt_ LPCWSTR lpWindowName, _In_ DWORD dwStyle,
+	_In_ int x, _In_ int y, _In_ int nWidth, _In_ int nHeight, _In_opt_ HWND hWndParent, _In_opt_ HMENU hMenu, _In_opt_ HINSTANCE hInstance, _In_opt_ LPVOID lpParam) {
+	return TrueCreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 }
 
 // DXGI /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
