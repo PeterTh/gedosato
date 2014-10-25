@@ -19,6 +19,9 @@
 #define USE_BORDER            0 //[0 or 1] Border : Makes the screenedge black as a workaround for the bright edge that forcing some AA modes sometimes causes.
 #define USE_SPLITSCREEN       0 //[0 or 1] Splitscreen : Enables the before-and-after splitscreen comparison mode.
 #define USE_SINCITY           0 //[0 or 1] SinCity : Make the game look like the movie Sin City. Use with Tonemap gamma, default value of 0.6.
+#define USE_LOTTES_CRT        0 //[0 or 1] Timothy Lottes' CRT (http://tinyurl.com/od5oyxn http://tinyurl.com/qboke3o)
+#define USE_CARTOON           0 //[0 or 1] Cartoon : "Toon"s the image(Interferes with SMAA, CRT, Bloom, HDR and Lumasharpen).
+#define USE_MONOCHROME        0 //[0 or 1] Monochrome : Monochrome makes the colors disappear.
 
 // Bloom settings
     #define BloomThreshold 20.25 // [0.00 to 50.00] Threshold for what is a bright light (that causes bloom) and what isn't.
@@ -134,6 +137,12 @@
 
 // SinCity settings 
     #define sincity_strength  1.00 //[0.00 to 1.00] This setting is a placeholder and does nothing at the moment.
+// Cartoon settings                          
+    #define CartoonPower      8.0  //[0.1 to 10.0] Amount of effect you want.
+    #define CartoonEdgeSlope  0.9  //[0.1 to 8.0]  Raise this to filter out fainter edges. You might need to increase the power to compensate. Whole numbers are faster.
+    
+// Monochrome settings                    
+    #define Monochrome_conversion_values  float3(0.18,0.41,0.41)  //[-1.00 to 1.00] Percentage of RGB to include (should sum up to 1.00)
     
 // -------------------- Interface -----------------------------------------------
 
@@ -1305,13 +1314,13 @@ Perlin noise shader by toneburst:
 http://machinesdontcare.wordpress.com/2009/06/25/3d-perlin-noise-sphere-vertex-shader-sourcecode/
 */
 
-const float permTexUnit = 1.0/256.0;        // Perm texture texel-size
-const float permTexUnitHalf = 0.5/256.0;    // Half perm texture texel-size
+static const float permTexUnit = 1.0/256.0;        // Perm texture texel-size
+static const float permTexUnitHalf = 0.5/256.0;    // Half perm texture texel-size
 
 float width = SCREEN_SIZE.x;
 float height = SCREEN_SIZE.y;
 
-const float grainamount = GrainPower;
+static const float grainamount = GrainPower;
 float colored = GrainColored;
 float coloramount = GrainColorAmount;
 float grainsize = GrainSize;
@@ -1542,6 +1551,288 @@ float4 SinCityPass( float4 colorInput )
         return pow(float4(colorout, 1.f), 2.2f);
 }
 
+// ------------------------- Timothy Lottes' CRT --------------------------------
+
+// Emulated input resolution.
+#if 0
+  // Fix resolution to set amount.
+  float2 res = float2(320.0/1.0, 160.0/1.0);
+#else
+  // Optimize for resize.
+  float2 res = SCREEN_SIZE / 6.0; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
+#endif
+
+// Hardness of scanline.
+//  -8.0 = soft
+// -16.0 = medium
+float hardScan=-10.0;
+
+// Hardness of pixels in scanline.
+// -2.0 = soft
+// -4.0 = hard
+float hardPix=-4.0;
+
+// Hardness of short vertical bloom.
+//  -1.0 = wide to the point of clipping (bad)
+//  -1.5 = wide
+//  -4.0 = not very wide at all
+float hardBloomScan=-2.0;
+
+// Hardness of short horizontal bloom.
+//  -0.5 = wide to the point of clipping (bad)
+//  -1.0 = wide
+//  -2.0 = not very wide at all
+float hardBloomPix=-1.5;
+
+// Amount of small bloom effect.
+//  1.0/1.0 = only bloom
+//  1.0/16.0 = what I think is a good amount of small bloom
+//  0.0     = no bloom
+float bloomAmount=1.0/4.0;
+
+// Display warp.
+// 0.0 = none
+// 1.0/8.0 = extreme
+float2 warp=float2(1.0/64.0,1.0/24.0);
+
+// Amount of shadow mask.
+float maskDark=0.5;
+float maskLight=1.5;
+
+//------------------------------------------------------------------------
+
+// sRGB to Linear.
+// Assuing using sRGB typed textures this should not be needed.
+float ToLinear1(float c){return(c<=0.04045)?c/12.92:pow((c+0.055)/1.055,2.4);}
+float3 ToLinear(float3 c){return float3(ToLinear1(c.r),ToLinear1(c.g),ToLinear1(c.b));}
+
+// Linear to sRGB.
+// Assuing using sRGB typed textures this should not be needed.
+float ToSrgb1(float c){return(c<0.0031308?c*12.92:1.055*pow(c,0.41666)-0.055);}
+float3 ToSrgb(float3 c){return float3(ToSrgb1(c.r),ToSrgb1(c.g),ToSrgb1(c.b));}
+
+// Testing only, something to help generate a dark signal for bloom test.
+// Set to zero, or remove Test() if using this shader.
+#if 1
+ float3 Test(float3 c){return c*(1.0/64.0)+c*c*c;}
+#else
+ float3 Test(float3 c){return c;}
+#endif
+
+// Nearest emulated sample given floating point position and texel offset.
+// Also zero's off screen.
+float3 Fetch(float2 pos,float2 off){
+  pos=floor(pos*res+off)/res;
+  if(max(abs(pos.x-0.5),abs(pos.y-0.5))>0.5)return float3(0.0,0.0,0.0);
+  return Test(ToLinear(tex2D(s0,pos.xy).rgb));} // return Test(ToLinear(tex2D(s0,pos.xy,-16.0).rgb));}
+
+// Distance in emulated pixels to nearest texel.
+float2 Dist(float2 pos){pos=pos*res;return -((pos-floor(pos))-float2(0.5, 0.5));}
+    
+// 1D Gaussian.
+float Gaus(float pos,float scale){return exp2(scale*pos*pos);}
+
+// 3-tap Gaussian filter along horz line.
+float3 Horz3(float2 pos,float off){
+  float3 b=Fetch(pos,float2(-1.0,off));
+  float3 c=Fetch(pos,float2( 0.0,off));
+  float3 d=Fetch(pos,float2( 1.0,off));
+  float dst=Dist(pos).x;
+  // Convert distance to weight.
+  float scale=hardPix;
+  float wb=Gaus(dst-1.0,scale);
+  float wc=Gaus(dst+0.0,scale);
+  float wd=Gaus(dst+1.0,scale);
+  // Return filtered sample.
+  return (b*wb+c*wc+d*wd)/(wb+wc+wd);}
+
+// 5-tap Gaussian filter along horz line.
+float3 Horz5(float2 pos,float off){
+  float3 a=Fetch(pos,float2(-2.0,off));
+  float3 b=Fetch(pos,float2(-1.0,off));
+  float3 c=Fetch(pos,float2( 0.0,off));
+  float3 d=Fetch(pos,float2( 1.0,off));
+  float3 e=Fetch(pos,float2( 2.0,off));
+  float dst=Dist(pos).x;
+  // Convert distance to weight.
+  float scale=hardPix;
+  float wa=Gaus(dst-2.0,scale);
+  float wb=Gaus(dst-1.0,scale);
+  float wc=Gaus(dst+0.0,scale);
+  float wd=Gaus(dst+1.0,scale);
+  float we=Gaus(dst+2.0,scale);
+  // Return filtered sample.
+  return (a*wa+b*wb+c*wc+d*wd+e*we)/(wa+wb+wc+wd+we);}
+
+// 7-tap Gaussian filter along horz line.
+float3 Horz7(float2 pos,float off){
+  float3 a=Fetch(pos,float2(-3.0,off));
+  float3 b=Fetch(pos,float2(-2.0,off));
+  float3 c=Fetch(pos,float2(-1.0,off));
+  float3 d=Fetch(pos,float2( 0.0,off));
+  float3 e=Fetch(pos,float2( 1.0,off));
+  float3 f=Fetch(pos,float2( 2.0,off));
+  float3 g=Fetch(pos,float2( 3.0,off));
+  float dst=Dist(pos).x;
+  // Convert distance to weight.
+  float scale=hardBloomPix;
+  float wa=Gaus(dst-3.0,scale);
+  float wb=Gaus(dst-2.0,scale);
+  float wc=Gaus(dst-1.0,scale);
+  float wd=Gaus(dst+0.0,scale);
+  float we=Gaus(dst+1.0,scale);
+  float wf=Gaus(dst+2.0,scale);
+  float wg=Gaus(dst+3.0,scale);
+  // Return filtered sample.
+  return (a*wa+b*wb+c*wc+d*wd+e*we+f*wf+g*wg)/(wa+wb+wc+wd+we+wf+wg);}
+
+// Return scanline weight.
+float Scan(float2 pos,float off){
+  float dst=Dist(pos).y;
+  return Gaus(dst+off,hardScan);}
+
+// Return scanline weight for bloom.
+float BloomScan(float2 pos,float off){
+  float dst=Dist(pos).y;
+  return Gaus(dst+off,hardBloomScan);}
+
+// Allow nearest three lines to effect pixel.
+float3 Tri(float2 pos){
+  float3 a=Horz3(pos,-1.0);
+  float3 b=Horz5(pos, 0.0);
+  float3 c=Horz3(pos, 1.0);
+  float wa=Scan(pos,-1.0);
+  float wb=Scan(pos, 0.0);
+  float wc=Scan(pos, 1.0);
+  return a*wa+b*wb+c*wc;}
+
+// Small bloom.
+float3 Bloom(float2 pos){
+  float3 a=Horz5(pos,-2.0);
+  float3 b=Horz7(pos,-1.0);
+  float3 c=Horz7(pos, 0.0);
+  float3 d=Horz7(pos, 1.0);
+  float3 e=Horz5(pos, 2.0);
+  float wa=BloomScan(pos,-2.0);
+  float wb=BloomScan(pos,-1.0);
+  float wc=BloomScan(pos, 0.0);
+  float wd=BloomScan(pos, 1.0);
+  float we=BloomScan(pos, 2.0);
+  return a*wa+b*wb+c*wc+d*wd+e*we;}
+
+// Distortion of scanlines, and end of screen alpha.
+float2 Warp(float2 pos){
+  pos=pos*2.0-1.0;    
+  pos*=float2(1.0+(pos.y*pos.y)*warp.x,1.0+(pos.x*pos.x)*warp.y);
+  return pos*0.5+0.5;}
+
+#if 0
+// Very compressed TV style shadow mask.
+float3 Mask(float2 pos){
+  float line=maskLight;
+  float odd=0.0;
+  if(frac(pos.x/6.0)<0.5)odd=1.0;
+  if(frac((pos.y+odd)/2.0)<0.5)line=maskDark;  
+  pos.x=frac(pos.x/3.0);
+  float3 mask=float3(maskDark,maskDark,maskDark);
+  if(pos.x<0.333)mask.r=maskLight;
+  else if(pos.x<0.666)mask.g=maskLight;
+  else mask.b=maskLight;
+  mask*=line;
+  return mask;}        
+#endif
+
+#if 1
+// Aperture-grille.
+float3 Mask(float2 pos){
+  pos.x=frac(pos.x/3.0);
+  float3 mask=float3(maskDark,maskDark,maskDark);
+  if(pos.x<0.333)mask.r=maskLight;
+  else if(pos.x<0.666)mask.g=maskLight;
+  else mask.b=maskLight;
+  return mask;}        
+#endif
+
+#if 0
+// Stretched VGA style shadow mask (same as prior shaders).
+float3 Mask(float2 pos){
+  pos.x+=pos.y*3.0;
+  float3 mask=float3(maskDark,maskDark,maskDark);
+  pos.x=frac(pos.x/6.0);
+  if(pos.x<0.333)mask.r=maskLight;
+  else if(pos.x<0.666)mask.g=maskLight;
+  else mask.b=maskLight;
+  return mask;}    
+#endif
+
+#if 0
+// VGA style shadow mask.
+float3 Mask(float2 pos){
+  pos.xy=floor(pos.xy*float2(1.0,0.5));
+  pos.x+=pos.y*3.0;
+  float3 mask=float3(maskDark,maskDark,maskDark);
+  pos.x=frac(pos.x/6.0);
+  if(pos.x<0.333)mask.r=maskLight;
+  else if(pos.x<0.666)mask.g=maskLight;
+  else mask.b=maskLight;
+  return mask;}    
+#endif
+
+
+// Draw dividing bars.
+float Bar(float pos,float bar){pos-=bar;return pos*pos<4.0?0.0:1.0;}
+
+float4 CRTLottesPass( float4 colorInput, float2 tex )
+{
+  float4 outColor;
+  float2 pos=Warp(tex);
+  outColor.rgb = Tri(pos)*Mask(tex * SCREEN_SIZE); // Mask(IN.UVCoord * SCREEN_SIZE.xy);
+  #if 0
+    // Normalized exposure.
+  	outColor.rgb = lerp(outColor.rgb,Bloom(pos),bloomAmount);
+  #else
+    // Additive bloom.
+  	outColor.rgb += Bloom(pos)*bloomAmount;
+  #endif
+  outColor.a=1.0;
+  outColor.rgb = ToSrgb(outColor.rgb);
+
+  return outColor;
+}
+
+//--------------------- Cartoon -------------------------------------------------
+
+float4 CartoonPass( float4 colorInput, float2 Tex )
+{
+  float3 CoefLuma2 = float3(0.2126, 0.7152, 0.0722);  //Values to calculate luma with
+  
+    float diff1 = dot(CoefLuma2,tex2D(s0, Tex + PIXEL_SIZE).rgb);
+//  float diff1 = dot(CoefLuma2,myTex2D(s0, Tex + pixel).rgb);
+  diff1 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex - PIXEL_SIZE).rgb , diff1));
+  
+  float diff2 = dot(CoefLuma2,tex2D(s0, Tex +float2(PIXEL_SIZE.x,-PIXEL_SIZE.y)).rgb);
+  diff2 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex +float2(-PIXEL_SIZE.x,PIXEL_SIZE.y)).rgb , diff2));
+    
+  float edge = dot(float2(diff1,diff2),float2(diff1,diff2));
+  
+  colorInput.rgb =  pow(edge,CartoonEdgeSlope) * -CartoonPower + colorInput.rgb;
+    
+  return saturate(colorInput);
+}
+
+//------------------------ Monochrome -----------------------------------
+
+//  by Christian Cann Schuldt Jensen ~ CeeJay.dk
+//      - Monochrome removes color and makes everything black and white.
+
+float4 MonochromePass( float4 colorInput )
+{
+    colorInput.rgb = dot(Monochrome_conversion_values, colorInput.rgb);
+    
+    return saturate(colorInput);
+}
+
+
 // -------------------- Main -----------------------------------------------
 
 float4 postProcessing(VSOUT IN) : COLOR0
@@ -1581,6 +1872,10 @@ float4 postProcessing(VSOUT IN) : COLOR0
     c0 = AdvancedCRTPass(c0, tex);
 #endif
 
+#if (USE_LOTTES_CRT == 1)
+    c0 = CRTLottesPass(c0, tex);
+#endif
+
 #if (USE_DITHER == 1)
     c0 = DitherPass(c0, tex);
 #endif
@@ -1607,6 +1902,14 @@ float4 postProcessing(VSOUT IN) : COLOR0
 
 #if (USE_SINCITY == 1)
     c0 = SinCityPass(c0);
+#endif
+
+#if (USE_CARTOON == 1)
+    c0 = CartoonPass(c0, tex);
+#endif
+
+#if (USE_MONOCHROME == 1)
+    c0 = MonochromePass(c0);
 #endif
 
     c0.w = 1.0;
