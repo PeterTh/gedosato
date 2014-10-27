@@ -56,8 +56,8 @@ SETTING(bool, ForceFullscreenMode, "forceFullscreenMode", false)
 // Injection options
 SETTING(string, InjectPSHash, "injectPSHash", "")
 SETTING(string, InjectVSHash, "injectVSHash", "")
-SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 SETTING(string, InjectRenderstate, "injectRenderstate", "")
+SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 
 // Graphics effects options
 SETTING(string, AAType, "aaType", "fxaa")

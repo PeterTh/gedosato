@@ -42,6 +42,7 @@ ACTION(toggleFreeze, TimeManager::get().toggleFreeze())
 ACTION(togglePerfInfo, RSManager::get().togglePerfInfo())
 
 ACTION(reloadShaders, RSManager::get().reloadShaders())
+ACTION(reloadSettings, { Settings::get().load(); Console::get().add("Settings loaded"); })
 
 ACTION(showStatus, RSManager::get().showStatus())
 

@@ -5,6 +5,7 @@ General:
 - Limit window size for game-side borderless fullscreen when downsampling
 - Fix mouse cursor in windowed downsampling modes
 - Added "forceFullscreenMode" option
+- Added "reloadSettings" keybinding -- NOTE: not everything actually updates immediately!
 
 22-10-2014 -- beta 14 - "Barrage am Ring"
 =========================================
