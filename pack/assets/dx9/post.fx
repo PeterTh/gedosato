@@ -137,9 +137,12 @@
 
 // SinCity settings 
     #define sincity_strength  1.00 //[0.00 to 1.00] This setting is a placeholder and does nothing at the moment.
-// Cartoon settings                          
-    #define CartoonPower      8.0  //[0.1 to 10.0] Amount of effect you want.
-    #define CartoonEdgeSlope  0.9  //[0.1 to 8.0]  Raise this to filter out fainter edges. You might need to increase the power to compensate. Whole numbers are faster.
+	
+// Cartoon settings                                                  
+    #define CartoonPower      10.0  //[0.1 to 10.0] Amount of effect you want.
+    #define CartoonEdgeSlope  1.3  //[0.1 to 8.0]  Raise this to filter out fainter edges. You might need to increase the power to compensate. Whole numbers are faster.
+	#define CartoonColor        1.0  //[-1.0 OR 1.0] Sets border color to either black or white.  -1 is black, 1 is white.  
+	#define CartoonThickness 1.0  //[0 and above]  Sets border thickness.  Looks best at values around 1.0 - 2.0.  At higher values, sharpening helps visuals look better.
     
 // Monochrome settings                    
     #define Monochrome_conversion_values  float3(0.18,0.41,0.41)  //[-1.00 to 1.00] Percentage of RGB to include (should sum up to 1.00)
@@ -1806,16 +1809,15 @@ float4 CartoonPass( float4 colorInput, float2 Tex )
 {
   float3 CoefLuma2 = float3(0.2126, 0.7152, 0.0722);  //Values to calculate luma with
   
-    float diff1 = dot(CoefLuma2,tex2D(s0, Tex + PIXEL_SIZE).rgb);
-//  float diff1 = dot(CoefLuma2,myTex2D(s0, Tex + pixel).rgb);
+  float diff1 = dot(CoefLuma2,tex2D(s0, Tex + PIXEL_SIZE).rgb);
   diff1 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex - PIXEL_SIZE).rgb , diff1));
   
   float diff2 = dot(CoefLuma2,tex2D(s0, Tex +float2(PIXEL_SIZE.x,-PIXEL_SIZE.y)).rgb);
-  diff2 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex +float2(-PIXEL_SIZE.x,PIXEL_SIZE.y)).rgb , diff2));
+  diff2 = dot(float4(CoefLuma2,-1.0),float4(tex2D(s0, Tex +float2(-PIXEL_SIZE.x*CartoonThickness,PIXEL_SIZE.y*CartoonThickness)).rgb , diff2));
     
   float edge = dot(float2(diff1,diff2),float2(diff1,diff2));
   
-  colorInput.rgb =  pow(edge,CartoonEdgeSlope) * -CartoonPower + colorInput.rgb;
+  colorInput.rgb =  pow(edge,CartoonEdgeSlope) * (CartoonColor*CartoonPower) + colorInput.rgb;
     
   return saturate(colorInput);
 }
