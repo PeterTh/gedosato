@@ -626,6 +626,10 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetRenderState(D3DRENDERSTATETYPE State, DW
 HRESULT APIENTRY hkIDirect3DDevice9::SetSamplerState(DWORD Sampler, D3DSAMPLERSTATETYPE Type, DWORD Value) {
 	RSManager::setLatest(rsMan);
 	SDLOG(14, "SetSamplerState sampler %lu:   state type: %s   value: %lu\n", Sampler, D3DSamplerStateTypeToString(Type), Value);
+	if(Settings::get().getForceAnisoLevel() > 0) {
+		if(Type == D3DSAMP_MAGFILTER || Type == D3DSAMP_MINFILTER) Value = D3DTEXF_ANISOTROPIC;
+		if(Type == D3DSAMP_MAXANISOTROPY) Value = Settings::get().getForceAnisoLevel();
+	}
 	return rsMan->redirectSetSamplerState(Sampler, Type, Value);
 }
 

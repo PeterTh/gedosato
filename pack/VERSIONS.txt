@@ -4,6 +4,7 @@ General:
 - Adjust reported monitor native resolution
 - Limit window size for game-side borderless fullscreen when downsampling
 - Fix mouse cursor in windowed downsampling modes
+- Added "forceAnisoLevel" option
 - Added "forceFullscreenMode" option
 - Added "reloadSettings" keybinding -- NOTE: not everything actually updates immediately!
 
