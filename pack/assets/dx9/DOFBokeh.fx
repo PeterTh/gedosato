@@ -3,7 +3,9 @@
 // Blurring Algorithm Created by Tomerk
 // Optimized by Ethatron
 // Adapted and tweaked for DS2 by Durante
- 
+
+//#define SHOW_DEPTH
+
 #ifndef DOF_BASE_BLUR_RADIUS
 #define DOF_BASE_BLUR_RADIUS 1.0
 #endif
@@ -35,9 +37,14 @@ extern float R = 16.0;		// maximum blur radius in pixels;
 static float k = 0.00001;
  
 static const float2 rcpres = PIXEL_SIZE;
- 
-static const float nearZ = 400000;
-static const float farZ = 2200000;
+
+#ifdef USE_HWDEPTH
+	static const float nearZ = 1;
+	static const float farZ = 40;
+#else
+	static const float nearZ = 400000;
+	static const float farZ = 2200000;
+#endif
 static const float depthRange = (nearZ-farZ)*0.01;
 
 texture thisframeTex;
@@ -68,6 +75,13 @@ VSOUT FrameVS(VSIN IN)
 	return OUT;
 }
  
+#ifdef USE_HWDEPTH
+float readDepth(in float2 coord : TEXCOORD0)
+{
+	float z = tex2D(depthSampler, coord).r;
+	return (2.0f * nearZ) / (nearZ + farZ - z * (farZ - nearZ));
+}
+#else
 float readDepth(in float2 coord : TEXCOORD0)
 {
 //	float posZ = tex2D(depthSampler, coord).x;
@@ -77,9 +91,10 @@ float readDepth(in float2 coord : TEXCOORD0)
 	//return (posZ-nearZ)/farZ;
 	return (2.0f * nearZ) / (nearZ + farZ - posZ * (farZ - nearZ));
 }
+#endif
  
 static float focus = (2.0f * nearZ) / (nearZ + farZ - 63800 * (farZ - nearZ));
-//static float focus = readDepth(float2(0.5,0.5));
+//static const float focus = readDepth(float2(0.5, 0.5));
  
 #define M 60
 static float2 taps[M] =
@@ -149,6 +164,11 @@ float2( 0.2588, 0.9659 )
  
 float4 dof( float2 tex : TEXCOORD0 ) : COLOR0
 {
+	#ifdef SHOW_DEPTH
+		float linDepth = readDepth(tex);
+		return float4(linDepth, linDepth, linDepth, 1.0);
+	#endif
+
 	float s = focus*depthRange;
 	float depth = readDepth(tex);
 	float z = depth*depthRange;
@@ -166,6 +186,9 @@ float4 dof( float2 tex : TEXCOORD0 ) : COLOR0
  
 float4 smartblur( float2 tex : TEXCOORD0 ) : COLOR0
 {
+	// float depth = tex2D(passSampler, tex).a;
+	// return float4(depth, depth, depth, 1.0);
+	
     float4 color = tex2D(passSampler, tex);
     float c = 2 * R * (color.a - 0.5);
  

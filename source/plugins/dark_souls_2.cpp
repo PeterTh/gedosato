@@ -24,13 +24,13 @@ void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORM
 		SDLOG(2, "Resource init: adjusting for non-16:9 resolution, screen: %ux%u, render: %ux%u\n", rw, rh, drw, drh);
 	}
 	RSManager::getRTMan().setOverrideFormat(RenderTarget::FMT_ARGB_FP16);
-	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, drw, drh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius());
+	if(Settings::get().getEnableDoF()) dof = new DOF(d3ddev, drw, drh, (Settings::get().getDOFType() == "bokeh") ? DOF::BOKEH : DOF::BASIC, Settings::get().getDOFBaseRadius(), false);
 	if(Settings::get().getAAQuality() > 0) {
 		if(Settings::get().getAAType() == "smaa") smaa = new SMAA(d3ddev, drw, drh, (SMAA::Preset)(Settings::get().getAAQuality() - 1));
 		else fxaa = new FXAA(d3ddev, drw, drh, (FXAA::Quality)(Settings::get().getAAQuality() - 1));
 	}
 	auto ssaoBlurType = (Settings::get().getSsaoBlurType() == "sharp") ? SSAO::BLUR_SHARP : SSAO::BLUR_GAUSSIAN;
-	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, drw, drh, Settings::get().getSsaoStrength() - 1, SSAO::VSSAO2, ssaoBlurType, true, false);
+	if(Settings::get().getSsaoStrength() > 0) ssao = new SSAO(d3ddev, drw, drh, drw, drh, Settings::get().getSsaoStrength() - 1, SSAO::VSSAO2, ssaoBlurType, true, false);
 	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh);
 	if(Settings::get().getEnableBloom()) bloom = new Bloom(d3ddev, drw, drh, 0.9f, 1.0f, 0.5f);
 }
@@ -166,7 +166,7 @@ HRESULT DS2Plugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value)
 		frameTex = D3DGetSurfTexture(hdrRT);
 		if(depth && frameTex) {
 			SDLOG(2, "- AO ready to go\n")
-			ssao->goHDR(frameTex, depth, hdrRT, false);
+			ssao->goHDR(frameTex, depth, hdrRT);
 			SDLOG(2, "- AO done\n")
 		}
 		else {
