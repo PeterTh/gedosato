@@ -35,8 +35,8 @@
 /** Manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
 /** This is key for the effect to look right. Basically you need to define the boundaries of the space you're going to shade */
 /** Usually nearZ is (0..10) and farZ is (10..300). Experiment with these until you approximate the right values for the game */
-static float nearZ = 0.50;
-static float farZ = 1000.0;
+static float nearZ = 1.0;
+static float farZ = 100.0;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
 /** This need not match the real far plane */
@@ -46,17 +46,17 @@ static float farZ = 1000.0;
 /** intensity : darkending factor, e.g., 1.0 */
 /** aoClamp : brightness fine-tuning (the higher the darker) */
 #ifdef SSAO_STRENGTH_LOW
-	float intensity = 4.0;
-	float aoClamp = 0.6;
+	float intensity = 2.0;
+	float aoClamp = 1.0;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-	float intensity = 5.0;
-	float aoClamp = 0.8;
+	float intensity = 4.0;
+	float aoClamp = 1.0;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-	float intensity = 10.0;
+	float intensity = 6.0;
 	float aoClamp = 1.0;
 #endif
 
@@ -74,7 +74,7 @@ static const float radius = 2.4;
 
 /** Bias to avoid AO in smooth corners, e.g., 0.01m */
 /** Use this to push the darkening farther away from the models so it is not stuck on the geometry itself */
-static const float bias = 0.06f;
+static const float bias = 0.05f;
 
 /** The height in pixels of a 1m object if viewed from 1m away.
 You can compute it from your projection matrix.  The actual value is just
@@ -82,11 +82,11 @@ a scale factor on radius; you can simply hardcode this to a constant (~500)
 and make your radius value unitless (...but resolution dependent.)  */
 /** This setting tends to extend the range of occlusion, much like a radius increase
 but without affecting the intensity */
-static const float projScale = 1.0f;
+static const float projScale = 1.2f;
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.2;
+extern float luminosity_threshold = 0.16;
 
 /** Falloff function type */
 	// 1: From the HPG12 paper
@@ -438,6 +438,7 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
     float ssDiskRadius = -projScale * radius / max(C.z,0.1f);
 
     float sum = 0.0;
+    [unroll]
     for (int i = 0; i < NUM_SAMPLES; ++i) 
     {
          sum += sampleAO(ssC, C, n_C, ssDiskRadius, i, randomPatternRotationAngle);
@@ -538,7 +539,7 @@ float4 BlurBL(VSOUT IN) : COLOR0
             float weight = 0.3 + gaussian[abs(r)];
 		
 			// range domain (the "bilateral" weight). As depth difference increases, decrease weight.
-			weight *= max(0.0, 1.0 - (400.0 * EDGE_SHARPNESS) * abs(tapKey - key));
+			weight *= max(0.0, 1.0 - (800.0 * EDGE_SHARPNESS) * abs(tapKey - key));
 
             sum += value * weight;
             totalWeight += weight;

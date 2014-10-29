@@ -35,13 +35,13 @@
 /** Manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
 /** This is key for the effect to look right. Basically you need to define the boundaries of the space you're going to shade */
 /** Usually nearZ is (0..10) and farZ is (10..300). Experiment with these until you approximate the right values for the game */
-static float nearZ = 0.06;
-static float farZ = 11000.0;
+static float nearZ = 1.0;
+static float farZ = 100.0;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
 /** This need not match the real far plane */
 /** This goes together with nearZ/farZ values. If you can't see any (or partial) AO output at all make sure this value isn't too low :] */
-#define FAR_PLANE_Z (140.0)
+#define FAR_PLANE_Z (180.0)
 
 /** intensity : darkending factor, e.g., 1.0 */
 #ifdef SSAO_STRENGTH_LOW
@@ -56,13 +56,13 @@ static float farZ = 11000.0;
 
 #ifdef SSAO_STRENGTH_HIGH
 	static float  g_Strength = 1.0f;                 // 0.0..3.0
-	static float  g_IntensityMul = 1.0f;             // 1.0..3.0
+	static float  g_IntensityMul = 1.1f;             // 1.0..3.0
 #endif
 
-static float  g_NumSteps = 8;                        // 0..32
-static float  g_NumDir = 16;                         // 0..25
-static float  m_RadiusMultiplier = 2.0;              // 0.0..2.0
-static float  m_AngleBias = 10.0;                    // 0.0..60.0
+static float  g_NumSteps = 3;                        // 0..32
+static float  g_NumDir = 5;                          // 0..25
+static float  m_RadiusMultiplier = 8.0;              // 0.0..2.0
+static float  m_AngleBias = 0.0;                     // 0.0..60.0
 #define SAMPLE_FIRST_STEP 1
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
@@ -70,7 +70,7 @@ static float  m_AngleBias = 10.0;                    // 0.0..60.0
 extern float luminosity_threshold = 0.16;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
-#define EDGE_SHARPNESS     (1.0)
+#define EDGE_SHARPNESS     (0.4)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
 first AO pass.  This constant can be increased while R decreases to improve
@@ -83,7 +83,7 @@ from using small numbers of sample taps.
 #define SCALE               (2)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
-#define R                   (4)
+#define R                   (6)
 
 /////////////////////////////////////////////////// END OF TWEAKABLE VALUES ///////////////////////////////////////////////////////////
 
@@ -471,8 +471,8 @@ the same blur shader to be used on different kinds of input data. */
 static const float gaussian[] =
 //	{ 0.356642, 0.239400, 0.072410, 0.009869 };
 //	{ 0.398943, 0.241971, 0.053991, 0.004432, 0.000134 };  // stddev = 1.0
-  { 0.153170, 0.144893, 0.122649, 0.092902, 0.062970 };  // stddev = 2.0
-//  { 0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108 }; // stddev = 3.0
+//  { 0.153170, 0.144893, 0.122649, 0.092902, 0.062970 };  // stddev = 2.0
+  { 0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108 }; // stddev = 3.0
 
 #define  result         output.VALUE_COMPONENTS
 #define  keyPassThrough output.KEY_COMPONENTS
