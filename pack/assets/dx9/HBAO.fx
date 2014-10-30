@@ -35,13 +35,13 @@
 /** Manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
 /** This is key for the effect to look right. Basically you need to define the boundaries of the space you're going to shade */
 /** Usually nearZ is (0..10) and farZ is (10..300). Experiment with these until you approximate the right values for the game */
-static float nearZ = 0.06;
-static float farZ = 11000.0;
+static float nearZ = 1.0;
+static float farZ = 1000.0;
 
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
 /** This need not match the real far plane */
 /** This goes together with nearZ/farZ values. If you can't see any (or partial) AO output at all make sure this value isn't too low :] */
-#define FAR_PLANE_Z (140.0)
+#define FAR_PLANE_Z (460.0)
 
 /** intensity : darkending factor, e.g., 1.0 */
 #ifdef SSAO_STRENGTH_LOW
@@ -56,13 +56,13 @@ static float farZ = 11000.0;
 
 #ifdef SSAO_STRENGTH_HIGH
 	static float  g_Strength = 1.0f;                 // 0.0..3.0
-	static float  g_IntensityMul = 1.0f;             // 1.0..3.0
+	static float  g_IntensityMul = 1.1f;             // 1.0..3.0
 #endif
 
-static float  g_NumSteps = 8;                        // 0..32
-static float  g_NumDir = 16;                         // 0..25
-static float  m_RadiusMultiplier = 2.0;              // 0.0..2.0
-static float  m_AngleBias = 10.0;                    // 0.0..60.0
+static float  g_NumSteps = 3;                        // 0..32
+static float  g_NumDir = 5;                          // 0..25
+static float  m_RadiusMultiplier = 16.0;              // 0.0..2.0
+static float  m_AngleBias = 0.0;                     // 0.0..60.0
 #define SAMPLE_FIRST_STEP 1
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
@@ -83,7 +83,7 @@ from using small numbers of sample taps.
 #define SCALE               (2)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
-#define R                   (4)
+#define R                   (6)
 
 /////////////////////////////////////////////////// END OF TWEAKABLE VALUES ///////////////////////////////////////////////////////////
 
@@ -399,7 +399,7 @@ float4 mainSSAOPass( VSOUT IN, float2 vPos : VPOS ) : COLOR0
     float3 P = fetchEyePos(IN.UVCoord);
    
     // r = cos(alpha), g = sin(alpha), b = jitter
-	float3 rand = tex2Dlod(noiseSampler, float4(vPos / 64.0, 0, 0)).rgb; // 64.0 <-- noise texture width
+	float3 rand = tex2Dlod(noiseSampler, float4(vPos / 64.0, 0, 0)).rgb * 2 - 1; // 64.0 <-- noise texture width
 	//float3 rand = tex2Dlod(noiseSampler, float4((vPos.x - floor(vPos.x)) * 64, (vPos.y - floor(vPos.y)) * 64, 0, 0)).rgb;
 	//float3 rand = tex2Dlod(noiseSampler, float4(IN.UVCoord*24.0, 0, 0)).rgb;
 	//float3 rand = tex2Dlod(noiseSampler, float4(IN.UVCoord * (SCREEN_SIZE / 4), 0, 0)).rgb;
@@ -408,7 +408,7 @@ float4 mainSSAOPass( VSOUT IN, float2 vPos : VPOS ) : COLOR0
     // Multiply by 0.5 to scale from [-1,1]^2 to [0,1]^2
     float2 ray_radius_uv = 0.5 * g_R * g_FocalLen / P.z;
     float ray_radius_pix = ray_radius_uv.x * SCREEN_SIZE.x;
-    if (ray_radius_pix < 20)
+    if (ray_radius_pix < 10)
     {
     	return 1.0;
     }
@@ -471,8 +471,8 @@ the same blur shader to be used on different kinds of input data. */
 static const float gaussian[] =
 //	{ 0.356642, 0.239400, 0.072410, 0.009869 };
 //	{ 0.398943, 0.241971, 0.053991, 0.004432, 0.000134 };  // stddev = 1.0
-  { 0.153170, 0.144893, 0.122649, 0.092902, 0.062970 };  // stddev = 2.0
-//  { 0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108 }; // stddev = 3.0
+//  { 0.153170, 0.144893, 0.122649, 0.092902, 0.062970 };  // stddev = 2.0
+  { 0.111220, 0.107798, 0.098151, 0.083953, 0.067458, 0.050920, 0.036108 }; // stddev = 3.0
 
 #define  result         output.VALUE_COMPONENTS
 #define  keyPassThrough output.KEY_COMPONENTS
@@ -517,7 +517,7 @@ float4 BlurBL(VSOUT IN) : COLOR0
             float weight = 0.3 + gaussian[abs(r)];
 		
 			// range domain (the "bilateral" weight). As depth difference increases, decrease weight.
-			weight *= max(0.0, 1.0 - (1000.0 * EDGE_SHARPNESS) * abs(tapKey - key));
+			weight *= max(0.0, 1.0 - (400.0 * EDGE_SHARPNESS) * abs(tapKey - key));
 
             sum += value * weight;
             totalWeight += weight;
