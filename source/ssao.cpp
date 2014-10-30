@@ -127,41 +127,43 @@ void SSAO::reloadShader() {
 	prevPassTexHandle = effect->GetParameterByName(NULL, "prevPassTex2D");
 	isBlurHorizontalHandle = effect->GetParameterByName(NULL, "isBlurHorizontal");
 
-	if(type == SSAO::SAO) {
-		projInfoHandle = effect->GetParameterByName(NULL, "projInfo");
-
-		// 1 iteration is not enough imo
-		blurPasses = 2;
-
-		D3DXMATRIX matProjection;
-		D3DXVECTOR4 projInfo;
-		//width = 1280; height = 720;
+	if(type == SSAO::SAO || type == SSAO::HBAO) {
 		// values from http://www.rjdown.co.uk/projects/bfbc2/fovcalculator.php. 16/9 : 59, 16/10 : 65
 		// D3DX_PI/2 or D3DX_PI/4 could suffice I don't know for sure
-		int FOV = dheight * 16 > dwidth * 9 ? 65 : 59;
-		D3DXMatrixPerspectiveFovLH(&matProjection, (FLOAT)D3DXToRadian(FOV), ((FLOAT)dwidth / (FLOAT)dheight), (FLOAT)0.01, (FLOAT)100.0); // Dummy nearZ/farZ
+		//int fovY = static_cast<int>(D3DX_PI/3.0f);
+		int fovY = dheight * 16 > dwidth * 9 ? 65 : 59;
+
+		if(type == SSAO::SAO) {
+			projInfoHandle = effect->GetParameterByName(NULL, "projInfo");
+
+			// 1 iteration is not enough imo
+			blurPasses = 2;
+
+			D3DXMATRIX matProjection;
+			D3DXVECTOR4 projInfo;
+
+			D3DXMatrixPerspectiveFovLH(&matProjection, (FLOAT)D3DXToRadian(fovY), ((FLOAT)dwidth / (FLOAT)dheight), (FLOAT)1.0, (FLOAT)100.0); // Dummy nearZ/farZ
 	
-		projInfo.x = -2.0f / ((float)dwidth * matProjection._11);
-		projInfo.y = -2.0f / ((float)dheight * matProjection._22),
-		projInfo.z = ((1.0f - matProjection._13) / matProjection._11) + projInfo.x * 0.5f;
-		projInfo.w = ((1.0f + matProjection._23) / matProjection._22) + projInfo.y * 0.5f;
+			projInfo.x = -2.0f / ((float)dwidth * matProjection._11);
+			projInfo.y = -2.0f / ((float)dheight * matProjection._22),
+			projInfo.z = ((1.0f - matProjection._13) / matProjection._11) + projInfo.x * 0.5f;
+			projInfo.w = ((1.0f + matProjection._23) / matProjection._22) + projInfo.y * 0.5f;
 
-		effect->SetVector(projInfoHandle, &projInfo);
-	}
-	else if(type == SSAO::HBAO) {
-		string noiseFile = getAssetFileName("RandomNoiseB.png");
-		hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
+			effect->SetVector(projInfoHandle, &projInfo);
+		}
+		else if(type == SSAO::HBAO) {
+			string noiseFile = getAssetFileName("RandomNoiseB.png");
+			hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
 
-		//int fovY = dheight * 16 > dwidth * 9 ? 65 : 59;
-		int fovY = static_cast<int>(D3DX_PI/3.0f);
-		float m_FocalLen[2];
-		m_FocalLen[0] = 1.0f / tanf(fovY * 0.5f) *  (float)dwidth / (float)dheight;
-		m_FocalLen[1] = 1.0f / tanf(fovY * 0.5f);
+			float m_FocalLen[2];
+			m_FocalLen[0] = 1.0f / tanf(fovY * 0.5f) *  (float)dwidth / (float)dheight;
+			m_FocalLen[1] = 1.0f / tanf(fovY * 0.5f);
 
-		m_pFocalLenHandle = effect->GetParameterByName(NULL, "g_FocalLen");
-		noiseTexHandle = effect->GetParameterByName(NULL, "noiseTexture");
+			m_pFocalLenHandle = effect->GetParameterByName(NULL, "g_FocalLen");
+			noiseTexHandle = effect->GetParameterByName(NULL, "noiseTexture");
 
-		effect->SetFloatArray(m_pFocalLenHandle, m_FocalLen, 2);
+			effect->SetFloatArray(m_pFocalLenHandle, m_FocalLen, 2);
+		}
 	}
 }
 
