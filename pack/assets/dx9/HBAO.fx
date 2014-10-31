@@ -67,7 +67,7 @@ static float  m_AngleBias = 0.0;                     // 0.0..60.0
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.16;
+extern float luminosity_threshold = 0.7;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
 #define EDGE_SHARPNESS     (1.0)

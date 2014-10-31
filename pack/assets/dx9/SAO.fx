@@ -86,7 +86,7 @@ static const float projScale = 1.2f;
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.16;
+extern float luminosity_threshold = 0.7;
 
 /** Falloff function type */
 	// 1: From the HPG12 paper
