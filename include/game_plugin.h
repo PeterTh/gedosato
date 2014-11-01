@@ -23,6 +23,7 @@ public:
 	virtual void initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) { }
 	virtual void prePresent() { }
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) { }
+	virtual void postDownsample(IDirect3DSurface9* backBuffer) { }
 
 	virtual void toggleAA() { Console::get().add("AA not supported by this plugin!"); }
 	virtual void toggleAO() { Console::get().add("AO not supported by this plugin!"); }

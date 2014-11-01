@@ -40,6 +40,7 @@ public:
 	virtual void reportStatus() override;
 
 	virtual void preDownsample(IDirect3DSurface9* backBuffer) override;
+	virtual void postDownsample(IDirect3DSurface9* backBuffer) override;
 	virtual void prePresent() override;
 
 	virtual void toggleAA() override { if(smaa || fxaa) { doAA = !doAA; Console::get().add(doAA ? "AA enabled" : "AA disabled"); } else { Console::get().add("AA disabled in configuration!"); } }

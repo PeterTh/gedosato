@@ -6,9 +6,9 @@ const char* VER_NAME = "Tokikagura";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 15;
-const unsigned VER_BUILD = 1639;
+const unsigned VER_BUILD = 1647;
 
-const char* VER_STRING = "version 0.15.1639 built on 2014/10/27 18:25:15";
+const char* VER_STRING = "version 0.15.1647 built on 2014/11/01 20:17:19";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

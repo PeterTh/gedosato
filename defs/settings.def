@@ -78,6 +78,7 @@ SETTING(bool, EnableBloom, "enableBloom", false)
 
 SETTING(bool, EnablePostprocessing, "enablePostprocessing", false)
 SETTING(string, PostProcessingType, "postProcessingType", "durante")
+SETTING(bool, postProcessAfterScaling, "postProcessAfterScaling", false)
 
 SETTING(unsigned, ShadowScale, "shadowScale", 1)
 SETTING(unsigned, MSAASampleCount, "MSAASampleCount", 4)

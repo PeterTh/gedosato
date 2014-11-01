@@ -13,6 +13,10 @@ GenericPlugin::~GenericPlugin() {
 
 void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
 	unsigned drw = rw, drh = rh;
+	if(Settings::get().getpostProcessAfterScaling()) {
+		drw = Settings::get().getPresentWidth();
+		drh = Settings::get().getPresentHeight();
+	}
 	if(Settings::get().getAAQuality() > 0) {
 		if(Settings::get().getAAType() == "smaa") smaa = new SMAA(d3ddev, drw, drh, (SMAA::Preset)(Settings::get().getAAQuality() - 1), false);
 		else fxaa = new FXAA(d3ddev, drw, drh, (FXAA::Quality)(Settings::get().getAAQuality() - 1), false);
@@ -94,8 +98,16 @@ void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
 	if(postDone && !hudEnabled && processedBB != NULL && backBuffer != processedBB) {
 		d3ddev->StretchRect(processedBB, NULL, backBuffer, NULL, D3DTEXF_NONE);
 	}
-	process(backBuffer);
+	if(!Settings::get().getpostProcessAfterScaling()) {
+		process(backBuffer);
+	}
 	processedBB = NULL;
+}
+
+void GenericPlugin::postDownsample(IDirect3DSurface9* backBuffer) {
+	if(Settings::get().getpostProcessAfterScaling()) {
+		process(backBuffer);
+	}
 }
 
 void GenericPlugin::prePresent() {

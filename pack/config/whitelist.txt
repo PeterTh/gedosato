@@ -20,6 +20,7 @@ Blackguards                  || Blackguards (The Dark Eye)
 BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
+bsnes                        || bsnes SNES emulator
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD

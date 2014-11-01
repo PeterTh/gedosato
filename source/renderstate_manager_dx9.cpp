@@ -157,8 +157,10 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
 		SDLOG(2, "- to backbuffer %p\n", realBackBuffer);
 		scaler->go(backBuffers[0]->getTex(), realBackBuffer);
-		realBackBuffer->Release();
 		SDLOG(2, "- scaling complete!\n");
+		// apply plugin actions if specified
+		plugin->postDownsample(realBackBuffer);
+		realBackBuffer->Release();
 
 		// emulate flip queue behaviour exactly if required
 		if(swapEffect == SWAP_FLIP && Settings::get().getEmulateFlipBehaviour() && !doNotFlip) {
