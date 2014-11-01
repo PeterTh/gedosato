@@ -23,7 +23,7 @@ float ConsoleLine::draw(float y) {
 	else ypos += (y-ypos)*0.2f; 
 	//cout << "Printed: " << msg << " at " << (10.0f + ypos) << "\n";
 	Console::get().print(25.0f, (39.0f + ypos), msg.c_str());
-	return t.elapsed() > 20000000.0 ? 0.0f : 38.0f + ypos;
+	return t.elapsed() > Settings::get().getMessageSeconds()*1000000.0 ? 0.0f : 38.0f + ypos;
 }
 
 void Console::initialize(IDirect3DDevice9* device, int w, int h) {

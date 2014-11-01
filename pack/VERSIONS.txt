@@ -8,6 +8,7 @@ General:
 - Added "forceFullscreenMode" option
 - Added "reloadSettings" keybinding -- NOTE: not everything actually updates immediately!
 - Refactored scaling so that nearest neighbour is handled uniformly with everything else
+- Added setting for the amount of time on-screen messages are displayed
 Generic Plugin:
 - Added option to postprocess after scaling (mostly for upsampling/CRT)
 
