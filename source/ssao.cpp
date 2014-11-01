@@ -134,10 +134,8 @@ void SSAO::reloadShader() {
 		int fovY = dheight * 16 > dwidth * 9 ? 65 : 59;
 
 		if(type == SSAO::SAO) {
+			blurPasses = 3;
 			projInfoHandle = effect->GetParameterByName(NULL, "projInfo");
-
-			// 1 iteration is not enough imo
-			blurPasses = 2;
 
 			D3DXMATRIX matProjection;
 			D3DXVECTOR4 projInfo;
@@ -152,6 +150,7 @@ void SSAO::reloadShader() {
 			effect->SetVector(projInfoHandle, &projInfo);
 		}
 		else if(type == SSAO::HBAO) {
+			blurPasses = 2;
 			string noiseFile = getAssetFileName("RandomNoiseB.png");
 			hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
 

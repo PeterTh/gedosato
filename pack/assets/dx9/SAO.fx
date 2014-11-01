@@ -74,7 +74,7 @@ static const float radius = 2.4;
 
 /** Bias to avoid AO in smooth corners, e.g., 0.01m */
 /** Use this to push the darkening farther away from the models so it is not stuck on the geometry itself */
-static const float bias = 0.05f;
+static const float bias = 0.08f;
 
 /** The height in pixels of a 1m object if viewed from 1m away.
 You can compute it from your projection matrix.  The actual value is just
@@ -99,8 +99,7 @@ extern float luminosity_threshold = 0.7;
 const float epsilon = 0.001;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
-// [Boulotaur2024] I recommand leaving low values because temporal flicker really *is* the problem especially at low samples
-#define EDGE_SHARPNESS     (0.6)
+#define EDGE_SHARPNESS     (1.0)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
 first AO pass.  This constant can be increased while R decreases to improve
@@ -110,7 +109,7 @@ Morgan found that a scale of 3 left a 1-pixel checkerboard grid that was
 unobjectionable after shading was applied but eliminated most temporal incoherence
 from using small numbers of sample taps.
 */
-#define SCALE               (2)
+#define SCALE               (1)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
 #define R                   (6)

@@ -56,13 +56,13 @@ static float farZ = 1000.0;
 
 #ifdef SSAO_STRENGTH_HIGH
 	static float  g_Strength = 1.0f;                 // 0.0..3.0
-	static float  g_IntensityMul = 1.1f;             // 1.0..3.0
+	static float  g_IntensityMul = 1.0f;             // 1.0..3.0
 #endif
 
 static float  g_NumSteps = 3;                        // 0..32
 static float  g_NumDir = 5;                          // 0..25
 static float  m_RadiusMultiplier = 8.0;              // 0.0..2.0
-static float  m_AngleBias = 0.0;                     // 0.0..60.0
+static float  m_AngleBias = 6.0;                     // 0.0..60.0
 #define SAMPLE_FIRST_STEP 1
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
@@ -80,7 +80,7 @@ Morgan found that a scale of 3 left a 1-pixel checkerboard grid that was
 unobjectionable after shading was applied but eliminated most temporal incoherence
 from using small numbers of sample taps.
 */
-#define SCALE               (2)
+#define SCALE               (1)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
 #define R                   (6)
@@ -491,12 +491,12 @@ float4 BlurBL(VSOUT IN) : COLOR0
 
 	float sum = temp.VALUE_COMPONENTS;
 
-	[branch]
-    if (key >= 0.999) {
-        // Sky pixel (if you aren't using depth keying, disable this test)
-        result = sum;
-        return output;
-    }
+	// [branch]
+    // if (key >= 0.999) {
+        // // Sky pixel (if you aren't using depth keying, disable this test)
+        // result = sum;
+        // return output;
+    // }
 
 	// Base weight for depth falloff.  Increase this for more blurriness,
 	// decrease it for better edge discrimination
