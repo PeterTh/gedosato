@@ -97,14 +97,6 @@ void Scaler::reloadShader() {
 
 
 void Scaler::go(IDirect3DTexture9 *input, IDirect3DSurface9 *dst) {
-	if(sType == NEAREST) {
-		IDirect3DSurface9* is = NULL;
-		input->GetSurfaceLevel(0, &is);
-		device->StretchRect(is, NULL, dst, NULL, D3DTEXF_NONE);
-		SAFERELEASE(is);
-		return;
-	}
-
 	device->SetVertexDeclaration(vertexDeclaration);
 	IDirect3DSurface9 *finalDst = dst;
 
@@ -132,7 +124,7 @@ void Scaler::setScaling(scalingType t) {
 
 void Scaler::nextScaling() {
 	scalingType newSType = static_cast<scalingType>(sType+1);
-	if(newSType == STYPE_END) newSType = BILINEAR;
+	if(newSType == STYPE_END) newSType = NEAREST;
 	setScaling(newSType);
 }
 
@@ -142,10 +134,10 @@ void Scaler::showStatus() {
 
 const char* Scaler::getScalingName() {
 	switch(sType) {
+	case NEAREST: return "nearest";
 	case BILINEAR: return "bilinear";
 	case BICUBIC: return "bicubic";
 	case LANCZOS: return "lanczos";
-	case NEAREST: return "nearest";
 	}
 	return "unknown";
 }

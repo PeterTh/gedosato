@@ -6,6 +6,16 @@ float2 inputSize;
 #define USE_SRGB true
 #endif
 
+sampler nearestSampler = sampler_state
+{
+	texture = <frameTex2D>;
+	AddressU = CLAMP;
+	AddressV = CLAMP;
+	MINFILTER = POINT;
+	MAGFILTER = POINT;
+	SRGBTexture = USE_SRGB;
+};
+
 sampler frameSampler = sampler_state
 {
 	texture = <frameTex2D>;
@@ -34,6 +44,11 @@ VSOUT FrameVS(VSIN IN)
 	OUT.vertPos = IN.vertPos;
 	OUT.UVCoord = IN.UVCoord;
 	return OUT;
+}
+
+float4 scaleNearest(VSOUT IN) : COLOR0
+{
+	return tex2D(nearestSampler, IN.UVCoord);
 }
 
 float4 scaleLinear(VSOUT IN) : COLOR0
@@ -154,7 +169,7 @@ technique t0
 	pass P0
 	{
 		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 scaleLinear();
+		PixelShader = compile ps_3_0 scaleNearest();
 		ZEnable = false;        
 		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
@@ -164,7 +179,7 @@ technique t0
 	pass P1
 	{
 		VertexShader = compile vs_3_0 FrameVS();
-		PixelShader = compile ps_3_0 scaleCubic();
+		PixelShader = compile ps_3_0 scaleLinear();
 		ZEnable = false;        
 		SRGBWriteEnable = USE_SRGB;
 		AlphaBlendEnable = false;
@@ -172,6 +187,16 @@ technique t0
 		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
 	}
 	pass P2
+	{
+		VertexShader = compile vs_3_0 FrameVS();
+		PixelShader = compile ps_3_0 scaleCubic();
+		ZEnable = false;        
+		SRGBWriteEnable = USE_SRGB;
+		AlphaBlendEnable = false;
+		AlphaTestEnable = false;
+		ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
+	}
+	pass P3
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 scaleLanczos();

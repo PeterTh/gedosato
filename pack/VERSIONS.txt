@@ -7,6 +7,9 @@ General:
 - Added "forceAnisoLevel" option
 - Added "forceFullscreenMode" option
 - Added "reloadSettings" keybinding -- NOTE: not everything actually updates immediately!
+- Refactored scaling so that nearest neighbour is handled uniformly with everything else
+Generic Plugin:
+- Added option to postprocess after scaling (mostly for upsampling/CRT)
 
 22-10-2014 -- beta 14 - "Barrage am Ring"
 =========================================
