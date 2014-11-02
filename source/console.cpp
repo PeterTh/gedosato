@@ -193,8 +193,10 @@ bool Console::needsDrawing() {
 
 void Console::add(const string& msg) {
 	SDLOG(1, "Console add: %s\n", msg.c_str());
-	std::vector<std::string> splitstring;
-	boost::algorithm::split(splitstring, msg, boost::is_any_of("\n\r"));
-	for(const auto& s : splitstring) lines.push_back(ConsoleLine(s));
-	lineHeight = 1.0f;
+	if(Settings::get().getMessageSeconds() > 0) {
+		std::vector<std::string> splitstring;
+		boost::algorithm::split(splitstring, msg, boost::is_any_of("\n\r"));
+		for(const auto& s : splitstring) lines.push_back(ConsoleLine(s));
+		lineHeight = 1.0f;
+	}
 }

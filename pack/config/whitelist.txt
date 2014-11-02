@@ -75,6 +75,7 @@ Injustice                    || Injustice: Gods Among Us
 kb                           || King's Bounty (All Versions)
 kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
+LaMulanaWin                  || La-Mulana
 Launcher                     || Launcher (multiple)
 lcgol                        || Lara Croft and the Guardian of Light
 left4dead2                   || Left 4 Dead 2

@@ -361,7 +361,7 @@
     <ClInclude Include="include\area_tex.h" />
     <ClInclude Include="include\blacklist.h" />
     <ClInclude Include="include\bloom.h" />
-    <ClInclude Include="include\Console.h" />
+    <ClInclude Include="include\console.h" />
     <ClInclude Include="include\d3d11\d3d11.h" />
     <ClInclude Include="include\d3d11\d3d11dev.h" />
     <ClInclude Include="include\d3d11\d3d11devcontext.h" />
