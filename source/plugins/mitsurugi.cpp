@@ -143,10 +143,11 @@ HRESULT MitsurugiPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,
 					manager.storeRenderState();
 					GenericPlugin::process(surf);
 					scaler->go(tex, rt);
-					if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_FULL || manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
+					if(manager.takingScreenshot(RSManager::SCREENSHOT_FULL) || manager.takingScreenshot(RSManager::SCREENSHOT_HUDLESS)) {
 						manager.captureRTScreen("full", surf);
+						manager.tookScreenshot(RSManager::SCREENSHOT_FULL);
+						manager.tookScreenshot(RSManager::SCREENSHOT_HUDLESS);
 					}
-					manager.tookScreenshot();
 					manager.restoreRenderState();
 				}
 				SAFERELEASE(surf);

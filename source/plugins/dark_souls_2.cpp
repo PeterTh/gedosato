@@ -140,9 +140,9 @@ HRESULT DS2Plugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 		SAFERELEASE(framesurf);
 		SAFERELEASE(frame);
 
-		if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
+		if(manager.takingScreenshot(RSManager::SCREENSHOT_HUDLESS)) {
 			manager.captureRTScreen("hudless");
-			manager.tookScreenshot();
+			manager.tookScreenshot(RSManager::SCREENSHOT_HUDLESS);
 		}
 
 		manager.restoreRenderState();

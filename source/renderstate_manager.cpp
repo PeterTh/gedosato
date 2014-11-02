@@ -39,6 +39,6 @@ bool RSManager::currentlyDownsampling() {
 ////////// Instance
 
 void RSManager::enableTakeScreenshot(ScreenshotType type) {
-	takeScreenshot = type;
+	takeScreenshot |= type;
 	SDLOG(0, "takeScreenshot: %d\n", type);
 }

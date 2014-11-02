@@ -207,12 +207,13 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 
 
 	// Full-size screenshots
-	if(takeScreenshot == SCREENSHOT_FULL || takeScreenshot == SCREENSHOT_HUDLESS || (!downsampling && takeScreenshot == SCREENSHOT_STANDARD)) {
-		tookScreenshot();
+	if(takingScreenshot(SCREENSHOT_FULL) || takingScreenshot(SCREENSHOT_HUDLESS)) {
 		storeRenderState();
 		if(downsampling) d3ddev->SetRenderTarget(0, backBuffers[0]->getSurf());
 		captureRTScreen("full resolution");
 		restoreRenderState();
+		tookScreenshot(SCREENSHOT_FULL);
+		tookScreenshot(SCREENSHOT_HUDLESS);
 	}
 
 	// Frame time measurements
@@ -238,8 +239,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 	}
 
 	// Normal screenshots
-	if(takeScreenshot == SCREENSHOT_STANDARD) {
-		tookScreenshot();
+	if(takingScreenshot(SCREENSHOT_STANDARD)) {
 		storeRenderState();
 		IDirect3DSurface9* realBackBuffer = NULL;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
@@ -247,6 +247,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		captureRTScreen();
 		SAFERELEASE(realBackBuffer);
 		restoreRenderState();
+		tookScreenshot(SCREENSHOT_STANDARD);
 	}
 
 	// reset per-frame vars

@@ -17,7 +17,11 @@ class Scaler;
 
 class RSManager {
 public:
-	typedef enum { SCREENSHOT_NONE, SCREENSHOT_STANDARD, SCREENSHOT_FULL, SCREENSHOT_HUDLESS } ScreenshotType;
+	static const unsigned SCREENSHOT_NONE = 0;
+	static const unsigned SCREENSHOT_STANDARD = 1 << 1;
+	static const unsigned SCREENSHOT_FULL = 1 << 2;
+	static const unsigned SCREENSHOT_HUDLESS = 1 << 3;
+	typedef unsigned ScreenshotType;
 
 protected:
 	static RSManager* latest;
@@ -60,9 +64,8 @@ public:
 	virtual Scaler* getScaler() { return &*scaler; }
 
 	void enableTakeScreenshot(ScreenshotType type);
-	ScreenshotType getTakeScreenshot() { return takeScreenshot; }
-	bool takingScreenshot() { return takeScreenshot != SCREENSHOT_NONE; }
-	void tookScreenshot() { takeScreenshot = SCREENSHOT_NONE; }
+	bool takingScreenshot(ScreenshotType type) { return (takeScreenshot & type) != SCREENSHOT_NONE; }
+	void tookScreenshot(ScreenshotType type) { takeScreenshot &= ~type; }
 
 	void dumpFrame() { dumpingFrame = true; }
 

@@ -139,8 +139,8 @@ void KeyActions::processIO() {
 				auto curState = state.Gamepad.wButtons & XINPUT_GAMEPAD_##_name; \
 				auto prevState = oldStates[i].Gamepad.wButtons & XINPUT_GAMEPAD_##_name; \
 				if(curState && !prevState) { \
-					auto elem = buttonBindingMap[i].find(XINPUT_GAMEPAD_##_name); \
-					if(elem != buttonBindingMap[i].end()) performAction(elem->second.c_str()); \
+					auto range = buttonBindingMap[i].equal_range(XINPUT_GAMEPAD_##_name); \
+					for(auto it = range.first; it != range.second; ++it) performAction(it->second.c_str()); \
 				} }
  				#include "xinput.def"
 				#undef BUTTON

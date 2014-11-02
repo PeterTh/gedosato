@@ -7,7 +7,7 @@
 class KeyActions {
 	static KeyActions instance;
 
-	using IntStrMap = std::map<int, std::string>;
+	using IntStrMap = std::multimap<int, std::string>;
 	IntStrMap keyBindingMap;
 	IntStrMap buttonBindingMap[4];
 

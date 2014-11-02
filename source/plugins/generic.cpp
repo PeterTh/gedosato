@@ -83,9 +83,9 @@ void GenericPlugin::processCurrentBB() {
 	if(bb) {
 		manager.storeRenderState();
 		process(bb);
-		if(manager.getTakeScreenshot() == RSManager::SCREENSHOT_HUDLESS) {
+		if(manager.takingScreenshot(RSManager::SCREENSHOT_HUDLESS)) {
 			manager.captureRTScreen("hudless", bb);
-			manager.tookScreenshot();
+			manager.tookScreenshot(RSManager::SCREENSHOT_HUDLESS);
 		}
 		manager.restoreRenderState();
 	}
