@@ -56,7 +56,7 @@
     #define Curves_mode     0   //[0|1|2] Choose what to apply contrast to. 0 = Luma, 1 = Chroma, 2 = both Luma and Chroma. Default is 0 (Luma)
     #define Curves_contrast 0.15 //[-1.00 to 1.00] The amount of contrast you want
 
-// -- Advanced curve settings --
+// Advanced curve settings
     #define Curves_formula     10 //[1|2|3|4|5|6|7|8|9|10] The contrast s-curve you want to use.
         //1 = Sine, 2 = Abs split, 3 = Smoothstep, 4 = Exp formula, 5 = Simplified Catmull-Rom (0,0,1,1), 6 = Perlins Smootherstep
         //Note that Technicolor Cinestyle is practically identical to Sine, but runs slower. In fact I think the difference might only be due to rounding errors.
@@ -67,10 +67,22 @@
         //Note that the patterns used by Dither, makes an image harder to compress.
         //This can make your screenshots and video recordings take up more space.
 
+// Lottes CRT settings
+    #define LCRT_IMAGE_RES float2(320.0/1.0, 240.0/1.0)  // Original image resolution.
+    #define LCRT_SCANLINE_HARDNESS -10.0                 // Hardness of scanline. -8.0 = soft -16.0 = medium
+    #define LCRT_PIXEL_HARDNESS     -3.0                 // Hardness of pixels in scanline. -2.0 = soft -4.0 = hard
+    #define LCRT_HARD_BLOOM_SCAN    -2.0                 // Hardness of short vertical bloom. -1.5 = wide -4.0 = narrow
+    #define LCRT_HARD_BLOOM_PIX     -1.5                 // Hardness of short horizontal bloom. -1.0 = wide -2.0 = narrow
+    #define LCRT_BLOOM_AMOUNT    1.0/4.0                 // Amount of small bloom effect. 1.0 = only bloom  0.0 = no bloom
+    #define LCRT_H_WARP         1.0/64.0                 // Horizontal display warp. 0.0 = none 1.0/8.0 = extreme
+    #define LCRT_V_WARP         1.0/24.0                 // Vertical display warp. 0.0 = none 1.0/8.0 = extreme
+    #define LCRT_MASK_DARK           0.5                 // Amount of shadow masking in dark areas.
+    #define LCRT_MASK_LIGHT          1.5                 // Amount of shadow masking in light areas.
+
 // Advanced CRT settings
     #define CRTAmount            1.00    //[0.00 to 1.00]  Amount of CRT effect you want
 
-    #define CRTResolutionX       (SCREEN_SIZE.x)  / 4    //[1 to 2048]     Original input width of the game.  Default is 1/4 horizontal screen resolution
+    #define CRTResolutionX       (SCREEN_SIZE.x) / 4    //[1 to 2048]     Original input width of the game.  Default is 1/4 horizontal screen resolution
     #define CRTResolutionY       (SCREEN_SIZE.y) / 4    //[1 to 2048]     Original input height of the game.  Default is 1/4 vertical screen resolution
     #define CRTgamma             2.2     //[0.0 to 4.0]    Gamma of simulated CRT (default 2.2)
     #define CRTmonitorgamma      2.4     //[0.0 to 4.0]    Gamma of display monitor (typically 2.2 is correct)
@@ -1559,48 +1571,15 @@ float4 SinCityPass( float4 colorInput )
 // Emulated input resolution.
 #if 0
   // Fix resolution to set amount.
-  float2 res = float2(320.0/1.0, 160.0/1.0);
+  float2 res = LCRT_IMAGE_RES;
 #else
   // Optimize for resize.
   float2 res = SCREEN_SIZE / 6.0; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
 #endif
 
-// Hardness of scanline.
-//  -8.0 = soft
-// -16.0 = medium
-float hardScan=-10.0;
-
-// Hardness of pixels in scanline.
-// -2.0 = soft
-// -4.0 = hard
-float hardPix=-4.0;
-
-// Hardness of short vertical bloom.
-//  -1.0 = wide to the point of clipping (bad)
-//  -1.5 = wide
-//  -4.0 = not very wide at all
-float hardBloomScan=-2.0;
-
-// Hardness of short horizontal bloom.
-//  -0.5 = wide to the point of clipping (bad)
-//  -1.0 = wide
-//  -2.0 = not very wide at all
-float hardBloomPix=-1.5;
-
-// Amount of small bloom effect.
-//  1.0/1.0 = only bloom
-//  1.0/16.0 = what I think is a good amount of small bloom
-//  0.0     = no bloom
-float bloomAmount=1.0/4.0;
-
-// Display warp.
-// 0.0 = none
-// 1.0/8.0 = extreme
-float2 warp=float2(1.0/64.0,1.0/24.0);
-
 // Amount of shadow mask.
-float maskDark=0.5;
-float maskLight=1.5;
+float maskDark = LCRT_MASK_DARK;
+float maskLight = LCRT_MASK_LIGHT;
 
 //------------------------------------------------------------------------
 
@@ -1614,20 +1593,12 @@ float3 ToLinear(float3 c){return float3(ToLinear1(c.r),ToLinear1(c.g),ToLinear1(
 float ToSrgb1(float c){return(c<0.0031308?c*12.92:1.055*pow(c,0.41666)-0.055);}
 float3 ToSrgb(float3 c){return float3(ToSrgb1(c.r),ToSrgb1(c.g),ToSrgb1(c.b));}
 
-// Testing only, something to help generate a dark signal for bloom test.
-// Set to zero, or remove Test() if using this shader.
-#if 1
- float3 Test(float3 c){return c*(1.0/64.0)+c*c*c;}
-#else
- float3 Test(float3 c){return c;}
-#endif
-
 // Nearest emulated sample given floating point position and texel offset.
 // Also zero's off screen.
 float3 Fetch(float2 pos,float2 off){
   pos=floor(pos*res+off)/res;
   if(max(abs(pos.x-0.5),abs(pos.y-0.5))>0.5)return float3(0.0,0.0,0.0);
-  return Test(ToLinear(tex2D(s0,pos.xy).rgb));} // return Test(ToLinear(tex2D(s0,pos.xy,-16.0).rgb));}
+  return ToLinear(tex2D(s0,pos.xy).rgb); } // return Test(ToLinear(tex2D(s0,pos.xy,-16.0).rgb));}
 
 // Distance in emulated pixels to nearest texel.
 float2 Dist(float2 pos){pos=pos*res;return -((pos-floor(pos))-float2(0.5, 0.5));}
@@ -1642,7 +1613,7 @@ float3 Horz3(float2 pos,float off){
   float3 d=Fetch(pos,float2( 1.0,off));
   float dst=Dist(pos).x;
   // Convert distance to weight.
-  float scale=hardPix;
+  float scale=LCRT_PIXEL_HARDNESS;
   float wb=Gaus(dst-1.0,scale);
   float wc=Gaus(dst+0.0,scale);
   float wd=Gaus(dst+1.0,scale);
@@ -1658,7 +1629,7 @@ float3 Horz5(float2 pos,float off){
   float3 e=Fetch(pos,float2( 2.0,off));
   float dst=Dist(pos).x;
   // Convert distance to weight.
-  float scale=hardPix;
+  float scale=LCRT_PIXEL_HARDNESS;
   float wa=Gaus(dst-2.0,scale);
   float wb=Gaus(dst-1.0,scale);
   float wc=Gaus(dst+0.0,scale);
@@ -1678,7 +1649,7 @@ float3 Horz7(float2 pos,float off){
   float3 g=Fetch(pos,float2( 3.0,off));
   float dst=Dist(pos).x;
   // Convert distance to weight.
-  float scale=hardBloomPix;
+  float scale=LCRT_HARD_BLOOM_PIX;
   float wa=Gaus(dst-3.0,scale);
   float wb=Gaus(dst-2.0,scale);
   float wc=Gaus(dst-1.0,scale);
@@ -1692,12 +1663,12 @@ float3 Horz7(float2 pos,float off){
 // Return scanline weight.
 float Scan(float2 pos,float off){
   float dst=Dist(pos).y;
-  return Gaus(dst+off,hardScan);}
+  return Gaus(dst+off,LCRT_SCANLINE_HARDNESS);}
 
 // Return scanline weight for bloom.
 float BloomScan(float2 pos,float off){
   float dst=Dist(pos).y;
-  return Gaus(dst+off,hardBloomScan);}
+  return Gaus(dst+off,LCRT_HARD_BLOOM_SCAN);}
 
 // Allow nearest three lines to effect pixel.
 float3 Tri(float2 pos){
@@ -1726,7 +1697,7 @@ float3 Bloom(float2 pos){
 // Distortion of scanlines, and end of screen alpha.
 float2 Warp(float2 pos){
   pos=pos*2.0-1.0;    
-  pos*=float2(1.0+(pos.y*pos.y)*warp.x,1.0+(pos.x*pos.x)*warp.y);
+  pos*=float2(1.0+(pos.y*pos.y)*(LCRT_H_WARP),1.0+(pos.x*pos.x)*(LCRT_V_WARP).y);
   return pos*0.5+0.5;}
 
 #if 0
@@ -1792,10 +1763,10 @@ float4 CRTLottesPass( float4 colorInput, float2 tex )
   outColor.rgb = Tri(pos)*Mask(tex * SCREEN_SIZE); // Mask(IN.UVCoord * SCREEN_SIZE.xy);
   #if 0
     // Normalized exposure.
-  	outColor.rgb = lerp(outColor.rgb,Bloom(pos),bloomAmount);
+  	outColor.rgb = lerp(outColor.rgb,Bloom(pos),LCRT_BLOOM_AMOUNT);
   #else
     // Additive bloom.
-  	outColor.rgb += Bloom(pos)*bloomAmount;
+  	outColor.rgb += Bloom(pos)*LCRT_BLOOM_AMOUNT;
   #endif
   outColor.a=1.0;
   outColor.rgb = ToSrgb(outColor.rgb);
@@ -1842,6 +1813,14 @@ float4 postProcessing(VSOUT IN) : COLOR0
     float2 tex = IN.UVCoord;
     float4 c0 = tex2D(s0, tex);
     
+#if (USE_ADVANCED_CRT == 1)
+    c0 = AdvancedCRTPass(c0, tex);
+#endif
+
+#if (USE_LOTTES_CRT == 1)
+    c0 = CRTLottesPass(c0, tex);
+#endif
+
 #if (USE_BLOOM == 1)
     c0 = BloomPass(c0, tex);
 #endif
@@ -1870,13 +1849,6 @@ float4 postProcessing(VSOUT IN) : COLOR0
     c0 = CurvesPass(c0);
 #endif
 
-#if (USE_ADVANCED_CRT == 1)
-    c0 = AdvancedCRTPass(c0, tex);
-#endif
-
-#if (USE_LOTTES_CRT == 1)
-    c0 = CRTLottesPass(c0, tex);
-#endif
 
 #if (USE_DITHER == 1)
     c0 = DitherPass(c0, tex);
