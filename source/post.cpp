@@ -49,7 +49,7 @@ void Post::reloadShader() {
 	ID3DXEffect* newEffect = NULL;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
 	if(hr != D3D_OK) {
-		SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
+		SDLOG(-1, "ERRORS:\n %s\n", (char*)errors->GetBufferPointer());
 		Console::get().add(format("Error compiling %s:", shaderFn.c_str()));
 		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
 	}

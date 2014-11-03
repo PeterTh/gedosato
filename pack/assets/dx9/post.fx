@@ -149,12 +149,12 @@
 
 // SinCity settings 
     #define sincity_strength  1.00 //[0.00 to 1.00] This setting is a placeholder and does nothing at the moment.
-	
+    
 // Cartoon settings                                                  
     #define CartoonPower      10.0  //[0.1 to 10.0] Amount of effect you want.
     #define CartoonEdgeSlope  1.3  //[0.1 to 8.0]  Raise this to filter out fainter edges. You might need to increase the power to compensate. Whole numbers are faster.
-	#define CartoonColor        1.0  //[-1.0 OR 1.0] Sets border color to either black or white.  -1 is black, 1 is white.  
-	#define CartoonThickness 1.0  //[0 and above]  Sets border thickness.  Looks best at values around 1.0 - 2.0.  At higher values, sharpening helps visuals look better.
+    #define CartoonColor        1.0  //[-1.0 OR 1.0] Sets border color to either black or white.  -1 is black, 1 is white.  
+    #define CartoonThickness 1.0  //[0 and above]  Sets border thickness.  Looks best at values around 1.0 - 2.0.  At higher values, sharpening helps visuals look better.
     
 // Monochrome settings                    
     #define Monochrome_conversion_values  float3(0.18,0.41,0.41)  //[-1.00 to 1.00] Percentage of RGB to include (should sum up to 1.00)
@@ -561,6 +561,7 @@ float4 TonemapPass(float4 colorInput)
     float3 newColor = lerp(result1, result2, L);
     //float A2 = Bleach * color.rgb; //why use a float for A2 here and then multiply by color.rgb (a float3)?
     float3 A2 = Bleach * color.rgb; //
+    // this line is clearly wrong, but I have no idea what the intention is -- Durante
     float3 mixRGB = (A2 * newColor.r, A2 * newColor.g, A2*newColor.b);
     
     color.rgb += ((1.0f - A2) * mixRGB);
@@ -1697,7 +1698,7 @@ float3 Bloom(float2 pos){
 // Distortion of scanlines, and end of screen alpha.
 float2 Warp(float2 pos){
   pos=pos*2.0-1.0;    
-  pos*=float2(1.0+(pos.y*pos.y)*(LCRT_H_WARP),1.0+(pos.x*pos.x)*(LCRT_V_WARP).y);
+  pos*=float2(1.0+(pos.y*pos.y)*(LCRT_H_WARP),1.0+(pos.x*pos.x)*(LCRT_V_WARP));
   return pos*0.5+0.5;}
 
 #if 0
@@ -1763,10 +1764,10 @@ float4 CRTLottesPass( float4 colorInput, float2 tex )
   outColor.rgb = Tri(pos)*Mask(tex * SCREEN_SIZE); // Mask(IN.UVCoord * SCREEN_SIZE.xy);
   #if 0
     // Normalized exposure.
-  	outColor.rgb = lerp(outColor.rgb,Bloom(pos),LCRT_BLOOM_AMOUNT);
+    outColor.rgb = lerp(outColor.rgb,Bloom(pos),LCRT_BLOOM_AMOUNT);
   #else
     // Additive bloom.
-  	outColor.rgb += Bloom(pos)*LCRT_BLOOM_AMOUNT;
+    outColor.rgb += Bloom(pos)*LCRT_BLOOM_AMOUNT;
   #endif
   outColor.a=1.0;
   outColor.rgb = ToSrgb(outColor.rgb);
