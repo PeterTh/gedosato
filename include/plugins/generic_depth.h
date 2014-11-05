@@ -2,20 +2,20 @@
 
 #include "generic.h"
 #include "ssao.h"
+#include "dof.h"
 #include "depth_texture.h"
 
 class GenericDepthPlugin : public GenericPlugin {
 
 	SSAO* ssao = NULL;
+	DOF* dof = NULL;
 	bool doAO = true;
-	bool isOrigDssRestored = false;
-	bool isOrigDssReplaced = false;
-	bool isAspectRatioFixNeeded = false;
+	bool doDof = true;
 
 	unsigned countClear;
-	unsigned drw, drh, dssw, dssh;
-	std::unique_ptr<DepthTexture> depthTexture;
-	IDirect3DSurface9* gameDepthStencil = NULL;
+	unsigned drw, drh, dssw, dssh, texw, texh, aspectHeight;
+	double drwP, aspectHeightP;
+	std::unique_ptr<DepthTexture> depthTexture, depthTextureAlt;
 
 	virtual void process(IDirect3DSurface9* backBuffer) override;
 
@@ -34,6 +34,7 @@ public:
 	virtual HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) override;
 
 	virtual void toggleAO() override { if(ssao) { doAO = !doAO; Console::get().add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { Console::get().add("SSAO disabled in configuration!"); } }
+	virtual void toggleDOF() override { if(dof) { doDof = !doDof; Console::get().add(doDof ? "DOF enabled" : "DOF disabled"); } else { Console::get().add("DOF disabled in configuration!"); } }
 	virtual void dumpSSAO() override { if(ssao) { ssao->dumpFrame(); Console::get().add("AO dumped"); } else { Console::get().add("SSAO disabled in configuration!"); } }
 
 	virtual void reloadShaders() override;

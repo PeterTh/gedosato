@@ -24,4 +24,5 @@ public:
 	}
 
 	void quad(int width, int height);
+	void aspectQuad(int inputWidth, int inputhHeight, int width, int height);
 };

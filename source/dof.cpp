@@ -8,9 +8,22 @@ using namespace std;
 #include "settings.h"
 #include "renderstate_manager.h"
 
-DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseRadius) 
-	: Effect(device), width(width), height(height) {
+DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseRadius, bool readHWDepth) 
+	: Effect(device), width(width), height(height), type(type), baseRadius(baseRadius), readHWDepth(readHWDepth) {
 	
+	reloadShader();
+
+	// Create buffers
+	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
+}
+
+DOF::~DOF() {
+	SAFERELEASE(effect);
+}
+
+void DOF::reloadShader() {
+
 	// Setup the defines for compiling the effect
     vector<D3DXMACRO> defines;
 
@@ -25,6 +38,10 @@ DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseR
 	D3DXMACRO radiusMacro = { "DOF_BASE_BLUR_RADIUS", radiusText.c_str() };
 	defines.push_back(radiusMacro);
 	
+	// Setup depth reading method
+	D3DXMACRO readHWDepthMacro = { "USE_HWDEPTH", "true" };
+	if(readHWDepth) defines.push_back(readHWDepthMacro);
+
     D3DXMACRO null = { NULL, NULL };
     defines.push_back(null);
 
@@ -41,19 +58,11 @@ DOF::DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseR
 	ID3DXBuffer* errors;
 	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
 	if(hr != D3D_OK) SDLOG(0, "ERRORS:\n %s\n", errors->GetBufferPointer());
-	
-	// Create buffers
-	buffer1 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
-	buffer2 = RSManager::getRTMan().createTexture(width, height, RenderTarget::FMT_ARGB_8);
 
 	// get handles
 	depthTexHandle = effect->GetParameterByName(NULL, "depthTex");
 	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
     lastpassTexHandle = effect->GetParameterByName(NULL, "lastpassTex");
-}
-
-DOF::~DOF() {
-	SAFERELEASE(effect);
 }
 
 void DOF::go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst) {

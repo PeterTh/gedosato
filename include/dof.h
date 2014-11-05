@@ -12,13 +12,18 @@ class DOF : public Effect {
 public:
 	enum Type { BOKEH, BASIC };
 
-    DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseRadius);
+    DOF(IDirect3DDevice9 *device, int width, int height, Type type, float baseRadius, bool readHWDepth);
     virtual ~DOF();
 
 	void go(IDirect3DTexture9 *frame, IDirect3DTexture9 *depth, IDirect3DSurface9 *dst);
 
+	void reloadShader();
+
 private:
 	int width, height;
+	float baseRadius;
+	bool readHWDepth;
+	Type type;
 
 	ID3DXEffect *effect;
 	
