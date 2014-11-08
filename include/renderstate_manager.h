@@ -48,6 +48,7 @@ protected:
 	std::unique_ptr<Scaler> scaler;
 
 public:
+	static bool exists() { return latest != NULL; }
 	static RSManager& get();
 	static RSManagerDX9& getDX9();
 	static RSManagerDX11& getDX11();

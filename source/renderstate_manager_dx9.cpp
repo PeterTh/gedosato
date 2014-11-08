@@ -48,7 +48,7 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 
 	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
 	Console::setLatest(&console);
-	imgWriter.reset(new ImageWriter(d3ddev, max(Settings::get().getRenderWidth(), Settings::get().getPresentWidth()), max(Settings::get().getRenderHeight(), Settings::get().getPresentHeight())));
+	imgWriter.reset(new ImageWriter(d3ddev, max(rw, max(Settings::get().getRenderWidth(), Settings::get().getPresentWidth())), max(rh, max(Settings::get().getRenderHeight(), Settings::get().getPresentHeight()))));
 
 	// performance measurement
 	console.add(frameTimeText);

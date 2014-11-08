@@ -41,6 +41,10 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	r.top = 0;
 	r.right = desc.Width;
 	r.bottom = desc.Height;
+	if(Settings::get().getConstrainInjectedRT()) {
+		if(r.right > wmax) r.right = wmax;
+		if(r.bottom > hmax) r.bottom = hmax;
+	}
 	HRESULT hr = device9->StretchRect(surf, &r, tempSurf, &r, D3DTEXF_NONE);
 	if(hr != D3D_OK) {
 		Console::get().add("Failed taking screenshot! (StretchRect)");
@@ -48,14 +52,14 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	}
 	D3DLOCKED_RECT lockedR;
 	if(tempSurf->LockRect(&lockedR, &r, D3DLOCK_READONLY) == D3D_OK) {
-		BYTE* buffer = new BYTE[lockedR.Pitch*desc.Height];
-		memcpy(buffer, lockedR.pBits, lockedR.Pitch*desc.Height);
+		BYTE* buffer = new BYTE[lockedR.Pitch*r.bottom];
+		memcpy(buffer, lockedR.pBits, lockedR.Pitch*r.bottom);
 		INT pitch = lockedR.Pitch;
 		tempSurf->UnlockRect();
 
 		// lambda performing image encoding and writing
-		auto writer = [this, buffer, desc, pitch, fn, discardAlpha] {
-			for(unsigned i = 0; i < pitch*desc.Height; i += 4) {
+		auto writer = [this, r, buffer, pitch, fn, discardAlpha] {
+			for(int i = 0; i < pitch*r.bottom; i += 4) {
 				// A8R8G8B8 --> (A)BGR
 				BYTE tmp = buffer[i + 0];
 				buffer[i + 0] = buffer[i + 2];
@@ -63,7 +67,7 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 				buffer[i + 2] = tmp;
 				if(discardAlpha) buffer[i + 3] = 255;
 			}
-			if(stbi_write_png(fn.c_str(), desc.Width, desc.Height, 4, buffer, pitch) == 0) {
+			if(stbi_write_png(fn.c_str(), r.right, r.bottom, 4, buffer, pitch) == 0) {
 				Console::get().add("Failed taking screenshot! (STBI)");
 			}
 			delete[] buffer;

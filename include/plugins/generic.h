@@ -30,6 +30,7 @@ protected:
 	void performInjection();
 	void setPostReady() { postReady = true; }
 	bool isPostDone() { return postDone; }
+	unsigned drw, drh;
 
 public:
 	GenericPlugin(IDirect3DDevice9* device, RSManagerDX9 &manager) : GamePlugin(device, manager) {}

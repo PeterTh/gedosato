@@ -12,6 +12,7 @@ General:
 - Allow binding more than one action per key
 Generic Plugin:
 - Added option to postprocess after scaling (mostly for upsampling/CRT)
+- Add option to constrain HuDless image for unusual rendering setups
 
 22-10-2014 -- beta 14 - "Barrage am Ring"
 =========================================

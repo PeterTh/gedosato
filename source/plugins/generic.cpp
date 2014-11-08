@@ -12,7 +12,8 @@ GenericPlugin::~GenericPlugin() {
 }
 
 void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
-	unsigned drw = rw, drh = rh;
+	drw = rw;
+	drh = rh;
 	if(Settings::get().getpostProcessAfterScaling()) {
 		drw = Settings::get().getPresentWidth();
 		drh = Settings::get().getPresentHeight();
@@ -23,7 +24,7 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3D
 	}
 	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh, false);
 
-	tmp = RSManager::getRTMan().createTexture(rw, rh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
+	tmp = RSManager::getRTMan().createTexture(drw, drh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
 
 	if(!Settings::get().getInjectRenderstate().empty()) {
 		auto str = Settings::get().getInjectRenderstate();
@@ -96,7 +97,13 @@ void GenericPlugin::processCurrentBB() {
 void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
 	// move rendered content to BB if HUD hidden and it was rendered to different RT
 	if(postDone && !hudEnabled && processedBB != NULL && backBuffer != processedBB) {
-		d3ddev->StretchRect(processedBB, NULL, backBuffer, NULL, D3DTEXF_NONE);
+		if(Settings::get().getConstrainInjectedRT()) {
+			RECT sourceRect{ 0, 0, drw, drh };
+			d3ddev->StretchRect(processedBB, &sourceRect, backBuffer, &sourceRect, D3DTEXF_NONE);
+		}
+		else {
+			d3ddev->StretchRect(processedBB, NULL, backBuffer, NULL, D3DTEXF_NONE);
+		}
 	}
 	if(!Settings::get().getpostProcessAfterScaling()) {
 		process(backBuffer);

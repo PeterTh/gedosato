@@ -62,6 +62,8 @@ SETTING(string, InjectVSHash, "injectVSHash", "")
 SETTING(string, InjectRenderstate, "injectRenderstate", "")
 SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 
+SETTING(bool, ConstrainInjectedRT, "constrainInjectedRT", false)
+
 // Graphics effects options
 SETTING(string, AAType, "aaType", "fxaa")
 SETTING(unsigned, AAQuality, "aaQuality", 0)
