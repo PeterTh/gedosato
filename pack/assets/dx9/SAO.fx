@@ -30,41 +30,47 @@
 
 //#define SHOW_SSAO           /** Uncomment this to display the bare SSAO output */
 //#define SHOW_DEPTH          /** Shows depth texture. Useful to debug if you get no AO (white output) when #define SHOW_SSAO is on */
+//#define SHOW_UNBLURRED      /** Useful to fine-tune your unblurred AO. Also random noise generation is cool */
 
 /** Manual nearZ/farZ values to compensate the fact we do not have access to the real projection matrix from the game */
 /** This is key for the effect to look right. Basically you need to define the boundaries of the space you're going to shade */
 /** Usually nearZ is (0..10) and farZ is (10..300). Experiment with these until you approximate the right values for the game */
-static float nearZ = 0.1;
-static float farZ = 40.0;
+static float nearZ = 1.0;
+static float farZ = 100.0;
+
+/** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
+/** This need not match the real far plane */
+/** This goes together with nearZ/farZ values. If you can't see any (or partial) AO output at all make sure this value isn't too low :] */
+#define FAR_PLANE_Z (300.0)
 
 /** intensity : darkending factor, e.g., 1.0 */
 /** aoClamp : brightness fine-tuning (the higher the darker) */
 #ifdef SSAO_STRENGTH_LOW
-	float intensity = 1.0;
-	float aoClamp = 0.13;
+	float intensity = 2.0;
+	float aoClamp = 1.0;
 #endif
 
 #ifdef SSAO_STRENGTH_MEDIUM
-	float intensity = 1.0;
-	float aoClamp = 0.25;
+	float intensity = 4.0;
+	float aoClamp = 1.0;
 #endif
 
 #ifdef SSAO_STRENGTH_HIGH
-	float intensity = 1.0;
-	float aoClamp = 0.5;
+	float intensity = 6.0;
+	float aoClamp = 1.0;
 #endif
 
 /** Quality. Range is (1..30). */
-#define NUM_SAMPLES (6)
+#define NUM_SAMPLES (9)
 
 /** More detailed distribution of the AO (imo). You'll need to tweak the intensity parameter accordingly */
-//#define HIGH_QUALITY
+#define HIGH_QUALITY
 
 /** World-space AO radius in scene units (r).  e.g., 1.0m */
 /** Usually you'll want tweak projScale parameter in conjunction with this. They *are* related */
 /** Radius is also linked to intensity such as intensity / radius^6 (see intensityDivR6 below) 
 *except* for HIGH_QUALITY mode */
-static const float radius = 0.6;
+static const float radius = 2.4;
 
 /** Bias to avoid AO in smooth corners, e.g., 0.01m */
 /** Use this to push the darkening farther away from the models so it is not stuck on the geometry itself */
@@ -76,16 +82,11 @@ a scale factor on radius; you can simply hardcode this to a constant (~500)
 and make your radius value unitless (...but resolution dependent.)  */
 /** This setting tends to extend the range of occlusion, much like a radius increase
 but without affecting the intensity */
-static const float projScale = 0.3f;
+static const float projScale = 1.2f;
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.6;
-
-/** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
-/** This need not match the real far plane */
-/** This goes together with nearZ/farZ values. If you can't see any (or partial) AO output at all make sure this value isn't too low :] */
-#define FAR_PLANE_Z (100.0)
+extern float luminosity_threshold = 0.7;
 
 /** Falloff function type */
 	// 1: From the HPG12 paper
@@ -94,12 +95,11 @@ extern float luminosity_threshold = 0.6;
 	// 4: Low contrast, no division operation
 #define FALLOFF_FUNCTION 2
 
-/** Epsilon (read the SAO paper for details). Basically larger values (ie. 0.02) avoid overdarkening within craks */
+/** Epsilon (read the SAO paper for details). Basically larger values (ie. 0.02) avoid overdarkening within cracks */
 const float epsilon = 0.001;
 
 /** Increase to make edges crisper. Decrease to reduce temporal flicker. */
-// [Boulotaur2024] I recommand leaving low values because temporal flicker really *is* the problem
-#define EDGE_SHARPNESS     (0.4)
+#define EDGE_SHARPNESS     (1.0)
 
 /** Step in 2-pixel intervals since we already blurred against neighbors in the
 first AO pass.  This constant can be increased while R decreases to improve
@@ -109,7 +109,7 @@ Morgan found that a scale of 3 left a 1-pixel checkerboard grid that was
 unobjectionable after shading was applied but eliminated most temporal incoherence
 from using small numbers of sample taps.
 */
-#define SCALE               (3)
+#define SCALE               (1)
 
 /** Filter radius in pixels. This will be multiplied by SCALE. */
 #define R                   (6)
@@ -319,21 +319,20 @@ float sampleAO(in float2 ssC, in float3 C, in float3 n_C, in float ssDiskRadius,
 		[branch] if( FALLOFF_FUNCTION == 1 )
 					// A: From the HPG12 paper
 					// Note large epsilon to avoid overdarkening within cracks
-					return float(vv < radius2) * max((vn - bias) / (epsilon + vv), 0.0) * radius2 * 0.6;
+					return float(vv < radius2) * max((vn - bias) * rcp(epsilon + vv), 0.0) * radius2 * 0.6;
 				else if( FALLOFF_FUNCTION == 2 ) {
 					// B: Smoother transition to zero (lowers contrast, smoothing out corners). [Recommended]
-					float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) / (epsilon + vv), 0.0);
+					float f = max(radius2 - vv, 0.0); return f * f * f * max((vn - bias) * rcp(epsilon + vv), 0.0); // / (epsilon + vv) (optimization by BartWronski)
 				}
 				else if( FALLOFF_FUNCTION == 3 )
 					// C: Medium contrast (which looks better at high radii), no division.  Note that the 
 					// contribution still falls off with radius^2, but we've adjusted the rate in a way that is
 					// more computationally efficient and happens to be aesthetically pleasing.
 					return 4.0 * max(1.0 - vv * 1.0 / radius2, 0.0) * max(vn - bias, 0.0);
-				else if( FALLOFF_FUNCTION == 3 )
+				else if( FALLOFF_FUNCTION == 4 )
 					// D: Low contrast, no division operation
 					return 2.0 * float(vv < radius * radius) * max(vn - bias, 0.0);
 				else
-					// D: Low contrast, no division operation
 					return 4.0 * max(1.0 - vv * 1.0 / radius2, 0.0) * max(vn - bias, 0.0);			
 	#endif
 }
@@ -374,20 +373,6 @@ float4 reconstructCSZPass(VSOUT IN) : COLOR0
 	// return tex2Dlod(depthSampler, float4(ssP, 0, LastMipInfo.z));
 // }
 
-// Input: It uses texture coords as the random number seed.
-// Output: Random number: [0,1), that is between 0.0 and 0.999999... inclusive.
-// Author: Michael Pohoreski
-// Copyright: Copyleft 2012 :-)
-float random( float2 p )
-{
-  // We need irrationals for pseudo randomness.
-  // Most (all?) known transcendental numbers will (generally) work.
-  const float2 r = float2(
-    23.1406926327792690,  // e^pi (Gelfond's constant)
-     2.6651441426902251); // 2^sqrt(2) (Gelfond–Schneider constant)
-  return frac( cos( fmod( 123456789., 1e-7 + 256. * dot(p,r) ) ) );
-}
-
 // by Morgan McGuire https://www.shadertoy.com/view/4dS3Wd
 // All noise functions are designed for values on integer scale.
 // They are tuned to avoid visible periodicity for both positive and
@@ -421,7 +406,7 @@ float noise1(float2 x) {
 
 float4 SSAOCalculate(VSOUT IN) : COLOR0
 {
-	//return tex2Dlod(depthSampler, float4(IN.UVCoord, 0, 3));
+	//return tex2Dlod(depthSampler, float4(IN.UVCoord, 0, 0));
 	
     float4 output = float4(1,1,1,1);
   
@@ -430,7 +415,6 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
 
     // World space point being shaded
     float3 C = getPosition(ssC);
-	//return float4(C, 1.0);
 	
 	bool earlyOut = C.z > FAR_PLANE_Z || C.z < 0.4f || any(ssC >= (SCREEN_SIZE - 8));
     [branch]
@@ -442,19 +426,18 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
     packKey(CSZToKey(C.z), bilateralKey);
 
     // Hash function used in the HPG12 AlchemyAO paper
-	float randomPatternRotationAngle = noise1(ssC * float2(SCREEN_SIZE.x, SCREEN_SIZE.y)) * 1000.0; // McGuire noise function
-	//float randomPatternRotationAngle = random(ssC * 12) * 1000.0;
+	float randomPatternRotationAngle = noise1(ssC * float2(SCREEN_SIZE.x, SCREEN_SIZE.y)) * 10; // McGuire noise function
 
     // Reconstruct normals from positions. These will lead to 1-pixel black lines
     // at depth discontinuities, however the blur will wipe those out so they are not visible
     // in the final image.
 	float3 n_C = reconstructCSFaceNormal(C);
-	//return float4(n_C, 1.0);
 
     // Choose the screen-space sample radius
     float ssDiskRadius = -projScale * radius / max(C.z,0.1f);
 
     float sum = 0.0;
+    [unroll]
     for (int i = 0; i < NUM_SAMPLES; ++i) 
     {
          sum += sampleAO(ssC, C, n_C, ssDiskRadius, i, randomPatternRotationAngle);
@@ -483,7 +466,10 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
 	// (x^0.2 + 1.2 * x^4)/2.2
 	A = (pow(A, 0.2) + 1.2 * A*A*A*A) / 2.2;
 	visibility = lerp(1.0, A, aoClamp);
-	//return float4(visibility, visibility, visibility, 1.0);
+
+	#ifdef SHOW_UNBLURRED
+		return float4(visibility, visibility, visibility, 1.0);
+	#endif
 	
     return output;
 }
@@ -552,7 +538,7 @@ float4 BlurBL(VSOUT IN) : COLOR0
             float weight = 0.3 + gaussian[abs(r)];
 		
 			// range domain (the "bilateral" weight). As depth difference increases, decrease weight.
-			weight *= max(0.0, 1.0 - (2000.0 * EDGE_SHARPNESS) * abs(tapKey - key));
+			weight *= max(0.0, 1.0 - (800.0 * EDGE_SHARPNESS) * abs(tapKey - key));
 
             sum += value * weight;
             totalWeight += weight;
@@ -563,6 +549,12 @@ float4 BlurBL(VSOUT IN) : COLOR0
 	result = sum / (totalWeight + epsilon);
 
 	return output;
+}
+
+// Usually to go from 16:9 to 16:10 but could be used for wilder AR
+// See ssao.cp to see what happens with aspectQuad()
+float4 aspectRatioPass( VSOUT IN ) : COLOR0 {
+	return tex2D(passSampler, IN.UVCoord);
 }
 
 float4 combine( VSOUT IN ) : COLOR0 {
@@ -610,6 +602,11 @@ technique t0
 		PixelShader = compile ps_3_0 BlurBL();	
 	}
 	pass p3
+	{
+		VertexShader = compile vs_3_0 FrameVS();
+		PixelShader = compile ps_3_0 aspectRatioPass();	
+	}	
+	pass p4
 	{
 		VertexShader = compile vs_3_0 FrameVS();
 		PixelShader = compile ps_3_0 combine();

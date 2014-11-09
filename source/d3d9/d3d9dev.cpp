@@ -127,7 +127,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::BeginStateBlock() {
 
 HRESULT APIENTRY hkIDirect3DDevice9::Clear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) {
 	RSManager::setLatest(rsMan);
-	SDLOG(4, "Clear\n");
+	SDLOG(4, "Clear - Flags: %d\n", Flags);
 	return rsMan->redirectClear(Count, pRects, Flags, Color, Z, Stencil);
 }
 

@@ -8,11 +8,13 @@
 AlanWake                     || Alan Wake
 AoW3                         || Age of Wonders 3
 AssassinsCreed_Dx9           || Assassins Creed
+AssassinsCreedIIGame         || Assassin's Creed 2
 Astebreed                    || Astebreed
 AvP                          || Aliens vs Predator 2010
 BatmanAC                     || Batman: Arkham City GOTY
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
 BFBC2Game                    || Battlefield: Bad Company 2
+Bio4                         || Resident Evil 4 PC
 bionic_commando              || Bionic Commando
 Bioshock                     || Bioshock
 Bioshock2                    || Bioshock 2
@@ -50,6 +52,7 @@ Earth2160*                   || Earth 2160
 EoCApp                       || Divinity: Original Sin
 Fallout3                     || Fallout 3
 FalloutLauncher              || Fallout 3 Launcher
+FarCry2                      || FarCry 2
 fear                         || F.E.A.R.
 FEAR2                        || F.E.A.R. 2
 FEARXP                       || F.E.A.R. Extraction Point
