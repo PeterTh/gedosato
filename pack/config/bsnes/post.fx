@@ -42,7 +42,7 @@
     #define Vibrance_RGB_balance float3(1.00, 1.00, 1.00) // [-10.00 to 10.00,-10.00 to 10.00,-10.00 to 10.00] A per channel multiplier to the Vibrance strength so you can give more boost to certain colors over others
 
 // Tonemap settings
-    #define Gamma 1.1                     //[0.000 to 2.000] Adjust midtones
+    #define Gamma 1.0                     //[0.000 to 2.000] Adjust midtones
     #define Exposure 0.1                   //[-1.000 to 1.000] Adjust exposure
     #define Saturation 0.0                 //[-1.000 to 1.000] Adjust saturation
     #define Bleach 0.0                     //[0.000 to 1.000] Brightens the shadows and fades the colors
@@ -1564,7 +1564,9 @@ float4 SinCityPass( float4 colorInput )
   //float2 res = float2(256.0/1.0, 224.0/1.0);
   //float2 res = float2(294.0/0.5, 224.0/.5);
   //float2 res = float2(255.5/.5, 224.0/.5);
-  float2 res = float2(257.0/1.0, 225.0/1.0);
+  // 2560x1440
+  ///float2 res = float2(257.0/1.0, 225.0/1.0);
+  float2 res = float2(256.0/1.0, 224.0/1.0);
 #else
   // Optimize for resize.
   float2 res = SCREEN_SIZE / 2.5; // <-- original implementation : SCREEN_SIZE / 6.0; (probably hardcoded for ShaderToy)
@@ -1573,7 +1575,7 @@ float4 SinCityPass( float4 colorInput )
 // Hardness of scanline.
 //  -8.0 = soft
 // -16.0 = medium
-float hardScan=-8.0;
+float hardScan=-16.0;
 
 // Hardness of pixels in scanline.
 // -2.0 = soft
@@ -1584,13 +1586,13 @@ float hardPix=-3.5;
 //  -1.0 = wide to the point of clipping (bad)
 //  -1.5 = wide
 //  -4.0 = not very wide at all
-float hardBloomScan=-1.5;
+float hardBloomScan=-2.5;
 
 // Hardness of short horizontal bloom.
 //  -0.5 = wide to the point of clipping (bad)
 //  -1.0 = wide
 //  -2.0 = not very wide at all
-float hardBloomPix=-1.0;
+float hardBloomPix=-1.5;
 
 // Amount of small bloom effect.
 //  1.0/1.0 = only bloom
@@ -1601,8 +1603,8 @@ float bloomAmount=1.0/4.0;
 // Display warp.
 // 0.0 = none
 // 1.0/8.0 = extreme
-float2 warp=float2(1.0/128.0,1.0/68.0);
-//float2 warp=float2(0.0,0.0);
+//float2 warp=float2(1.0/128.0,1.0/68.0);
+float2 warp=float2(0.0,0.0);
 
 // Amount of shadow mask.
 float maskDark=0.5;
@@ -1622,8 +1624,10 @@ float3 ToSrgb(float3 c){return float3(ToSrgb1(c.r),ToSrgb1(c.g),ToSrgb1(c.b));}
 
 // terrible hack to get the pixel mapping right
 float2 Adjust(float2 pos) {
-    pos.x = pos.x + smoothstep(0.92, 1.0, pos.x)*0.005;
-    pos.x = pos.x - smoothstep(0.08, 0.0, pos.x)*0.005;
+    //pos.x = pos.x + smoothstep(0.92, 1.0, pos.x)*0.005;
+    //pos.x = pos.x - smoothstep(0.08, 0.0, pos.x)*0.005;
+    pos.x -= 0.5 * (1.0/res.x);
+    pos.y -= 0.5 * (1.0/res.y);
     return pos;
 }
 
