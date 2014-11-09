@@ -8,7 +8,7 @@
 #define USE_HDR               0 //[0 or 1] HDR : Not actual HDR - It just tries to mimic an HDR look (relatively high performance cost)
 #define USE_LUMASHARPEN       0 //[0 or 1] LumaSharpen
 #define USE_VIBRANCE          0 //[0 or 1] Vibrance : Intelligently saturates (or desaturates if you use negative values) the pixels depending on their original saturation.
-#define USE_XBONE            1 //[0 or 1] Levels : Sets a new black and white point. Brings all the power of TheCloud to your Glorious PC games. This increases contrast but causes clipping. Use Curves instead if you want to avoid that.  
+#define USE_XBONE            0 //[0 or 1] Levels : Sets a new black and white point. Brings all the power of TheCloud to your Glorious PC games. This increases contrast but causes clipping. Use Curves instead if you want to avoid that.  
 #define USE_TONEMAP           0 //[0 or 1] Tonemap : Adjust gamma, exposure, saturation, bleach and defog. (may cause clipping)
 #define USE_CA                0 //[0 or 1] Chromatic aberration. You can only use Chromatic Aberration OR the Explosion Shader. Not both at the same time.
 #define USE_CURVES            0 //[0 or 1] Curves : Contrast adjustments using S-curves.
