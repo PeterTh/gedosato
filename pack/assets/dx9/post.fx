@@ -8,6 +8,7 @@
 #define USE_HDR               0 //[0 or 1] HDR : Not actual HDR - It just tries to mimic an HDR look (relatively high performance cost)
 #define USE_LUMASHARPEN       0 //[0 or 1] LumaSharpen
 #define USE_VIBRANCE          0 //[0 or 1] Vibrance : Intelligently saturates (or desaturates if you use negative values) the pixels depending on their original saturation.
+#define USE_XBONE            1 //[0 or 1] Levels : Sets a new black and white point. Brings all the power of TheCloud to your Glorious PC games. This increases contrast but causes clipping. Use Curves instead if you want to avoid that.  
 #define USE_TONEMAP           0 //[0 or 1] Tonemap : Adjust gamma, exposure, saturation, bleach and defog. (may cause clipping)
 #define USE_CA                0 //[0 or 1] Chromatic aberration. You can only use Chromatic Aberration OR the Explosion Shader. Not both at the same time.
 #define USE_CURVES            0 //[0 or 1] Curves : Contrast adjustments using S-curves.
@@ -40,6 +41,13 @@
 // Vibrance settings
     #define Vibrance     0.08     // [-1.00 to 1.00] Intelligently saturates (or desaturates if you use negative values) the pixels depending on their original saturation.
     #define Vibrance_RGB_balance float3(1.00, 1.00, 1.00) // [-10.00 to 10.00,-10.00 to 10.00,-10.00 to 10.00] A per channel multiplier to the Vibrance strength so you can give more boost to certain colors over others
+	
+// XBONE settings
+
+#define Levels_black_point 16    //[0 to 255] The black point is the new black - literally. Everything darker than this will become completely black. Default is 16.0
+#define Levels_white_point 235   //[0 to 255] The new white point. Everything brighter than this becomes completely white. Default is 235.0
+
+//Colors between the two points will stretched, which increases contrast, but details above and below the points are lost (this is called clipping).
 
 // Tonemap settings
     #define Gamma 1.0                      //[0.000 to 2.000] Adjust midtones
@@ -153,7 +161,7 @@
 // Cartoon settings                                                  
     #define CartoonPower      10.0  //[0.1 to 10.0] Amount of effect you want.
     #define CartoonEdgeSlope  1.3  //[0.1 to 8.0]  Raise this to filter out fainter edges. You might need to increase the power to compensate. Whole numbers are faster.
-    #define CartoonColor        1.0  //[-1.0 OR 1.0] Sets border color to either black or white.  -1 is black, 1 is white.  
+    #define CartoonColor        -1.0  //[-1.0 OR 1.0] Sets border color to either black or white.  -1 is black, 1 is white.  
     #define CartoonThickness 1.0  //[0 and above]  Sets border thickness.  Looks best at values around 1.0 - 2.0.  At higher values, sharpening helps visuals look better.
     
 // Monochrome settings                    
@@ -530,6 +538,28 @@ float4 VibrancePass(float4 colorInput)
 
     color.rgb = lerp(luma, color.rgb, (1.0 + (Vibrance_coeff * (1.0 - (sign(Vibrance_coeff) * color_saturation)))));
     return color;
+}
+
+// -------------------- XBONE -----------------------------------------------
+/*
+#by Christian Cann Schuldt Jensen ~ CeeJay.dk
+#
+#Allows you to set a new black and a white level.
+#This increases contrast, but clips any colors outside the new range to either black or white
+#and so some details in the shadows or highlights can be lost.
+#
+#The shader is very useful for expanding the 16-235 TV range to 0-255 PC range.
+#You might need it if you're playing a game meant to display on a TV with an emulator that does not do this.
+#But it's also a quick and easy way to uniformly increase the contrast of an image.
+*/
+
+#define black_point_float ( Levels_black_point / 255.0 )
+#define white_point_float ( 255.0 / (Levels_white_point - Levels_black_point))
+
+float4 XBONEPass( float4 colorInput )
+{
+  colorInput.rgb = colorInput.rgb * white_point_float - (black_point_float *  white_point_float);
+  return colorInput;
 }
 
 // -------------------------Tonemap--------------------------------------------
@@ -1836,6 +1866,10 @@ float4 postProcessing(VSOUT IN) : COLOR0
 
 #if (USE_VIBRANCE == 1)
     c0 = VibrancePass(c0);
+#endif
+
+#if (USE_XBONE == 1)
+    c0 = XBONEPass(c0);
 #endif
 
 #if (USE_TONEMAP == 1)
