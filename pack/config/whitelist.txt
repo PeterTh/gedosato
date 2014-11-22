@@ -13,7 +13,6 @@ Astebreed                    || Astebreed
 AvP                          || Aliens vs Predator 2010
 BatmanAC                     || Batman: Arkham City GOTY
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
-BFBC2Game                    || Battlefield Bad Company 2
 BFBC2Game                    || Battlefield: Bad Company 2
 Bio4                         || Resident Evil 4 PC
 bionic_commando              || Bionic Commando
@@ -78,6 +77,7 @@ HitmanBloodMoney             || Hitman: Blood Money
 hl2                          || Half-Life 2, Portal
 Injustice                    || Injustice: Gods Among Us
 iw3sp                        || Call of Duty: Modern Warfare
+JacobJonesGame               || Jacob Jones and the Bigfoot Mystery: Episode 1
 jetsetradio                  || Jet Set Radio
 jsrsetup                     || Jet Set Radio Config Tool
 kb                           || King's Bounty (All Versions)
