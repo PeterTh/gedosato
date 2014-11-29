@@ -1,5 +1,5 @@
 /*===============================================================================*\
-|########################    [GSFx Shader Suite v1.50]    ########################|
+|########################    [GSFx Shader Suite v1.55]    ########################|
 |##########################        By Asmodean          ##########################|
 ||                                                                               ||
 ||          This program is free software; you can redistribute it and/or        ||
@@ -24,11 +24,11 @@
 //-#[LIGHTING & COLOUR]         [1=ON|0=OFF]
 #define BLENDED_BLOOM                1      //#High Quality Bloom, using blend techniques. Blooms naturally, per environment.
 #define SCENE_TONEMAPPING            1      //#Scene Tonemapping & RGB Colour Correction. Corrects colour, and tone maps the scene.
-#define GAMMA_CORRECTION             1      //#RGB Post Gamma Correction Curve. sRGB->Linear->sRGB correction curve. 
+#define GAMMA_CORRECTION             0      //#RGB Gamma Correction. sRGB->Linear->sRGB correction curve. Enable for games with incorrect gamma.
 #define TEXTURE_SHARPEN              0      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative LOD bias. Enhances texture fidelity.
 #define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
-#define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated-style games.
+#define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated style games.
 
 /*------------------------------------------------------------------------------
                           [EFFECT CONFIG OPTIONS]
@@ -44,9 +44,9 @@
 #define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[TONEMAP OPTIONS]##
-#define TonemapType 1                       //[1 or 2] Type of tone mapping operator. 1 is natural, 2 is cinematic. You may want to readjust BlackLevels to compensate for diff types.
+#define TonemapType 1                       //[1 or 2] Type of tone mapping operator. 1 is natural map, 2 is cinematic(darker) map. (Default: 1)
 #define ToneAmount 0.25                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.25)
-#define BlackLevels 0.30                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.30).
+#define BlackLevels 0.30                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.30)
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
 #define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
 #define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint avg (lum correction) Use to alter the scene whitepoint average. Raising can give a cinema look.
@@ -56,16 +56,18 @@
 #define RedCurve 1.00                       //[1.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
 #define GreenCurve 1.00                     //[1.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
 #define BlueCurve 1.00                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
-#define FilmicShift 1                       //[0 or 1] Filmic cross processing. Shifts colour balance to alter the mood of the scene. For a more filmic look.
-#define RedShift 0.60                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicShift.
-#define GreenShift 0.40                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicShift.
-#define BlueShift 0.50                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicShift.
-#define ShiftRatio 0.15                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicShift.
+
+//##[FILMIC OPTIONS]##
+#define FilmicProcess 1                     //[0 or 1] Filmic cross processing. Alters the mood of the scene, for more of a filmic look. Typically best suited to realistic style games.
+#define RedShift 0.60                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicProcess.
+#define GreenShift 0.50                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicProcess.
+#define BlueShift 0.50                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicProcess.
+#define ShiftRatio 0.20                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicProcess.
 
 //##[SHARPEN OPTIONS]##
 #define SharpeningType 2                    //[1 or 2] The type of sharpening to use. Type 1 is a High Pass Gaussian. Type 2 is a higher quality(slightly slower) Bicubic Sampling type.
-#define SharpenStrength 0.60                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
-#define SharpenClamp 0.012                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
+#define SharpenStrength 0.75                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
+#define SharpenClamp 0.015                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
 #define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
 
@@ -79,7 +81,7 @@
 #define ColorRounding 1                     //[0 or 1] Uses rounding methods on colors. This can emphasise shaded toon colors. Looks good in some games, and odd in others. Try it in-game and see.
 
 //##[GAMMA OPTIONS]##
-#define Gamma 2.20                          //[1.5 to 4.0] Gamma correction. Lower Values = more gamma toning(darker), higher Values = brighter (2.2 correction is generally recommended)
+#define Gamma 2.20                          //[1.5 to 4.0] Gamma correction. Decrease for lower gamma(darker). Increase for higher gamma(brighter). (Default: 2.2)
 
 //##[VIBRANCE OPTIONS]##
 #define Vibrance 0.10                       //[-1.00 to 1.00] Adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
@@ -111,21 +113,6 @@ SamplerState s0
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
-};
-
-Texture2D paletteTex
-<
-    string path = "palette.bmp";
-    string format = "D3DFMT_X8R8G8B8";
->;
-SamplerState s1
-{
-    Texture = <paletteTex>;
-    MinFilter = Linear;
-    MagFilter = Linear;
-    AddressU = Clamp;
-    AddressV = Clamp;
-    SRGBTexture = false;
 };
 
 struct VS_INPUT
@@ -253,7 +240,7 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 {
-    float defocus = 1.2;
+    float defocus = 1.25;
     float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
     float2 dx = float2(invDefocus.x * float(BlendSpread), 0.0);
@@ -326,7 +313,7 @@ float3 FilmicTonemap(float3 color)
 
     color.xyz = numerator / denominator;
 
-    return color;
+    return saturate(color);
 }
 
 float3 ColorShift(float3 color)
@@ -361,11 +348,11 @@ float3 ColorCorrection(float3 color)
 float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
 {
     const float delta = 0.001f;
+    const float wpoint = pow(1.002f, 2.0f);
     
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
-    if (FilmicShift == 1) { color.rgb = ColorShift(color.rgb); }
-    
-    color.rgb = FilmicTonemap(color.rgb);
+    if (FilmicProcess == 1) { color.rgb = ColorShift(color.rgb); }
+    if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
 
     // RGB -> XYZ conversion
     const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -375,8 +362,7 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
     float3 XYZ = mul(RGB2XYZ, color.rgb);
 
     // XYZ -> Yxy conversion
-    float3 Yxy = lumCoeff;
-    float Wp = 1.000;
+    float3 Yxy;
 
     Yxy.r = XYZ.g;                              // copy luminance Y
     Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b);    // x = X / (X + Y + Z)
@@ -393,7 +379,8 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
     #endif
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
-    Yxy.r = (Lp * (1.0 + Lp / (Wp * Wp))) / (1.0 + Lp);
+    Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
+    if (FilmicProcess == 1) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // Yxy -> XYZ conversion
     XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
@@ -602,7 +589,7 @@ float4 CelPass(float4 color, float2 uv0)
     #if (PaletteType == 1)
         color.rgb = lerp(color.rgb, color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, EdgeStrength);
     #elif (PaletteType == 2)
-        color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.3);
+        color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.25);
     #elif (PaletteType == 3)
         color.rgb = lerp(shadedColor + edge * -EdgeStrength, pow(edge, EdgeFilter) * -EdgeStrength + color.rgb, 0.5);
     #endif
@@ -668,19 +655,6 @@ float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
                               [MAIN/COMBINE]
 ------------------------------------------------------------------------------*/
 
-float4 ColorCorrectionPS(VS_OUTPUT Input) : COLOR0
-{
-    float2 tex = Input.UVCoord;
-    float4 c0 = tex2D(s0, tex);
-
-    c0.r = tex1D(s1, c0.r).r;
-    c0.g = tex1D(s1, c0.g).g;
-    c0.b = tex1D(s1, c0.b).b;
-    c0.a = RGBLuminance(c0.rgb);
-
-    return c0;
-}
-
 float4 postProcessing(VS_OUTPUT Input) : COLOR0
 {
     float2 tex = Input.UVCoord;
@@ -690,7 +664,7 @@ float4 postProcessing(VS_OUTPUT Input) : COLOR0
         c0 = GammaPass(c0, tex);
     #endif
 
-     #if (CEL_SHADING == 1)
+    #if (CEL_SHADING == 1)
         c0 = CelPass(c0, tex);
     #endif
     
@@ -734,4 +708,3 @@ technique t0
         ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
     }
 }
-
