@@ -15,34 +15,12 @@ using namespace std;
 Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, float strength, float dirtStrength)
 	: Effect(device), width(width), height(height), cutoff(cutoff),
 	  strength(strength), dirtStrength(dirtStrength), 
-	  steps(0),
-	  dumping(false) {
+	  steps(0) {
 	
-	// Setup the defines for compiling the effect
-    vector<D3DXMACRO> defines;
-	//string cutoffText = format("%lf", cutoff);
-	//D3DXMACRO cutoffMacro = { "CUTOFF", cutoffText.c_str() };
-	//defines.push_back(cutoffMacro);
-	//string strengthText = format("%lf", strength);
-	//D3DXMACRO strengthMacro = { "STRENGTH", strengthText.c_str() };
-	//defines.push_back(strengthMacro);
-	//string dirtStrengthText = format("%lf", dirtStrength);
-	//D3DXMACRO dirtStrengthMacro = { "DIRT_STRENGTH", dirtStrengthText.c_str() };
-	//defines.push_back(dirtStrengthMacro);	
-    D3DXMACRO null = { NULL, NULL };
-    defines.push_back(null);
-
-	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
-
-	// Load effect from file
-	string shaderFn = getAssetFileName("bloom.fx");
-	SDLOG(0, "%s load\n", shaderFn.c_str());
-	ID3DXBuffer* errors;
-	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &effect, &errors);
-	if(hr != D3D_OK) SDLOG(-1, "ERRORS compiling bloom.fx:\n %s\n", errors->GetBufferPointer());
+	reloadShader();
 	
 	// Load texture
-	hr = D3DXCreateTextureFromFile(device, getAssetFileName("lensdirt.dds").c_str(), &dirtTexture);
+	HRESULT hr = D3DXCreateTextureFromFile(device, getAssetFileName("lensdirt.dds").c_str(), &dirtTexture);
 	if(hr != D3D_OK) SDLOG(-1, "ERROR loading bloom texture lensdirt.dds\n");
 
 	// Create buffers
@@ -64,27 +42,52 @@ Bloom::Bloom(IDirect3DDevice9 *device, int width, int height, float cutoff, floa
 		++i;
 	}
 	steps = i;
+}
 
-	// Get handles
-	#define GETHANDLE(__name) \
-	__name##Handle = effect->GetParameterByName(NULL, #__name); \
-	if(__name##Handle == NULL) SDLOG(-1, "ERROR loading handle %s in Bloom effect\n", #__name);
-	GETHANDLE(inputPixelMetrics)
-	GETHANDLE(invSteps);
-	GETHANDLE(sampleTex);
-	GETHANDLE(passTex);
-	GETHANDLE(dirtTex);
-	GETHANDLE(avgTex);
-	#undef GETHANDLE
-	#define GETHANDLE(__name) \
-	__name##Handle = effect->GetTechniqueByName(#__name); \
-	if(__name##Handle == NULL) SDLOG(-1, "ERROR loading technique handle %s in Bloom effect\n", #__name);
-	GETHANDLE(initialCutoffAndDownsample);
-	GETHANDLE(gaussian);
-	GETHANDLE(integrateUpwards);
-	GETHANDLE(eyeAdaption);
-	GETHANDLE(finalCompose);
-	#undef GETHANDLE
+void Bloom::reloadShader() {
+	// Setup the defines for compiling the effect
+	vector<D3DXMACRO> defines;
+	D3DXMACRO null = { NULL, NULL };
+	defines.push_back(null);
+
+	DWORD flags = D3DXFX_NOT_CLONEABLE | D3DXSHADER_OPTIMIZATION_LEVEL3;
+
+	// Load effect from file
+	string shaderFn = getAssetFileName("bloom.fx");
+	SDLOG(0, "%s load\n", shaderFn.c_str());
+	ID3DXBuffer* errors;
+	ID3DXEffect* newEffect = NULL;
+	HRESULT hr = D3DXCreateEffectFromFile(device, shaderFn.c_str(), &defines.front(), NULL, flags, NULL, &newEffect, &errors);
+	if(hr != D3D_OK) {
+		SDLOG(-1, "ERRORS:\n %s\n", (char*)errors->GetBufferPointer());
+		Console::get().add(format("Error compiling %s:", shaderFn.c_str()));
+		Console::get().add(static_cast<const char*>(errors->GetBufferPointer()));
+	}
+	else {
+		SAFERELEASE(effect);
+		effect = newEffect;
+
+		// Get handles
+		#define GETHANDLE(__name) \
+			__name##Handle = effect->GetParameterByName(NULL, #__name); \
+			if(__name##Handle == NULL) SDLOG(-1, "ERROR loading handle %s in Bloom effect\n", #__name);
+		GETHANDLE(inputPixelMetrics)
+			GETHANDLE(invSteps);
+		GETHANDLE(sampleTex);
+		GETHANDLE(passTex);
+		GETHANDLE(dirtTex);
+		GETHANDLE(avgTex);
+		#undef GETHANDLE
+		#define GETHANDLE(__name) \
+			__name##Handle = effect->GetTechniqueByName(#__name); \
+			if(__name##Handle == NULL) SDLOG(-1, "ERROR loading technique handle %s in Bloom effect\n", #__name);
+		GETHANDLE(initialCutoffAndDownsample);
+		GETHANDLE(gaussian);
+		GETHANDLE(integrateUpwards);
+		GETHANDLE(eyeAdaption);
+		GETHANDLE(finalCompose);
+		#undef GETHANDLE
+	}
 }
 
 Bloom::~Bloom() {
