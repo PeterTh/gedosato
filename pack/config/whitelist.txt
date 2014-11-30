@@ -43,6 +43,7 @@ DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
+Diablo III                   
 Dishonored                   || Dishonored
 DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
@@ -75,7 +76,12 @@ HawkenGame-Win32-Shipping    || Hawken
 HitmanBloodMoney             || Hitman: Blood Money
 hl2                          || Half-Life 2, Portal
 Injustice                    || Injustice: Gods Among Us
+iw3sp                        || Call of Duty: Modern Warfare
+JacobJonesGame               || Jacob Jones and the Bigfoot Mystery: Episode 1
+jetsetradio                  || Jet Set Radio
+jsrsetup                     || Jet Set Radio Config Tool
 kb                           || King's Bounty (All Versions)
+KentuckyRouteZero            || Kentucky Route Zero
 kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
 LaMulanaWin                  || La-Mulana
@@ -91,6 +97,7 @@ MassEffect3                  || Mass Effect 3
 MassEffect3Config            || Mass Effect 3 Configurator
 MassEffectConfig             || Mass Effect Configurator
 MazeGame-Win32-Shipping      || Lili: Child of Geos
+mgs2*                        || Metal Gear Solid 2
 Might and Magic X Legacy     || Might and Magic X Legacy
 MirrorsEdge                  || Mirror's Edge
 mitsurugi                    || Mitsurugi Kamui Hikae
@@ -101,6 +108,9 @@ Never_Alone                  || Never Alone (Kisima Ingitchuna)
 OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
+PKHD-DS-ConfigTool           || Painkiller HD Config
+PKHDGame-Win32-Shipping      || Painkiller HD
+PPSSPPWindows64              || PPSSPP
 Rayman Legends               || Rayman Legends
 RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
@@ -112,15 +122,18 @@ Risen3                       || Risen 3
 RoA                          || Rock of Ages
 runner2                      || BIT:TRIP Runner 2
 Shadowrun                    || Shadowrun Returns
+Sherlock                     || Sherlock Holmes: Crimes and Punishments
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
 SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
+SonicGenerations             || Sonic Generations
 SpaceMarine                  || SpaceMarine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
 TFOC                         || Transformers: Fall of Cybertron
 TheFall                      || The Fall
+TheWalkingDead2              || The Walking Dead Season 2
 TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
