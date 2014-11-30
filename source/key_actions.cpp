@@ -23,6 +23,22 @@ using namespace std;
 
 KeyActions KeyActions::instance;
 
+bool KeyActions::loadBinding(const char* keyName, int keyVal, const string& bstring) {
+	size_t pos = bstring.find(keyName);
+	char postChar = bstring[pos + strlen(keyName)];
+	if(pos != bstring.npos && (postChar == '\r' || postChar == '\n' || postChar == ' ' || postChar == '\0')) {
+		stringstream ss(bstring);
+		ActionBinding actionBinding;
+		actionBinding.ctrl  = bstring.find("~") != bstring.npos; // Ctrl  = ~
+		actionBinding.alt   = bstring.find("+") != bstring.npos; // Alt   = +
+		actionBinding.shift = bstring.find("-") != bstring.npos; // Shift = - 
+		ss >> actionBinding.action;
+		keyBindingMap.insert(make_pair(keyVal, actionBinding));
+		return true;
+	}
+	return false;
+}
+
 void KeyActions::load(const string &fn) {
 	if(!boost::filesystem::exists(fn)) return;
 	std::ifstream sfile;
@@ -35,16 +51,7 @@ void KeyActions::load(const string &fn) {
 		string bstring(buffer);
 
 		// Keyboard
-		size_t pos = bstring.npos;
-		char postChar;
-		#define KEY(_name, _val) \
-		pos = bstring.find(#_name); \
-		postChar = buffer[pos + strlen(#_name)]; \
-		if(pos != bstring.npos && (postChar == '\r' || postChar == '\n' || postChar == ' ' || postChar == '\0')) { \
-			string action; stringstream ss(bstring); ss >> action; \
-			keyBindingMap.insert(make_pair(_val, action)); \
-			continue; \
-		}
+		#define KEY(_name, _val) if(loadBinding(#_name, _val, bstring)) continue;
 		#include "Keys.def"
 		#undef KEY
 
@@ -78,7 +85,7 @@ void KeyActions::load() {
 void KeyActions::report() {
 	SDLOG(0, "= Loaded Keybindings:\n");
 	for(const auto& elem : keyBindingMap) {
-		SDLOG(0, " - %p => %s\n", elem.first, elem.second.c_str());
+		SDLOG(0, " - %p => %s\n", elem.first, elem.second.action.c_str());
 	}
 	SDLOG(0, "= Loaded Button bindings:\n");
 	for(int i = 0; i < 4; ++i) {
@@ -122,10 +129,14 @@ void KeyActions::processIO() {
 	if(activeProcId != procId) return;
 
 	// keyboard
-	for(IntStrMap::const_iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
+	for(IntBindingMap::const_iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
 		if(GetAsyncKeyState(i->first)&1) {
-			SDLOG(0, "Action triggered: %s\n", i->second.c_str());
-			performAction(i->second.c_str());
+			const auto& binding = i->second;
+			if(binding.ctrl  && ((GetAsyncKeyState(VK_CONTROL) & 0x8000) == 0)) continue;
+			if(binding.alt   && ((GetAsyncKeyState(VK_MENU)    & 0x8000) == 0)) continue;
+			if(binding.shift && ((GetAsyncKeyState(VK_SHIFT)   & 0x8000) == 0)) continue;
+			SDLOG(0, "Action triggered: %s\n", i->second.action.c_str());
+			performAction(i->second.action.c_str());
 		}
 	}
 

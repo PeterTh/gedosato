@@ -18,15 +18,16 @@ public:
 	void go(IDirect3DTexture9 *hdrFrame, IDirect3DTexture9 *composeFrame, IDirect3DSurface9 *dst);
 
 	void dumpFrame();
+	void reloadShader();
 
 private:
 	int width, height;
 	float cutoff, strength, dirtStrength;
 	unsigned steps;
-	bool dumping;
+	bool dumping = false;
 
-	ID3DXEffect *effect;
-	IDirect3DTexture9 *dirtTexture;
+	ID3DXEffect *effect = NULL;
+	IDirect3DTexture9 *dirtTexture = NULL;
 
 	struct Size { int w; int h; };
 	std::vector<Size> stepSizes;
