@@ -117,6 +117,7 @@ RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
 Reckoning                    || Kingdom's of Amalur: Reckoning
 RememberMe                   || Remember Me
+rfg                          || Red Faction: Guerrilla
 Risen                        || Risen
 Risen2                       || Risen 2
 Risen3                       || Risen 3
