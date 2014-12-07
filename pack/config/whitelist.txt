@@ -105,6 +105,7 @@ mm                           || Dark Messiah of Might and Magic Single Player
 MOHA                         || Medal of Honor: Airborne
 MWOClient                    || MechWarrior Online
 Never_Alone                  || Never Alone (Kisima Ingitchuna)
+ninja					     || Mini Ninjas
 OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
