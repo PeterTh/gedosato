@@ -6,6 +6,7 @@
 # Exe File Name (or pattern) || Readable Name (optional)
 
 AlanWake                     || Alan Wake
+AO                           || Abyss Odyssey
 AoW3                         || Age of Wonders 3
 AssassinsCreed_Dx9           || Assassins Creed
 AssassinsCreedIIGame         || Assassin's Creed 2
