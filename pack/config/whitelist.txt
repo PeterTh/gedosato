@@ -44,6 +44,7 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
+demoniconR                   || Demonicon
 dmc3se                       || Devil May Cry 3 Special Edition
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Diablo III                   
