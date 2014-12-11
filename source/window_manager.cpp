@@ -86,8 +86,7 @@ void WindowManager::maintainBorderlessFullscreen() {
 }
 
 void WindowManager::forceBorderlessFullscreen() {
-	borderlessFullscreen = true;
-	maintainBorderlessFullscreen();
+	toggleBorderlessFullscreen();
 }
 
 void WindowManager::resize(unsigned clientW, unsigned clientH) {
