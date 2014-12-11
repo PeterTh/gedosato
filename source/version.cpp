@@ -6,9 +6,9 @@ const char* VER_NAME = "Third Ensemble";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 16;
-const unsigned VER_BUILD = 1704;
+const unsigned VER_BUILD = 1724;
 
-const char* VER_STRING = "version 0.16.1704 built on 2014/11/30 18:46:26";
+const char* VER_STRING = "version 0.16.1724 built on 2014/12/11 22:42:20";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";

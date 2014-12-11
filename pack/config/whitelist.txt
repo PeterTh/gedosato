@@ -14,6 +14,7 @@ AvP                          || Aliens vs Predator 2010
 BatmanAC                     || Batman: Arkham City GOTY
 BatmanOrigins                || Batman: Arkham Origins (Single Player)
 BFBC2Game                    || Battlefield: Bad Company 2
+BH6                          || Resident Evil 6
 Bio4                         || Resident Evil 4 PC
 bionic_commando              || Bionic Commando
 Bioshock                     || Bioshock
@@ -43,7 +44,7 @@ DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
-Diablo III                   
+Diablo III                   || Diablo III
 Dishonored                   || Dishonored
 DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
@@ -58,7 +59,8 @@ fear                         || F.E.A.R.
 FEAR2                        || F.E.A.R. 2
 FEARXP                       || F.E.A.R. Extraction Point
 FEARXP2                      || F.E.A.R. Perseus Mandate
-ffxiiiimg                    || Fianl Fantasy XIII
+ffxiiiimg                    || Final Fantasy XIII
+ffxiii2img                   || Final Fantasy XIII-2
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall

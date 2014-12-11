@@ -94,14 +94,12 @@ UINT APIENTRY hkIDirect3D9::GetAdapterCount() {
 
 HRESULT APIENTRY hkIDirect3D9::GetAdapterDisplayMode(UINT Adapter, D3DDISPLAYMODE *pMode) {
 	SDLOG(0, "GetAdapterDisplayMode ------\n");
-	if(Settings::get().getForceBorderlessFullscreen()) {
-		pMode->Width = Settings::get().getPresentWidth();
+	HRESULT hr = m_pD3Dint->GetAdapterDisplayMode(Adapter, pMode);
+	if(SUCCEEDED(hr) && Settings::get().getForceBorderlessFullscreen()) {
+		pMode->Width = Settings::get().getRenderWidth();
 		pMode->Height = Settings::get().getRenderHeight();
-		pMode->RefreshRate = Settings::getResSettings().getActiveHz();
-		pMode->Format = D3DFMT_A8R8G8B8;
-		return D3D_OK;
 	}
-	return m_pD3Dint->GetAdapterDisplayMode(Adapter, pMode);
+	return hr;
 }
 
 HRESULT APIENTRY hkIDirect3D9::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D3DADAPTER_IDENTIFIER9 *pIdentifier) {

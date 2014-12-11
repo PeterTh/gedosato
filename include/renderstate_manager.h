@@ -10,6 +10,7 @@
 #include "rendertarget_manager.h"
 #include "imaging.h"
 #include "game_plugin.h"
+#include "perf_monitor.h"
 
 class RSManagerDX9;
 class RSManagerDX11;
@@ -40,6 +41,8 @@ protected:
 	SlidingAverage cpuFrameTimes{ 120 };
 	D3DPerfMonitor* perfMonitor = NULL;
 	StaticTextPtr frameTimeText{ new StaticText("", 20.0f, 100.0f) };
+	StaticTextPtr traceText{ new StaticText("Tracing", 300.0f, 30.0f) };
+	std::unique_ptr<PerfTrace> perfTrace;
 
 	// Utilities
 	Console console;
@@ -87,4 +90,22 @@ public:
 	virtual void dumpBloom() {}
 
 	virtual void reloadShaders() {}
+
+	virtual void startPerfTrace() {
+		traceText->show = true;
+		perfTrace = std::make_unique<PerfTrace>();
+	}
+	virtual void endPerfTrace() {
+		traceText->show = false;
+		perfTrace->storeResult();
+		perfTrace.reset(nullptr);
+	}
+	virtual void togglePerfTrace() {
+		if(perfTrace) {
+			endPerfTrace();
+		}
+		else {
+			startPerfTrace();
+		}
+	}
 };

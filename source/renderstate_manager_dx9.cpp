@@ -53,6 +53,7 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	// performance measurement
 	console.add(frameTimeText);
 	perfMonitor = new D3DPerfMonitor(d3ddev, 60);
+	console.add(traceText);
 
 	// create state block for state save/restore
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
@@ -222,6 +223,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 	double cpuTime = cpuFrameTimes.get(), gpuTime = perfMonitor->getCurrent();
 	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf",
 		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0 / max(cpuTime, gpuTime));
+	if(perfTrace) perfTrace->addFrame(cpuTime, gpuTime);
 
 	// Draw console
 	if(console.needsDrawing()) {
@@ -582,7 +584,7 @@ namespace {
 		if(Settings::get().getForceWindowedMode()) {
 			SDLOG(1, "Forcing windowed mode.\n");
 			if(pPresentationParameters->hDeviceWindow) SetForegroundWindow(pPresentationParameters->hDeviceWindow);
-			WindowManager::get().addCaption();
+			//WindowManagedger::get().addCaption();
 			WindowManager::get().resize(Settings::get().getPresentWidth(), Settings::get().getPresentHeight());
 			pPresentationParameters->Windowed = TRUE;
 			pPresentationParameters->FullScreen_RefreshRateInHz = 0;
@@ -623,8 +625,10 @@ namespace {
 	bool forceBorderlessFS(D3DPRESENT_PARAMETERS *pPresentationParameters) {
 		if(pPresentationParameters && pPresentationParameters->Windowed == FALSE && Settings::get().getForceBorderlessFullscreen()) {
 			SDLOG(1, "Forcing borderless windowed fullscreen mode.\n");
+			if(pPresentationParameters->hDeviceWindow) SetForegroundWindow(pPresentationParameters->hDeviceWindow);
 			pPresentationParameters->Windowed = TRUE;
 			pPresentationParameters->FullScreen_RefreshRateInHz = 0;
+			pPresentationParameters->hDeviceWindow = ::GetActiveWindow();
 			return true;
 		}
 		return false;
