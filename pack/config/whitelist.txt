@@ -20,6 +20,7 @@ bionic_commando              || Bionic Commando
 Bioshock                     || Bioshock
 Bioshock2                    || Bioshock 2
 Blackguards                  || Blackguards (The Dark Eye)
+bladesoftime                 || Blades of Time
 BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
