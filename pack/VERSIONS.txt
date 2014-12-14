@@ -1,6 +1,8 @@
 **-12-2014 -- beta 16 - "Third Ensemble"
 ========================================
 General:
+- Fixed bugs related to forcing borderless FS with GeDoSaTo (improves compatibility)
+- Implemented performance tracing
 - Implemented modifiers (Ctrl, Alt, Shift) for keybindings
 - Made "reloadShaders" keybinding correctly reload bloom shader
 - Added some new profiles and whitelist entries
