@@ -6,6 +6,7 @@
 # Exe File Name (or pattern) || Readable Name (optional)
 
 AlanWake                     || Alan Wake
+AO                           || Abyss Odyssey
 AoW3                         || Age of Wonders 3
 AssassinsCreed_Dx9           || Assassins Creed
 AssassinsCreedIIGame         || Assassin's Creed 2
@@ -19,10 +20,12 @@ bionic_commando              || Bionic Commando
 Bioshock                     || Bioshock
 Bioshock2                    || Bioshock 2
 Blackguards                  || Blackguards (The Dark Eye)
+bladesoftime                 || Blades of Time
 BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
 bsnes                        || bsnes SNES emulator
+ShippingPC-StormGame         || Bulletstorm
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
@@ -42,6 +45,8 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
+demoniconR                   || Demonicon
+dmc3se                       || Devil May Cry 3 Special Edition
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Diablo III                   
 Dishonored                   || Dishonored
@@ -105,6 +110,7 @@ mm                           || Dark Messiah of Might and Magic Single Player
 MOHA                         || Medal of Honor: Airborne
 MWOClient                    || MechWarrior Online
 Never_Alone                  || Never Alone (Kisima Ingitchuna)
+ninja                        || Mini Ninjas
 OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
@@ -116,6 +122,7 @@ RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
 Reckoning                    || Kingdom's of Amalur: Reckoning
 RememberMe                   || Remember Me
+rfg                          || Red Faction: Guerrilla (DX9)
 Risen                        || Risen
 Risen2                       || Risen 2
 Risen3                       || Risen 3
