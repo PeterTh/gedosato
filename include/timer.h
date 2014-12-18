@@ -51,7 +51,7 @@ public:
 		vals = new double[interval]();
 	}
 	~SlidingAverage() {
-		delete vals;
+		delete [] vals;
 	}
 
 	void add(double value) {

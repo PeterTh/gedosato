@@ -39,7 +39,7 @@ protected:
 	// Performance measurement
 	Timer cpuFrameTimer;
 	SlidingAverage cpuFrameTimes{ 120 };
-	D3DPerfMonitor* perfMonitor = NULL;
+	std::unique_ptr<D3DPerfMonitor> perfMonitor;
 	StaticTextPtr frameTimeText{ new StaticText("", 20.0f, 100.0f) };
 	StaticTextPtr traceText{ new StaticText("Tracing", 300.0f, 30.0f) };
 	std::unique_ptr<PerfTrace> perfTrace;

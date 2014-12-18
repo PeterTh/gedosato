@@ -50,8 +50,8 @@ void Console::initialize(IDirect3DDevice9* device, int w, int h) {
 	tempTex->UnlockRect(0);
 	device->UpdateTexture(tempTex, fontTex);
 	tempTex->Release();
-	delete ttf_buffer;
-	delete temp_bitmap;
+	delete [] ttf_buffer;
+	delete [] temp_bitmap;
 	
 	// Create vertex decl
 	SDLOG(2, " - creating console vertex decl\n");
@@ -85,6 +85,8 @@ void Console::cleanup() {
 	SAFERELEASE(vertexDeclaration);
 	SAFERELEASE(effect);
 	SAFERELEASE(fontTex);
+	lines.clear();
+	statics.clear();
 }
 
 
@@ -118,7 +120,12 @@ void Console::draw() {
 	}
 	if(y == 0.0f) {
 		if(lineHeight>0.2f) lineHeight *= 0.6f;
-		else lineHeight = 0.0f;
+		else {
+			lineHeight = 0.0f;
+			// clear lines
+			lines.clear();
+			start = 0;
+		}
 	}
 	else lineHeight = y + 15.0f;
 
