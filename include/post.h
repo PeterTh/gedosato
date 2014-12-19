@@ -22,7 +22,9 @@ private:
 	Timer timer;
 
 	ID3DXEffect *effect = NULL;
+	IDirect3DTexture9* noiseTex;	// NoiseTex.png
 
 	D3DXHANDLE thisframeTexHandle;
 	D3DXHANDLE timerHandle;
+	D3DXHANDLE noiseTexHandle;
 };
