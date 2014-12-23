@@ -1,6 +1,7 @@
 #include "utils/win_utils.h"
 
 #include "main.h"
+#include "settings.h"
 #include "utils/string_utils.h"
 
 // most of the enum-related functions in here are auto-generated
@@ -211,4 +212,22 @@ DWORD RunSilent(const char* command) {
 
 	return rc;
 	
+}
+
+void forceLFHs() {
+	// Force low fragmentation heap
+	SDLOG(2, "Starting heap adjustment (LFH)\n");
+	HANDLE heaps[256];
+	DWORD numHeaps = GetProcessHeaps(256, heaps);
+	for(DWORD i = 0; i < numHeaps; ++i) {
+		ULONG HeapInformation = HEAP_LFH;
+		BOOL res = HeapSetInformation(heaps[i], HeapCompatibilityInformation, &HeapInformation, sizeof(HeapInformation));
+		if(res != FALSE) {
+			SDLOG(1, "Low-fragmentation heap enabled for heap #%d.\n", i);
+		}
+		else {
+			SDLOG(1, "Failed to enable low-fragmentation for heap #%d; LastError %d.\n", i, GetLastError());
+		}
+	}
+	SDLOG(2, "Completed heap adjustment (LFH)\n");
 }

@@ -10,6 +10,8 @@
 #include <Psapi.h>
 #pragma warning(pop)
 
+#define HEAP_LFH 2
+
 #include <string>
 using std::string;
 
@@ -20,3 +22,5 @@ const char* GetDeviceCapsParamToString(int index);
 string RectToString(const RECT* rect);
 
 DWORD RunSilent(const char* command);
+
+void forceLFHs();
