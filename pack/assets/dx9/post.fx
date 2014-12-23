@@ -1385,10 +1385,10 @@ float4 mix (float x, float y, float a)
     return x * (1 - a) + y * a;
 }
     
-//a random texture generator, but you can also use a pre-computed perturbation texture
+// a random texture generator, but you can also use a pre-computed perturbation texture
 float4 rnm(in float2 tc) 
 {
-    float noise =  sin(dot(tc + float2(timer,timer),float2(12.9898,78.233))) * 43758.5453;
+	float noise = sin(dot(float3(tc.x, tc.y, timer), float3(12.9898, 78.233, 0.0025216))) * 43758.5453;
 
     float noiseR =  frac(noise)*2.0-1.0;
     float noiseG =  frac(noise*1.2154)*2.0-1.0; 
