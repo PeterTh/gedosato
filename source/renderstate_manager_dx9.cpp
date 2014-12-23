@@ -125,6 +125,7 @@ void RSManagerDX9::releaseResources() {
 	d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb);
 	d3ddev->SetRenderTarget(0, bb);
 	SAFERELEASE(bb);
+
 	SDLOG(0, "RenderstateManager releasing resources\n");
 	SAFEDELETE(plugin);
 	perfMonitor.reset(NULL);
@@ -139,6 +140,7 @@ void RSManagerDX9::releaseResources() {
 	SAFERELEASE(prevRenderTarget);
 	backBuffers.clear();
 	console.cleanup();
+
 	SDLOG(0, "RenderstateManager resource release completed\n");
 }
 
