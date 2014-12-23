@@ -97,6 +97,7 @@ lcgol                        || Lara Croft and the Guardian of Light
 left4dead2                   || Left 4 Dead 2
 LEGOMARVEL                   || LEGO Marvel Superheroes
 Leviathan                    || Leviathan: Warships
+LostPlanetDX9                || Lost Planet: Extreme Condition (DX9)
 MassEffect                   || Mass Effect
 MassEffect2                  || Mass Effect 2
 MassEffect2Config            || Mass Effect 2 Configurator
