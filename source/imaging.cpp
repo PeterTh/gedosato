@@ -6,6 +6,8 @@
 #include "external/stb_image_write.h"
 #undef STB_IMAGE_WRITE_IMPLEMENTATION
 
+#include "utils/win_utils.h"
+
 #include <boost/algorithm/string/replace.hpp>
 
 void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool discardAlpha) {
@@ -52,7 +54,12 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	}
 	D3DLOCKED_RECT lockedR;
 	if(tempSurf->LockRect(&lockedR, &r, D3DLOCK_READONLY) == D3D_OK) {
-		BYTE* buffer = new BYTE[lockedR.Pitch*r.bottom];
+		BYTE* buffer = new (std::nothrow) BYTE[lockedR.Pitch*r.bottom];
+		if(buffer == nullptr) {
+			Console::get().add("Failed taking screenshot! (could not allocate buffer memory)");
+			tempSurf->UnlockRect();
+			return;
+		}
 		memcpy(buffer, lockedR.pBits, lockedR.Pitch*r.bottom);
 		INT pitch = lockedR.Pitch;
 		tempSurf->UnlockRect();
