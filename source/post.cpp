@@ -58,14 +58,16 @@ void Post::reloadShader() {
 		effect = newEffect;
 	}
 
-	// Load noise
-	string noiseFile = getAssetFileName("NoiseTex.png");
-	hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
-
 	// Get handles
 	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
 	timerHandle = effect->GetParameterByName(NULL, "timer");
 	noiseTexHandle = effect->GetParameterByName(NULL, "noiseTexture");
+
+	// Load noise
+	if(noiseTexHandle != NULL) {
+		string noiseFile = getAssetFileName("NoiseTex.png");
+		hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
+	}
 
 	// start timer
 	timer.start();
