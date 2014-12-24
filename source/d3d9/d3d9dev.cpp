@@ -166,7 +166,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateOffscreenPlainSurface(UINT Width, UIN
 	return m_pD3Ddev->CreateOffscreenPlainSurface(Width,Height,Format,Pool,ppSurface,pSharedHandle);
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::CreatePixelShader(CONST DWORD* pFunction,IDirect3DPixelShader9** ppShader) {
+HRESULT APIENTRY hkIDirect3DDevice9::CreatePixelShader(CONST DWORD* pFunction, IDirect3DPixelShader9** ppShader) {
 	RSManager::setLatest(rsMan);
 	HRESULT hr = m_pD3Ddev->CreatePixelShader(pFunction, ppShader);
 	if(SUCCEEDED(hr)) {
@@ -175,7 +175,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreatePixelShader(CONST DWORD* pFunction,ID
 	return hr;
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type,IDirect3DQuery9** ppQuery) {
+HRESULT APIENTRY hkIDirect3DDevice9::CreateQuery(D3DQUERYTYPE Type, IDirect3DQuery9** ppQuery) {
 	RSManager::setLatest(rsMan);
 	return m_pD3Ddev->CreateQuery(Type, ppQuery);
 }
@@ -187,7 +187,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateRenderTarget(UINT Width, UINT Height,
 	return ret;
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type,IDirect3DStateBlock9** ppSB) {
+HRESULT APIENTRY hkIDirect3DDevice9::CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDirect3DStateBlock9** ppSB) {
 	RSManager::setLatest(rsMan);
 	return m_pD3Ddev->CreateStateBlock(Type, ppSB);
 }
@@ -206,12 +206,12 @@ HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexBuffer(UINT Length, DWORD Usage
 	return retval;
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexDeclaration(CONST D3DVERTEXELEMENT9* pVertexElements,IDirect3DVertexDeclaration9** ppDecl) {
+HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexDeclaration(CONST D3DVERTEXELEMENT9* pVertexElements, IDirect3DVertexDeclaration9** ppDecl) {
 	RSManager::setLatest(rsMan);
 	return m_pD3Ddev->CreateVertexDeclaration(pVertexElements,ppDecl);
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexShader(CONST DWORD* pFunction,IDirect3DVertexShader9** ppShader) {
+HRESULT APIENTRY hkIDirect3DDevice9::CreateVertexShader(CONST DWORD* pFunction, IDirect3DVertexShader9** ppShader) {
 	RSManager::setLatest(rsMan);
 	HRESULT hr = m_pD3Ddev->CreateVertexShader(pFunction, ppShader);
 	if(SUCCEEDED(hr)) {

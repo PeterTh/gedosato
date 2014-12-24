@@ -134,5 +134,9 @@ HRESULT APIENTRY hkIDirect3D9::RegisterSoftwareDevice(void *pInitializeFunction)
 
 ULONG APIENTRY hkIDirect3D9::Release() {
 	SDLOG(20, "Release hkIDirect3D9 ------ %p \n", this);
-	return m_pD3Dint->Release();
+	ULONG res = m_pD3Dint->Release();
+	if(res == 0) {
+		delete this;
+	}
+	return res;
 }
