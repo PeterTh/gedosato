@@ -10,6 +10,20 @@
 
 #include <boost/algorithm/string/replace.hpp>
 
+ImageWriter::ImageWriter(IDirect3DDevice9* dev, int wmax, int hmax) 
+	: device9(dev), tempSurf(NULL), wmax(wmax), hmax(hmax) {
+	if(Settings::get().getMaxScreenshotParallelism() != -1) device9->CreateRenderTarget(wmax, hmax, D3DFMT_A8R8G8B8, D3DMULTISAMPLE_NONE, 0, TRUE, &tempSurf, NULL);
+}
+
+ImageWriter::~ImageWriter() {
+	while(futures.size() > 0) {
+		auto& f = futures.front();
+		f.wait();
+		futures.pop();
+	}
+	SAFERELEASE(tempSurf);
+}
+
 void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool discardAlpha) {
 	//{
 	//	D3DSURFACE_DESC desc, tdesc;
@@ -29,7 +43,7 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 	}
 
 	// wait for processing if maximum degree of parallelism reached
-	if(static_cast<int>(futures.size()) > Settings::get().getMaxScreenshotParallelism()) {
+	if(futures.size() > 0 && static_cast<int>(futures.size()) > Settings::get().getMaxScreenshotParallelism()) {
 		auto& f = futures.front();
 		if(f.valid()) f.wait();
 		futures.pop();
@@ -77,7 +91,7 @@ void ImageWriter::writeSurface(const string& fn, IDirect3DSurface9* surf, bool d
 			if(stbi_write_png(fn.c_str(), r.right, r.bottom, 4, buffer, pitch) == 0) {
 				Console::get().add("Failed taking screenshot! (STBI)");
 			}
-			delete [] buffer;
+			delete[] buffer;
 		};
 
 		if(Settings::get().getMaxScreenshotParallelism() > 0) {
