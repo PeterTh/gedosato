@@ -8,6 +8,8 @@ General:
 - Added some new profiles and whitelist entries
 - Cleaned up various potential sources of memory leaks
 - Fixed infinite shader hash table growth by introducing "trackShaders" setting
+Final Fantasy 13 Plugin:
+- Disabled the plugin, as the game settings + the generic plugin can replicate all its functions
 
 30-11-2014 -- beta 15 - "Tokikagura"
 ====================================

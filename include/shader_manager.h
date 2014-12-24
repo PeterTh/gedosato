@@ -29,7 +29,10 @@ class ShaderManager {
 
 		// given names
 		#define SHADER(_name, _id) \
-		if(_id == id) shaderPtrNameMap.emplace(pShader, #_name);
+		if(_id == id) { \
+			shaderPtrNameMap.emplace(pShader, #_name); \
+			shaderPtrIdMap.emplace(pShader, id); \
+		}
 		#include "shaders.def"
 		#undef SHADER
 
