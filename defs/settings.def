@@ -49,6 +49,7 @@ SETTING(bool, ModifyGetWindowRect, "modifyGetWindowRect", true)
 // Internal options
 SETTING(int, LogLevel, "logLevel", 0)
 SETTING(unsigned, MessageSeconds, "messageSeconds", 10)
+SETTING(bool, TrackShaders, "trackShaders", false)
 
 // Windowing options
 SETTING(bool, ForceBorderlessFullscreen, "forceBorderlessFullscreen", false)

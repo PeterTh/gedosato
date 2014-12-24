@@ -265,6 +265,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\d3d9\d3d9ps.cpp" />
     <ClCompile Include="source\blacklist.cpp" />
     <ClCompile Include="source\bloom.cpp" />
     <ClCompile Include="source\console.cpp" />
@@ -369,6 +370,7 @@
     <ClInclude Include="include\d3d9\d3d9.h" />
     <ClInclude Include="include\d3d9\d3d9dev_ex.h" />
     <ClInclude Include="include\d3d9\d3d9int_ex.h" />
+    <ClInclude Include="include\d3d9\d3d9ps.h" />
     <ClInclude Include="include\d3d9\d3d9swap.h" />
     <ClInclude Include="include\d3d9\d3d9tex.h" />
     <ClInclude Include="include\d3dperf.h" />

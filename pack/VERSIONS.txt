@@ -1,4 +1,4 @@
-**-12-2014 -- beta 16 - "Third Ensemble"
+24-12-2014 -- beta 16 - "Third Ensemble"
 ========================================
 General:
 - Fixed bugs related to forcing borderless FS with GeDoSaTo (improves compatibility)
@@ -6,6 +6,8 @@ General:
 - Implemented modifiers (Ctrl, Alt, Shift) for keybindings
 - Made "reloadShaders" keybinding correctly reload bloom shader
 - Added some new profiles and whitelist entries
+- Cleaned up various potential sources of memory leaks
+- Fixed infinite shader hash table growth by introducing "trackShaders" setting
 
 30-11-2014 -- beta 15 - "Tokikagura"
 ====================================
