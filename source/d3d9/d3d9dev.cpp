@@ -54,7 +54,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9 *pViewport) 
 
 HRESULT APIENTRY hkIDirect3DDevice9::DrawIndexedPrimitive(D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount) {
 	RSManager::setLatest(rsMan);
-	SDLOG(9, "DrawIndexedPrimitive\n");
+	SDLOG(9, "DrawIndexedPrimitive(%s, %d, %u, %u, %u, %u)\n", D3DPrimitiveTypeToString(Type), BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 	return rsMan->redirectDrawIndexedPrimitive(Type, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, primCount);
 }
 
@@ -644,9 +644,20 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 	return m_pD3Ddev->SetSoftwareVertexProcessing(bSoftware);
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSource(UINT StreamNumber,IDirect3DVertexBuffer9* pStreamData,UINT OffsetInBytes,UINT Stride) {
+HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride) {
 	RSManager::setLatest(rsMan);
 	SDLOG(8, "SetStreamSource %d: %p (%u, %u)\n", StreamNumber, pStreamData, OffsetInBytes, Stride);
+	LOG_CHECK(18, {
+		float *buffer;
+		pStreamData->Lock(0, 0, (void**)&buffer, D3DLOCK_READONLY);
+		D3DVERTEXBUFFER_DESC desc;
+		pStreamData->GetDesc(&desc);
+		for(unsigned i = 0; i < min(32, desc.Size / 4); ++i) {
+			SDLOG(0, "%8.2f ", buffer[i]);
+			if(i%8==7) SDLOG(0, "\n");
+		}
+		pStreamData->Unlock();
+	});
 	return m_pD3Ddev->SetStreamSource(StreamNumber, pStreamData,OffsetInBytes, Stride);
 }
 

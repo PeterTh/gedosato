@@ -16,6 +16,7 @@ TCHAR* D3DMultisampleTypeToString(D3DMULTISAMPLE_TYPE type);
 TCHAR* D3DSwapEffectToString(D3DSWAPEFFECT swap);
 TCHAR* D3DRenderStateTypeToString(D3DRENDERSTATETYPE s);
 TCHAR* D3DPoolToString(D3DPOOL pool);
+TCHAR* D3DPrimitiveTypeToString(D3DPRIMITIVETYPE prim);
 
 string D3DMatrixToString(const D3DMATRIX* pMatrix);
 string D3DPresentExFlagsToString(DWORD flags);

@@ -278,6 +278,7 @@
     <ClCompile Include="source\d3d9\d3d9tex.cpp" />
     <ClCompile Include="source\d3dperf.cpp" />
     <ClCompile Include="source\perf_monitor.cpp" />
+    <ClCompile Include="source\plugins\dw8.cpp" />
     <ClCompile Include="source\plugins\ff13.cpp" />
     <ClCompile Include="source\utils\d3d_utils.cpp" />
     <ClCompile Include="source\depth_texture.cpp" />
@@ -375,6 +376,7 @@
     <ClInclude Include="include\d3d9\d3d9tex.h" />
     <ClInclude Include="include\d3dperf.h" />
     <ClInclude Include="include\perf_monitor.h" />
+    <ClInclude Include="include\plugins\dw8.h" />
     <ClInclude Include="include\plugins\ff13.h" />
     <ClInclude Include="include\utils\d3d9_utils.h" />
     <ClInclude Include="include\depth_texture.h" />

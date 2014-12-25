@@ -26,7 +26,6 @@ BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
 bsnes                        || bsnes SNES emulator
-ShippingPC-StormGame         || Bulletstorm
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
@@ -47,10 +46,10 @@ DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 Dead Space                   || Dead Space
 demoniconR                   || Demonicon
-dmc3se                       || Devil May Cry 3 Special Edition
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Diablo III                   || Diablo III
 Dishonored                   || Dishonored
+dmc3se                       || Devil May Cry 3 Special Edition
 DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
@@ -64,8 +63,8 @@ fear                         || F.E.A.R.
 FEAR2                        || F.E.A.R. 2
 FEARXP                       || F.E.A.R. Extraction Point
 FEARXP2                      || F.E.A.R. Perseus Mandate
-ffxiiiimg                    || Final Fantasy XIII
 ffxiii2img                   || Final Fantasy XIII-2
+ffxiiiimg                    || Final Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
@@ -92,6 +91,7 @@ KentuckyRouteZero            || Kentucky Route Zero
 kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
 LaMulanaWin                  || La-Mulana
+Launch                       || Dynasty Warriors 8 XL
 Launcher                     || Launcher (multiple)
 lcgol                        || Lara Croft and the Guardian of Light
 left4dead2                   || Left 4 Dead 2
@@ -135,6 +135,7 @@ Shadowrun                    || Shadowrun Returns
 Sherlock                     || Sherlock Holmes: Crimes and Punishments
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
+ShippingPC-StormGame         || Bulletstorm
 SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
 SonicGenerations             || Sonic Generations
 SpaceMarine                  || SpaceMarine

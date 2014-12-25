@@ -332,6 +332,18 @@ TCHAR* D3DPoolToString(D3DPOOL pool) {
 	return "Unknown d3d pool";
 }
 
+TCHAR* D3DPrimitiveTypeToString(D3DPRIMITIVETYPE prim) {
+	switch(prim) {
+	case D3DPT_POINTLIST: return "D3DPT_POINTLIST";
+	case D3DPT_LINELIST: return "D3DPT_LINELIST";
+	case D3DPT_TRIANGLELIST: return "D3DPT_TRIANGLELIST";
+	case D3DPT_TRIANGLESTRIP: return "D3DPT_TRIANGLESTRIP";
+	case D3DPT_TRIANGLEFAN: return "D3DPT_TRIANGLEFAN";
+	}
+	return "Unknown primitive type";
+}
+
+
 
 string D3DMatrixToString(const D3DMATRIX* pMatrix) {
 	std::stringstream ss;
