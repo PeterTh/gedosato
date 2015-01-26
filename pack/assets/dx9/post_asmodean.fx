@@ -1,5 +1,5 @@
 /*===============================================================================*\
-|########################    [GSFx Shader Suite v1.55]    ########################|
+|########################    [GSFx Shader Suite v1.60]    ########################|
 |##########################        By Asmodean          ##########################|
 ||                                                                               ||
 ||          This program is free software; you can redistribute it and/or        ||
@@ -35,17 +35,17 @@
 ------------------------------------------------------------------------------*/
 
 //##[BLOOM OPTIONS]##
-#define BloomType BlendBloom                //[BlendScreen, BlendOverlay, BlendBloom, BlendAddLight] The type of blending for the bloom (Default: BlendScreen).
+#define BloomType BlendGlow                 //[BlendGlow, BlendLuma, BlendAddLight, BlendScreen, BlendOverlay] The type of blending for the bloom.
 #define BloomStrength 0.200                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
-#define BlendSpread 4.000                   //[1.000 to 8.000] Width of the bloom 'glow' spread. 0.000 = off. Scales with BloomStrength. (Default: 4.000).
+#define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'glow' spread. 0.000 = off. Scales with BloomStrength. (Default: 4.000).
 #define BloomReds 1.00                      //[0.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
 #define BloomGreens 1.00                    //[0.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
 #define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 1                       //[1 or 2] Type of tone mapping operator. 1 is natural map, 2 is cinematic(darker) map. (Default: 1)
-#define ToneAmount 0.25                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.25)
+#define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.25)
 #define BlackLevels 0.30                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.30)
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
 #define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
@@ -59,15 +59,15 @@
 
 //##[FILMIC OPTIONS]##
 #define FilmicProcess 1                     //[0 or 1] Filmic cross processing. Alters the mood of the scene, for more of a filmic look. Typically best suited to realistic style games.
-#define RedShift 0.60                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicProcess.
-#define GreenShift 0.50                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicProcess.
-#define BlueShift 0.50                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicProcess.
-#define ShiftRatio 0.20                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicProcess.
+#define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicProcess.
+#define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicProcess.
+#define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicProcess.
+#define ShiftRatio 0.33                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicProcess.
 
 //##[SHARPEN OPTIONS]##
 #define SharpeningType 2                    //[1 or 2] The type of sharpening to use. Type 1 is a High Pass Gaussian. Type 2 is a higher quality(slightly slower) Bicubic Sampling type.
 #define SharpenStrength 0.75                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
-#define SharpenClamp 0.015                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
+#define SharpenClamp 0.010                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
 #define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
 
@@ -108,11 +108,11 @@ Texture2D thisframeTex;
 SamplerState s0
 {
     Texture = <thisframeTex>;
-    MinFilter = Linear;
-    MagFilter = Linear;
+    Filter = Anisotropic;
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
+    MaxAnisotropy = 16;
 };
 
 struct VS_INPUT
@@ -190,23 +190,30 @@ float4 GammaPass(float4 color, float2 texcoord) : COLOR0
                         [BLENDED BLOOM CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float3 BlendAddLight(float3 color, float3 bloom)
+float3 BlendAddLight(in float3 color, in float3 bloom)
 {
-    return color + bloom;
+    return saturate(color + bloom);
 }
 
-float3 BlendScreen(float3 color, float3 bloom)
+float3 BlendScreen(in float3 color, in float3 bloom)
 {
     return (color + bloom) - (color * bloom);
 }
 
-float3 BlendBloom(float3 color, float3 bloom)
+float3 BlendLuma(in float3 color, in float3 bloom)
 {
-    float3 coeff = step(0.5, color);
-    return lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), coeff);
+    return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), RGBLuminance(color + bloom));
 }
 
-float3 BlendOverlay(float3 color, float3 bloom)
+float3 BlendGlow(in float3 color, in float3 bloom)
+{
+    float3 glow = step(0.5, color);
+    glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
+
+    return glow;
+}
+
+float3 BlendOverlay(in float3 color, in float3 bloom)
 {
     float3 overlay = step(0.5, color);
     overlay = lerp((color * bloom * 2.0), (1.0 - (2.0 * (1.0 - color) * (1.0 - bloom))), overlay);
@@ -225,7 +232,7 @@ float4 PyramidFilter(sampler2D tex, float2 texcoord, float2 width)
     return color;
 }
 
-float3 BloomCorrection(float3 color)
+float3 BloomCorrection(in float3 color)
 {
     float X = 1.0 / (1.0 + exp(float(BloomReds) / 2.0));
     float Y = 1.0 / (1.0 + exp(float(BloomGreens) / 2.0));
@@ -240,45 +247,44 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 {
-    float defocus = 1.25;
-    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
+    float4 bloom = PyramidFilter(s0, texcoord, pixelSize);
 
-    float2 dx = float2(invDefocus.x * float(BlendSpread), 0.0);
-    float2 dy = float2(0.0, invDefocus.y * float(BlendSpread));
+	float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
+	float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
 
-    float2 dx2 = 2.0 * dx;
-    float2 dy2 = 2.0 * dy;
+	float2 mdx = mul(2.0, dx);
+	float2 mdy = mul(2.0, dy);
 
     float4 bloomBlend = bloom * 0.22520613262190495;
 
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord - dx2 + dy2);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx + dy2);
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord + dy2);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx + dy2);
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + dx2 + dy2);
+    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord - mdx + mdy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx + mdy);
+    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord + mdy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx + mdy);
+    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + mdx + mdy);
 
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx2 + dy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - mdx + dy);
     bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord - dx + dy);
     bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord + dy);
     bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord + dx + dy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx2 + dy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + mdx + dy);
 
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - dx2);
+    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - mdx);
     bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord - dx);
     bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord + dx);
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord + dx2);
+    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord + mdx);
 
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx2 - dy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - mdx - dy);
     bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord - dx - dy);
     bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord - dy);
     bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord + dx - dy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx2 - dy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + mdx - dy);
 
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord - dx2 - dy2);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx - dy2);
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - dy2);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx - dy2);
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + dx2 - dy2);
+    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord - mdx - mdy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx - mdy);
+    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - mdy);
+    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx - mdy);
+    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + mdx - mdy);
     bloomBlend = lerp(color, bloomBlend, float(BlendStrength));
 
     bloom.rgb = BloomType(bloom.rgb, bloomBlend.rgb);
@@ -296,7 +302,15 @@ float4 BloomPass(float4 color, float2 texcoord) : COLOR0
                 [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float3 FilmicTonemap(float3 color)
+float3 ScaleLuma(in float3 x)
+{
+	const float W = 1.00;	// Linear White Point Value
+	const float K = 1.10;   // Scale
+
+	return (1.0 + K * x / (W * W)) * x / (x + K);
+}
+
+float3 FilmicTonemap(in float3 color)
 {
     float3 Q = color.xyz;
 
@@ -309,20 +323,25 @@ float3 FilmicTonemap(float3 color)
     float W = float(WhitePoint);
 
     float3 numerator = ((Q*(A*Q + C*B) + D*E) / (Q*(A*Q + B) + D*F)) - E / F;
-    float3 denominator = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
+    float denominator = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
 
     color.xyz = numerator / denominator;
 
     return saturate(color);
 }
 
-float3 ColorShift(float3 color)
+float3 CrossShift(in float3 color)
 {
     float3 colMood;
 
-    colMood.r = float(RedShift);
-    colMood.g = float(GreenShift);
-    colMood.b = float(BlueShift);
+	float2 CrossMatrix[3] = {
+	float2 (0.96, 0.04),
+	float2 (0.99, 0.01),
+	float2 (0.97, 0.03), };
+
+	colMood.r = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
+	colMood.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
+	colMood.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
     float fLum = RGBLuminance(color.rgb);
     colMood = lerp(0.0, colMood, saturate(fLum * 2.0));
@@ -332,7 +351,7 @@ float3 ColorShift(float3 color)
     return colOutput;
 }
 
-float3 ColorCorrection(float3 color)
+float3 ColorCorrection(in float3 color)
 {
     float X = 1.0 / (1.0 + exp(float(RedCurve) / 2.0));
     float Y = 1.0 / (1.0 + exp(float(GreenCurve) / 2.0));
@@ -350,9 +369,11 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
     const float delta = 0.001f;
     const float wpoint = pow(1.002f, 2.0f);
     
+	color.rgb = ScaleLuma(color.rgb);
+
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
-    if (FilmicProcess == 1) { color.rgb = ColorShift(color.rgb); }
-    if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
+    if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
+	if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
 
     // RGB -> XYZ conversion
     const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -370,16 +391,12 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
 
     if (CorrectionPalette == 2) { Yxy.rgb = ColorCorrection(Yxy.rgb); }
 
-    // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
-    #if (TonemapType == 1)
-        float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
-    #elif (TonemapType == 2)
-        float Lp = Yxy.r * FilmicTonemap(Yxy.rrr) / RGBLuminance(Yxy.rrr) *
-        float(Exposure) / (float(Luminance) + delta);
-    #endif
+	// (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
+	float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
+
     if (FilmicProcess == 1) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // Yxy -> XYZ conversion
@@ -477,64 +494,36 @@ float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
                         [CEL SHADING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-static const int NUM = 9;
-static const float3 thresholds = float3(5.0, 8.0, 6.0);
-
-#if (LumaConversion == 1)
-#define celLumaCoef float3(0.2126729, 0.7151522, 0.0721750)
-#else
-#define celLumaCoef float3(0.299, 0.587, 0.114)
-#endif
-
-float3 GetYUV(float3 rgb)
+float3 GetYUV(float3 RGB)
 {
-#if (LumaConversion == 1)
-    float3x3 RGB2YUV = { 
-             0.2126, 0.7152, 0.0722,
-            -0.09991, -0.33609, 0.436,
-             0.615, -0.55861, -0.05639 };
+    const float3x3 RGB2YUV = { 0.2126, 0.7152, 0.0722,
+                              -0.09991,-0.33609, 0.436,
+                               0.615, -0.55861, -0.05639 };
 
-#else
-    float3x3 RGB2YUV = {
-             0.299, 0.587, 0.114,
-            -0.14713, -0.28886f, 0.436,
-             0.615, -0.51499, -0.10001 };
-#endif
-
-    return mul(RGB2YUV, rgb);
+    return mul(RGB2YUV, RGB);
 }
 
-float3 GetRGB(float3 yuv)
+float3 GetRGB(float3 YUV)
 {
-#if (LumaConversion == 1)
-    float3x3 YUV2RGB = {
-             1.000, 0.000, 1.28033,
-             1.000, -0.21482, -0.38059,
-             1.000, 2.12798, 0.000 };
+    const float3x3 YUV2RGB = { 1.000, 0.000, 1.28033,
+                               1.000,-0.21482,-0.38059,
+                               1.000, 2.12798, 0.000 };
 
-#else
-    float3x3 YUV2RGB = {
-             1.000, 0.000, 1.13983,
-             1.000, -0.39465, -0.58060,
-             1.000, 2.03211, 0.000 };
-#endif
-
-    return mul(YUV2RGB, yuv);
-}
-
-float GetCelLuminance(float3 rgb)
-{
-    return dot(rgb, celLumaCoef);
+    return mul(YUV2RGB, YUV);
 }
 
 float4 CelPass(float4 color, float2 uv0)
-{
+{   
     float3 yuv;
     float3 sum = color.rgb;
-    float2 pixel = pixelSize * EdgeThickness;
-    const float2 RoundingOffset = float2(0.20, 0.40);
 
-    float2 c[NUM] = {
+    const int NUM = 9;
+    const float2 RoundingOffset = float2(0.25, 0.25);
+    const float3 thresholds = float3(9.0, 8.0, 6.0);
+
+    float lum[NUM];
+    float3 col[NUM];
+    float2 set[NUM] = {
     float2(-0.0078125, -0.0078125),
     float2(0.00, -0.0078125),
     float2(0.0078125, -0.0078125),
@@ -545,51 +534,44 @@ float4 CelPass(float4 color, float2 uv0)
     float2(0.00, 0.0078125),
     float2(0.0078125, 0.0078125) };
 
-    float3 col[NUM];
-    float lum[NUM];
-
     for (int i = 0; i < NUM; i++)
     {
-        col[i] = tex2D(s0, uv0 + c[i] * RoundingOffset).rgb;
+        col[i] = tex2D(s0, uv0 + set[i] * RoundingOffset).rgb;
 
         #if (ColorRounding == 1)
-        col[i].r = saturate(round(col[i].r * thresholds.r) / thresholds.r);
-        col[i].g = saturate(round(col[i].g * thresholds.g) / thresholds.g);
-        col[i].b = saturate(round(col[i].b * thresholds.b) / thresholds.b);
+        col[i].r = round(col[i].r * thresholds.r) / thresholds.r;
+        col[i].g = round(col[i].g * thresholds.g) / thresholds.g;
+        col[i].b = round(col[i].b * thresholds.b) / thresholds.b;
         #endif
 
-        lum[i] = GetCelLuminance(col[i].xyz);
-
+        lum[i] = RGBLuminance(col[i].xyz);
         yuv = GetYUV(col[i]);
 
-        if (UseYuvLuma == 0)
-        {
-            yuv.r = saturate(round(yuv.r * lum[i]) / thresholds.r + lum[i]);
-        }
-        else
-        {
-            yuv.r = saturate(round(yuv.r * thresholds.r) / thresholds.r + lum[i] / (255.0 / 5.0));
-        }
-
+        #if (UseYuvLuma == 0)
+        yuv.r = round(yuv.r * thresholds.r) / thresholds.r;
+        #else
+        yuv.r = saturate(round(yuv.r * lum[i]) / thresholds.r + lum[i]);
+        #endif
+        
         yuv = GetRGB(yuv);
-
         sum += yuv;
     }
 
     float3 shadedColor = (sum / NUM);
+    float2 pixel = float2(pixelSize.x * EdgeThickness, pixelSize.y * EdgeThickness);
 
-    float edgeX = dot(tex2D(s0, uv0 + pixel).rgb, celLumaCoef);
-    edgeX = dot(float4(tex2D(s0, uv0 - pixel).rgb, edgeX), float4(celLumaCoef, -1.0));
+    float edgeX = dot(tex2D(s0, uv0 + pixel).rgb, lumCoeff);
+    edgeX = dot(float4(tex2D(s0, uv0 - pixel).rgb, edgeX), float4(lumCoeff, -1.0));
 
-    float edgeY = dot(tex2D(s0, uv0 + float2(pixel.x, -pixel.y)).rgb, celLumaCoef);
-    edgeY = dot(float4(tex2D(s0, uv0 + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(celLumaCoef, -1.0));
+    float edgeY = dot(tex2D(s0, uv0 + float2(pixel.x, -pixel.y)).rgb, lumCoeff);
+    edgeY = dot(float4(tex2D(s0, uv0 + float2(-pixel.x, pixel.y)).rgb, edgeY), float4(lumCoeff, -1.0));
 
     float edge = dot(float2(edgeX, edgeY), float2(edgeX, edgeY));
 
     #if (PaletteType == 1)
         color.rgb = lerp(color.rgb, color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, EdgeStrength);
     #elif (PaletteType == 2)
-        color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.25);
+        color.rgb = lerp(color.rgb + pow(edge, EdgeFilter) * -EdgeStrength, shadedColor, 0.30);
     #elif (PaletteType == 3)
         color.rgb = lerp(shadedColor + edge * -EdgeStrength, pow(edge, EdgeFilter) * -EdgeStrength + color.rgb, 0.5);
     #endif
