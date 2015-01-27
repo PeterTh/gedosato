@@ -23,9 +23,9 @@
 
 //-#[LIGHTING & COLOUR]         [1=ON|0=OFF]
 #define BLENDED_BLOOM                1      //#High Quality Bloom, using blend techniques. Blooms naturally, per environment.
-#define SCENE_TONEMAPPING            1      //#Scene Tonemapping & RGB Colour Correction. Corrects colour, and tone maps the scene.
+#define SCENE_TONEMAPPING            1      //#HDR Scene Tonemapping & RGB Colour Correction. Corrects colour, and tone maps the scene.
 #define GAMMA_CORRECTION             1      //#RGB Gamma Correction. sRGB->Linear->sRGB correction curve. Enable for games with incorrect gamma.
-#define TEXTURE_SHARPEN              1      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative LOD bias. Enhances texture fidelity.
+#define TEXTURE_SHARPEN              0      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative texture LOD bias. Enhances texture fidelity.
 #define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
 #define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated style games.
@@ -35,8 +35,8 @@
 ------------------------------------------------------------------------------*/
 
 //##[BLOOM OPTIONS]##
-#define BloomType BlendGlow                 //[BlendGlow, BlendLuma, BlendAddLight, BlendScreen, BlendOverlay] The type of blending for the bloom.
-#define BloomStrength 0.200                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
+#define BloomType BlendGlow                 //[BlendGlow, BlendLuma, BlendAddLight, BlendScreen, BlendOverlay] The type of blending for the bloom. Glow & Overlay are dynamic.
+#define BloomStrength 0.250                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'glow' spread. 0.000 = off. Scales with BloomStrength. (Default: 4.000).
 #define BloomReds 1.00                      //[0.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
@@ -44,8 +44,8 @@
 #define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[TONEMAP OPTIONS]##
-#define TonemapType 1                       //[1 or 2] Type of tone mapping operator. 1 is natural map, 2 is cinematic(darker) map. (Default: 1)
-#define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.25)
+#define TonemapType 1                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR filmic(palette alterations for more of a film style).
+#define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.20)
 #define BlackLevels 0.30                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.30)
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
 #define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
@@ -58,16 +58,15 @@
 #define BlueCurve 1.00                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[FILMIC OPTIONS]##
-#define FilmicProcess 1                     //[0 or 1] Filmic cross processing. Alters the mood of the scene, for more of a filmic look. Typically best suited to realistic style games.
+#define FilmicProcess 0                     //[0 or 1] Filmic cross processing. Alters the mood of the scene, for more of a filmic look. Typically best suited to realistic style games.
 #define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicProcess.
 #define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicProcess.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicProcess.
 #define ShiftRatio 0.33                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicProcess.
 
 //##[SHARPEN OPTIONS]##
-#define SharpeningType 2                    //[1 or 2] The type of sharpening to use. Type 1 is a High Pass Gaussian. Type 2 is a higher quality(slightly slower) Bicubic Sampling type.
 #define SharpenStrength 0.75                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
-#define SharpenClamp 0.010                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
+#define SharpenClamp 0.015                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
 #define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
 
@@ -156,7 +155,8 @@ VS_OUTPUT FrameVS(VS_INPUT Input)
                        [GAMMA CORRECTION CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float3 RGBGammaToLinear(float3 color, float gamma)
+#if (GAMMA_CORRECTION == 1)
+float3 RGBGammaToLinear(in float3 color, in float gamma)
 {
     color = saturate(color);
     color.r = (color.r <= 0.0404482362771082) ?
@@ -169,7 +169,7 @@ float3 RGBGammaToLinear(float3 color, float gamma)
     return color;
 }
 
-float3 LinearToRGBGamma(float3 color, float gamma)
+float3 LinearToRGBGamma(in float3 color, in float gamma)
 {
     color = saturate(color);
     color.r = (color.r <= 0.00313066844250063) ?
@@ -191,11 +191,13 @@ float4 GammaPass(float4 color, float2 texcoord)
 
     return color;
 }
+#endif
 
 /*------------------------------------------------------------------------------
                         [BLENDED BLOOM CODE SECTION]
 ------------------------------------------------------------------------------*/
 
+#if (BLENDED_BLOOM == 1)
 float3 BlendAddLight(in float3 color, in float3 bloom)
 {
     return saturate(color + bloom);
@@ -213,7 +215,7 @@ float3 BlendLuma(in float3 color, in float3 bloom)
 
 float3 BlendGlow(in float3 color, in float3 bloom)
 {
-    float3 glow = step(0.5, color);
+    float3 glow = smoothstep(0.25, 1.00, color);
     glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
 
     return glow;
@@ -227,7 +229,12 @@ float3 BlendOverlay(in float3 color, in float3 bloom)
     return overlay;
 }
 
-float4 PyramidFilter(sampler2D tex, float2 texcoord, float2 width)
+float4 BrightPassFilter(in float4 color)
+{
+    return float4(color.rgb * pow(abs(max(color.r, max(color.g, color.b))), 0.04), color.a);
+}
+
+float4 PyramidFilter(in sampler2D tex, in float2 texcoord, in float2 width)
 {
     float4 color = tex2D(tex, texcoord + float2(0.5, 0.5) * width);
     color += tex2D(tex, texcoord + float2(-0.5,  0.5) * width);
@@ -253,8 +260,10 @@ float3 BloomCorrection(in float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
+    color = BrightPassFilter(color);
+
     const float defocus = 1.25;
-    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
+    float4 bloom = PyramidFilter(s0, texcoord, invDefocus * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
@@ -304,17 +313,19 @@ float4 BloomPass(float4 color, float2 texcoord)
 
     return color;
 }
+#endif
 
 /*------------------------------------------------------------------------------
                 [COLOR CORRECTION/TONE MAPPING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float3 ScaleLuma(in float3 x)
+#if (SCENE_TONEMAPPING == 1)
+float3 ScaleLuma(in float3 L)
 {
     const float W = 1.00;	// Linear White Point Value
     const float K = 1.15;   // Scale
 
-    return (1.0 + K * x / (W * W)) * x / (x + K);
+    return (1.0 + K * L / (W * W)) * L / (L + K);
 }
 
 float3 FilmicTonemap(in float3 color)
@@ -380,7 +391,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
 
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
-    if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
+    if (TonemapType == 1) { color.rgb = FilmicTonemap(color.rgb); }
 
     // RGB -> XYZ conversion
     const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -404,7 +415,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
 
-    if (FilmicProcess == 1) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
+    if (TonemapType == 2) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // Yxy -> XYZ conversion
     XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
@@ -423,25 +434,27 @@ float4 TonemapPass(float4 color, float2 texcoord)
 
     return color;
 }
+#endif
 
 /*------------------------------------------------------------------------------
                        [TEXTURE SHARPEN CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float Cubic(float x)
+#if (TEXTURE_SHARPEN == 1)
+float Cubic(float coeff)
 {
-    float x2 = x * x;
-    float x3 = x2 * x;
+    float4 n = float4(1.0, 2.0, 3.0, 4.0) - coeff;
+    float4 s = n * n * n;
 
-    float cx = -x3 + 3.0 * x2 - 3.0 * x + 1.0;
-    float cy = 3.0 * x3 - 6.0 * x2 + 4.0;
-    float cz = -3.0 * x3 + 3.0 * x2 + 3.0 * x + 1.0;
-    float cw = x3;
+    float x = s.x;
+    float y = s.y - 4.0 * s.x;
+    float z = s.z - 4.0 * s.y + 6.0 * s.x;
+    float w = 6.0 - x - y - z;
 
-    return (lerp(cx, cy, 0.5) + lerp(cz, cw, 0.5)) / 6.0;
+    return (x + y + z + w) / 4.0;
 }
 
-float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
+float4 SampleBicubic(in SamplerState texSample, in float2 TexCoord)
 {
     float texelSizeX = pixelSize.x * float(SharpenBias);
     float texelSizeY = pixelSize.y * float(SharpenBias);
@@ -481,7 +494,7 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
 {
     float3 calcSharpen = lumCoeff * float(SharpenStrength);
 
-    float4 blurredColor = SampleBiCubic(s0, texcoord);
+    float4 blurredColor = SampleBicubic(s0, texcoord);
     float3 sharpenedColor = (color.rgb - blurredColor.rgb);
 
     float sharpenLuma = dot(sharpenedColor, calcSharpen);
@@ -496,25 +509,29 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
 
     return saturate(color);
 }
+#endif
 
 /*------------------------------------------------------------------------------
                         [CEL SHADING CODE SECTION]
 ------------------------------------------------------------------------------*/
 
+#if (CEL_SHADING == 1)
 float3 GetYUV(float3 RGB)
 {
-    const float3x3 RGB2YUV = { 0.2126, 0.7152, 0.0722,
-                              -0.09991,-0.33609, 0.436,
-                               0.615, -0.55861, -0.05639 };
+    const float3x3 RGB2YUV = {
+    0.2126, 0.7152, 0.0722,
+   -0.09991,-0.33609, 0.436,
+    0.615, -0.55861, -0.05639 };
 
     return mul(RGB2YUV, RGB);
 }
 
 float3 GetRGB(float3 YUV)
 {
-    const float3x3 YUV2RGB = { 1.000, 0.000, 1.28033,
-                               1.000,-0.21482,-0.38059,
-                               1.000, 2.12798, 0.000 };
+    const float3x3 YUV2RGB = {
+    1.000, 0.000, 1.28033,
+    1.000,-0.21482,-0.38059,
+    1.000, 2.12798, 0.000 };
 
     return mul(YUV2RGB, YUV);
 }
@@ -587,11 +604,13 @@ float4 CelPass(float4 color, float2 uv0)
 
     return saturate(color);
 }
+#endif
 
 /*------------------------------------------------------------------------------
                           [CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
 
+#if (S_CURVE_CONTRAST == 1)
 float4 ContrastPass(float4 color, float2 texcoord)
 {
     float3 luma = (float3)RGBLuminance(color.rgb);
@@ -619,11 +638,13 @@ float4 ContrastPass(float4 color, float2 texcoord)
 
     return saturate(color);
 }
+#endif
 
 /*------------------------------------------------------------------------------
                        [PIXEL VIBRANCE CODE SECTION]
 ------------------------------------------------------------------------------*/
 
+#if (PIXEL_VIBRANCE == 1)
 float4 VibrancePass(float4 color, float2 texcoord)
 {
     float cVibrance = Vibrance;
@@ -639,6 +660,7 @@ float4 VibrancePass(float4 color, float2 texcoord)
 
     return saturate(color); //Debug: return colorSaturation.xxxx;
 }
+#endif
 
 /*------------------------------------------------------------------------------
                               [MAIN/COMBINE]
