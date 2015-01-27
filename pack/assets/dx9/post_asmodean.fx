@@ -24,8 +24,8 @@
 //-#[LIGHTING & COLOUR]         [1=ON|0=OFF]
 #define BLENDED_BLOOM                1      //#High Quality Bloom, using blend techniques. Blooms naturally, per environment.
 #define SCENE_TONEMAPPING            1      //#Scene Tonemapping & RGB Colour Correction. Corrects colour, and tone maps the scene.
-#define GAMMA_CORRECTION             0      //#RGB Gamma Correction. sRGB->Linear->sRGB correction curve. Enable for games with incorrect gamma.
-#define TEXTURE_SHARPEN              0      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative LOD bias. Enhances texture fidelity.
+#define GAMMA_CORRECTION             1      //#RGB Gamma Correction. sRGB->Linear->sRGB correction curve. Enable for games with incorrect gamma.
+#define TEXTURE_SHARPEN              1      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative LOD bias. Enhances texture fidelity.
 #define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
 #define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated style games.
@@ -108,11 +108,12 @@ Texture2D thisframeTex;
 SamplerState s0
 {
     Texture = <thisframeTex>;
-    Filter = Anisotropic;
+    MinFilter = Linear;
+    MagFilter = Linear;
+    MipFilter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
     SRGBTexture = USE_SRGB;
-    MaxAnisotropy = 16;
 };
 
 struct VS_INPUT
@@ -125,6 +126,11 @@ struct VS_OUTPUT
 {
     float4 vertPos : SV_POSITION;
     float2 UVCoord : TEXCOORD0;
+};
+
+struct PS_OUTPUT
+{
+    float4 color : COLOR0;
 };
 
 float RGBLuminance(float3 color)
@@ -176,7 +182,7 @@ float3 LinearToRGBGamma(float3 color, float gamma)
     return color;
 }
 
-float4 GammaPass(float4 color, float2 texcoord) : COLOR0
+float4 GammaPass(float4 color, float2 texcoord)
 {
     const float GammaConst = 2.233;
     color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
@@ -245,15 +251,16 @@ float3 BloomCorrection(in float3 color)
     return saturate(color);
 }
 
-float4 BloomPass(float4 color, float2 texcoord) : COLOR0
+float4 BloomPass(float4 color, float2 texcoord)
 {
-    float4 bloom = PyramidFilter(s0, texcoord, pixelSize);
+    const float defocus = 1.25;
+    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
-	float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
-	float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
+    float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
+    float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
 
-	float2 mdx = mul(2.0, dx);
-	float2 mdy = mul(2.0, dy);
+    float2 mdx = mul(2.0, dx);
+    float2 mdy = mul(2.0, dy);
 
     float4 bloomBlend = bloom * 0.22520613262190495;
 
@@ -304,10 +311,10 @@ float4 BloomPass(float4 color, float2 texcoord) : COLOR0
 
 float3 ScaleLuma(in float3 x)
 {
-	const float W = 1.00;	// Linear White Point Value
-	const float K = 1.10;   // Scale
+    const float W = 1.00;	// Linear White Point Value
+    const float K = 1.15;   // Scale
 
-	return (1.0 + K * x / (W * W)) * x / (x + K);
+    return (1.0 + K * x / (W * W)) * x / (x + K);
 }
 
 float3 FilmicTonemap(in float3 color)
@@ -334,14 +341,14 @@ float3 CrossShift(in float3 color)
 {
     float3 colMood;
 
-	float2 CrossMatrix[3] = {
-	float2 (0.96, 0.04),
-	float2 (0.99, 0.01),
-	float2 (0.97, 0.03), };
+    float2 CrossMatrix[3] = {
+    float2 (0.96, 0.04),
+    float2 (0.99, 0.01),
+    float2 (0.97, 0.03), };
 
-	colMood.r = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
-	colMood.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
-	colMood.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
+    colMood.r = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
+    colMood.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
+    colMood.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
     float fLum = RGBLuminance(color.rgb);
     colMood = lerp(0.0, colMood, saturate(fLum * 2.0));
@@ -364,16 +371,16 @@ float3 ColorCorrection(in float3 color)
     return saturate(color);
 }
 
-float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
+float4 TonemapPass(float4 color, float2 texcoord)
 {
     const float delta = 0.001f;
     const float wpoint = pow(1.002f, 2.0f);
     
-	color.rgb = ScaleLuma(color.rgb);
+    color.rgb = ScaleLuma(color.rgb);
 
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
-	if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
+    if (FilmicProcess == 0) { color.rgb = FilmicTonemap(color.rgb); }
 
     // RGB -> XYZ conversion
     const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -391,8 +398,8 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
 
     if (CorrectionPalette == 2) { Yxy.rgb = ColorCorrection(Yxy.rgb); }
 
-	// (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
-	float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
+    // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
+    float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
@@ -414,7 +421,7 @@ float4 TonemapPass(float4 color, float2 texcoord) : COLOR0
     color.rgb = mul(XYZ2RGB, XYZ);
     color.a = RGBLuminance(color.rgb);
 
-    return saturate(color);
+    return color;
 }
 
 /*------------------------------------------------------------------------------
@@ -470,7 +477,7 @@ float4 SampleBiCubic(SamplerState texSample, float2 TexCoord)
     return nSum / nDenom;
 }
 
-float4 TexSharpenPass(float4 color, float2 texcoord) : COLOR0
+float4 TexSharpenPass(float4 color, float2 texcoord)
 {
     float3 calcSharpen = lumCoeff * float(SharpenStrength);
 
@@ -585,7 +592,7 @@ float4 CelPass(float4 color, float2 uv0)
                           [CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float4 ContrastPass(float4 color, float2 texcoord) : COLOR0
+float4 ContrastPass(float4 color, float2 texcoord)
 {
     float3 luma = (float3)RGBLuminance(color.rgb);
     float3 chroma = color.rgb - luma;
@@ -617,7 +624,7 @@ float4 ContrastPass(float4 color, float2 texcoord) : COLOR0
                        [PIXEL VIBRANCE CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
+float4 VibrancePass(float4 color, float2 texcoord)
 {
     float cVibrance = Vibrance;
     float luma = RGBLuminance(color.rgb);
@@ -637,8 +644,10 @@ float4 VibrancePass(float4 color, float2 texcoord) : COLOR0
                               [MAIN/COMBINE]
 ------------------------------------------------------------------------------*/
 
-float4 postProcessing(VS_OUTPUT Input) : COLOR0
+PS_OUTPUT postProcessing(VS_OUTPUT Input)
 {
+    PS_OUTPUT Output;
+
     float2 tex = Input.UVCoord;
     float4 c0 = tex2D(s0, tex);
 
@@ -670,7 +679,9 @@ float4 postProcessing(VS_OUTPUT Input) : COLOR0
         c0 = ContrastPass(c0, tex);
     #endif
 
-    return c0;
+    Output.color = c0;
+
+    return Output;
 }
 
 /*------------------------------------------------------------------------------
@@ -683,7 +694,7 @@ technique t0
     {
         VertexShader = compile vs_3_0 FrameVS();
         PixelShader = compile ps_3_0 postProcessing();
-        ZEnable = false;        
+        ZEnable = false;
         SRGBWriteEnable = USE_SRGB;
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
