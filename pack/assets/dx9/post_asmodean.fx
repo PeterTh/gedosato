@@ -215,7 +215,7 @@ float3 BlendLuma(in float3 color, in float3 bloom)
 
 float3 BlendGlow(in float3 color, in float3 bloom)
 {
-    float3 glow = smoothstep(0.25, 1.00, color);
+    float3 glow = smoothstep(0.0, 1.0, color);
     glow = lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
 
     return glow;
@@ -260,9 +260,10 @@ float3 BloomCorrection(in float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    color = BrightPassFilter(color);
+    float defocus = 1.25;
+    float anflare = 4.00;
 
-    const float defocus = 1.25;
+    color = BrightPassFilter(color);
     float4 bloom = PyramidFilter(s0, texcoord, invDefocus * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
@@ -308,6 +309,7 @@ float4 BloomPass(float4 color, float2 texcoord)
 
     color.a = RGBLuminance(color.rgb);
     bloom.a = RGBLuminance(bloom.rgb);
+    bloom.a *= anflare;
 
     color = lerp(color, bloom, float(BloomStrength));
 
@@ -322,7 +324,7 @@ float4 BloomPass(float4 color, float2 texcoord)
 #if (SCENE_TONEMAPPING == 1)
 float3 ScaleLuma(in float3 L)
 {
-    const float W = 1.00;	// Linear White Point Value
+    const float W = 1.00;   // Linear White Point Value
     const float K = 1.15;   // Scale
 
     return (1.0 + K * L / (W * W)) * L / (L + K);
