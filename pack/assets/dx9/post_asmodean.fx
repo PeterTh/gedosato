@@ -39,6 +39,7 @@
 #define BloomStrength 0.250                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'glow' spread. 0.000 = off. Scales with BloomStrength. (Default: 4.000).
+#define BloomCutoff 0.05                    //[0.00 to 1.00] Threshold for the bloom affecting darker areas. This is done automatically by the bloom, but I've included this setting to provide some control.
 #define BloomReds 1.00                      //[0.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
 #define BloomGreens 1.00                    //[0.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
 #define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
@@ -231,7 +232,7 @@ float3 BlendOverlay(in float3 color, in float3 bloom)
 
 float4 BrightPassFilter(in float4 color)
 {
-    return float4(color.rgb * pow(abs(max(color.r, max(color.g, color.b))), 0.04), color.a);
+    return float4(color.rgb * pow(abs(max(color.r, max(color.g, color.b))), float(BloomCutoff)), color.a);
 }
 
 float4 PyramidFilter(in sampler2D tex, in float2 texcoord, in float2 width)
@@ -325,7 +326,7 @@ float4 BloomPass(float4 color, float2 texcoord)
 float3 ScaleLuma(in float3 L)
 {
     const float W = 1.00;   // Linear White Point Value
-    const float K = 1.15;   // Scale
+    const float K = 1.12;   // Scale
 
     return (1.0 + K * L / (W * W)) * L / (L + K);
 }
