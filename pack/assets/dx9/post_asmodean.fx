@@ -39,7 +39,6 @@
 #define BloomStrength 0.250                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'glow' spread. 0.000 = off. Scales with BloomStrength. (Default: 4.000).
-#define BloomCutoff 0.05                    //[0.00 to 1.00] Threshold for the bloom affecting darker areas. This is done automatically by the bloom, but I've included this setting to provide some control.
 #define BloomReds 1.00                      //[0.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
 #define BloomGreens 1.00                    //[0.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
 #define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
@@ -47,7 +46,7 @@
 //##[TONEMAP OPTIONS]##
 #define TonemapType 1                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR filmic(palette alterations for more of a film style).
 #define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.20)
-#define BlackLevels 0.30                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to lighten blacks, lower to deepen them. (Default: ~ 0.30)
+#define BlackLevels 0.10                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them. (Default: ~ 0.10)
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
 #define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
 #define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint avg (lum correction) Use to alter the scene whitepoint average. Raising can give a cinema look.
@@ -63,7 +62,7 @@
 #define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic tone shift. Alters the red balance of the shift. Requires FilmicProcess.
 #define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic tone shift. Alters the green balance of the shift. Requires FilmicProcess.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic tone shift. Alters the blue balance of the shift. Requires FilmicProcess.
-#define ShiftRatio 0.33                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicProcess.
+#define ShiftRatio 0.25                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. Requires FilmicProcess.
 
 //##[SHARPEN OPTIONS]##
 #define SharpenStrength 0.75                //[0.10 to 1.00] Strength of the texture luma sharpening effect. This is the maximum strength that will be used.
@@ -135,7 +134,7 @@ struct PS_OUTPUT
 
 float RGBLuminance(float3 color)
 {
-    return dot(color.rgb, lumCoeff);
+    return dot(color.xyz, lumCoeff);
 }
 
 /*------------------------------------------------------------------------------
@@ -230,11 +229,6 @@ float3 BlendOverlay(in float3 color, in float3 bloom)
     return overlay;
 }
 
-float4 BrightPassFilter(in float4 color)
-{
-    return float4(color.rgb * pow(abs(max(color.r, max(color.g, color.b))), float(BloomCutoff)), color.a);
-}
-
 float4 PyramidFilter(in sampler2D tex, in float2 texcoord, in float2 width)
 {
     float4 color = tex2D(tex, texcoord + float2(0.5, 0.5) * width);
@@ -264,7 +258,6 @@ float4 BloomPass(float4 color, float2 texcoord)
     float defocus = 1.25;
     float anflare = 4.00;
 
-    color = BrightPassFilter(color);
     float4 bloom = PyramidFilter(s0, texcoord, invDefocus * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
@@ -323,12 +316,12 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (SCENE_TONEMAPPING == 1)
-float3 ScaleLuma(in float3 L)
+float4 ScaleBlk(in float4 color)
 {
-    const float W = 1.00;   // Linear White Point Value
-    const float K = 1.12;   // Scale
-
-    return (1.0 + K * L / (W * W)) * L / (L + K);
+    color = float4(color.rgb * pow(abs(max(color.r,
+    max(color.g, color.b))), float(BlackLevels)), color.a);
+    
+    return color;
 }
 
 float3 FilmicTonemap(in float3 color)
@@ -336,7 +329,7 @@ float3 FilmicTonemap(in float3 color)
     float3 Q = color.xyz;
 
     float A = 0.10;
-    float B = float(BlackLevels);
+    float B = 0.30;
     float C = 0.10;
     float D = float(ToneAmount);
     float E = 0.02;
@@ -364,7 +357,7 @@ float3 CrossShift(in float3 color)
     colMood.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
     colMood.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
-    float fLum = RGBLuminance(color.rgb);
+    float fLum = RGBLuminance(color.xyz);
     colMood = lerp(0.0, colMood, saturate(fLum * 2.0));
     colMood = lerp(colMood, 1.0, saturate(fLum - 0.5) * 2.0);
     float3 colOutput = lerp(color, colMood, saturate(fLum * float(ShiftRatio)));
@@ -390,7 +383,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     const float delta = 0.001f;
     const float wpoint = pow(1.002f, 2.0f);
     
-    color.rgb = ScaleLuma(color.rgb);
+    color = ScaleBlk(color);
 
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
@@ -410,6 +403,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b);    // x = X / (X + Y + Z)
     Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b);    // y = Y / (X + Y + Z)
 
+    if (TonemapType == 2) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
     if (CorrectionPalette == 2) { Yxy.rgb = ColorCorrection(Yxy.rgb); }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
@@ -417,8 +411,6 @@ float4 TonemapPass(float4 color, float2 texcoord)
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
-
-    if (TonemapType == 2) { Yxy.r = FilmicTonemap(Yxy.rgb).r; }
 
     // Yxy -> XYZ conversion
     XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
