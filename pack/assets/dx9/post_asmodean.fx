@@ -39,9 +39,9 @@
 #define BloomStrength 0.220                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'glow' spread. Scales with BloomStrength. (Default: 4.000).
-#define BloomReds 1.00                      //[0.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
-#define BloomGreens 1.00                    //[0.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
-#define BloomBlues 1.00                     //[0.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
+#define BloomReds 0.010                     //[0.000 to 1.000] Bloom-exclusive colour correction of the red channel. Adjust for desired manipulation of reds.
+#define BloomGreens 0.005                   //[0.000 to 1.000] Bloom-exclusive colour correction of the green channel. Adjust for desired manipulation of greens.
+#define BloomBlues 0.005                    //[0.000 to 1.000] Bloom-exclusive colour correction of the blue channel. Adjust for desired manipulation of blues.
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR filmic(palette alterations for more of a film style).
@@ -261,15 +261,17 @@ float4 PyramidFilter(sampler tex, float2 texcoord, float2 width)
 
 float3 BloomCorrection(float3 color)
 {
-    float X = 1.0 / (1.0 + exp(float(BloomReds) / 2.0));
-    float Y = 1.0 / (1.0 + exp(float(BloomGreens) / 2.0));
-    float Z = 1.0 / (1.0 + exp(float(BloomBlues) / 2.0));
+    float3 bloom = (color.rgb - 0.5) * 2.0;
+    bloom.r = 2.0 / 3.0 * (1.0 - (bloom.r * bloom.r));
+    bloom.g = 2.0 / 3.0 * (1.0 - (bloom.g * bloom.g));
+    bloom.b = 2.0 / 3.0 * (1.0 - (bloom.b * bloom.b));
 
-    color.r = (1.0 / (1.0 + exp(float(-BloomReds) * (color.r - 0.5))) - X) / (1.0 - 2.0 * X);
-    color.g = (1.0 / (1.0 + exp(float(-BloomGreens) * (color.g - 0.5))) - Y) / (1.0 - 2.0 * Y);
-    color.b = (1.0 / (1.0 + exp(float(-BloomBlues) * (color.b - 0.5))) - Z) / (1.0 - 2.0 * Z);
+    bloom.r = saturate(color.r + BloomReds * bloom.r);
+    bloom.g = saturate(color.g + BloomGreens * bloom.g);
+    bloom.b = saturate(color.b + BloomBlues * bloom.b);
+    color = bloom;
 
-    return saturate(color);
+    return color;
 }
 
 float4 BloomPass(float4 color, float2 texcoord)
