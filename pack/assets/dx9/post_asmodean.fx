@@ -401,8 +401,7 @@ float3 ColorCorrection(float3 color)
 float4 TonemapPass(float4 color, float2 texcoord)
 {
     const float delta = 0.001;
-    float wpoint = max(color.x, max(color.y, color.z));
-    wpoint = wpoint / wpoint;
+    float wpoint = max(color.x, max(color.y, color.z)); wpoint /= wpoint;
     
     color = ScaleBlk(color);
 
