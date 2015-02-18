@@ -250,18 +250,18 @@ float3 BlendOverlay(float3 color, float3 bloom)
 
 float4 PyramidFilter(sampler tex, float2 texcoord, float2 width)
 {
-    float4 color = tex2D(tex, texcoord + float2(0.5, 0.5) * width);
-    color += tex2D(tex, texcoord + float2(-0.5,  0.5) * width);
-    color += tex2D(tex, texcoord + float2(0.5, -0.5) * width);
-    color += tex2D(tex, texcoord + float2(-0.5, -0.5) * width);
-    color *= 0.25;
+    float4 X = tex2D(tex, texcoord + float2(0.5, 0.5) * width);
+    float4 Y = tex2D(tex, texcoord + float2(-0.5,  0.5) * width);
+    float4 Z = tex2D(tex, texcoord + float2(0.5, -0.5) * width);
+    float4 W = tex2D(tex, texcoord + float2(-0.5, -0.5) * width);
 
-    return color;
+    return (X + Y + Z + W) / 4.0;
 }
 
 float3 BloomCorrection(float3 color)
 {
     float3 bloom = (color.rgb - 0.5) * 2.0;
+
     bloom.r = 2.0 / 3.0 * (1.0 - (bloom.r * bloom.r));
     bloom.g = 2.0 / 3.0 * (1.0 - (bloom.g * bloom.g));
     bloom.b = 2.0 / 3.0 * (1.0 - (bloom.b * bloom.b));
@@ -269,6 +269,7 @@ float3 BloomCorrection(float3 color)
     bloom.r = saturate(color.r + BloomReds * bloom.r);
     bloom.g = saturate(color.g + BloomGreens * bloom.g);
     bloom.b = saturate(color.b + BloomBlues * bloom.b);
+
     color = bloom;
 
     return color;
@@ -276,10 +277,10 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    float defocus = 1.25;
+    float defocus = 1.33;
     float anflare = 4.00;
 
-    float4 bloom = PyramidFilter(s0, texcoord, invDefocus * defocus);
+    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
     float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
