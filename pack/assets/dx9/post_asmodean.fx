@@ -44,7 +44,7 @@
 #define BloomBlues 0.005                    //[0.000 to 1.000] Bloom-exclusive colour correction of the blue channel. Adjust for desired manipulation of blues.
 
 //##[TONEMAP OPTIONS]##
-#define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR filmic(palette alterations for more of a film style).
+#define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic ALU(cinematic).
 #define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.20)
 #define BlackLevels 0.06                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them. (Default: ~ 0.10)
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
@@ -58,11 +58,11 @@
 #define BlueCurve 1.00                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[FILMIC OPTIONS]##
-#define FilmicProcess 1                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
+#define FilmicProcess 0                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
 #define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic processing. Alters the blue balance of the shift.
-#define ShiftRatio 0.33                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. 
+#define ShiftRatio 0.25                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. 
 
 //##[SHARPEN OPTIONS]##
 #define SharpenStrength 0.75                //[0.10 to 1.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
@@ -104,7 +104,7 @@ static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
 static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
 
 texture thisframeTex;
-sampler s0
+sampler s0 = sampler_state
 {
     Texture = <thisframeTex>;
     MinFilter = Linear;
@@ -124,7 +124,7 @@ struct VS_INPUT
 
 struct VS_OUTPUT
 {
-    float4 vertPos : SV_POSITION;
+    float4 vertPos : POSITION0;
     float2 UVCoord : TEXCOORD0;
 };
 
@@ -154,8 +154,8 @@ float4 DebugClipping(float4 color)
 float RGBLuminance(float3 color)
 {
     return dot(color.xyz, lumCoeff);
-}*/
-
+}
+*/
 
 /*------------------------------------------------------------------------------
                             [VERTEX CODE SECTION]
@@ -338,18 +338,22 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (SCENE_TONEMAPPING == 1)
-float4 ScaleBlk(float4 color)
+float3 FilmicALU(float3 color)
 {
-    color = float4(color.rgb * pow(abs(max(color.r,
-    max(color.g, color.b))), float(BlackLevels)), color.a);
-    
-    return color;
+    float3 tone = color;
+
+    tone = max(0, tone - 0.004f);
+    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.7) + 0.06);
+    tone = pow(tone, 2.233);
+
+    return lerp(color, tone, float(ToneAmount));
+
 }
 
 float3 FilmicCurve(float3 color)
 {
     float delta = 0.001;
-    float3 Q = color.xyz;
+    float3 Q = color;
 
     float A = 0.10;
     float B = 0.30;
@@ -362,7 +366,7 @@ float3 FilmicCurve(float3 color)
     float3 numerator = ((Q*(A*Q + C*B) + D*E) / (Q*(A*Q + B) + D*F)) - E / F;
     float denominator = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
 
-    color.xyz = numerator / denominator;
+    color = numerator / denominator;
 
     return saturate(color);
 }
@@ -404,13 +408,15 @@ float3 ColorCorrection(float3 color)
 float4 TonemapPass(float4 color, float2 texcoord)
 {
     const float delta = 0.001;
-    float wpoint = max(color.x, max(color.y, color.z)); wpoint /= wpoint;
-    
-    color = ScaleBlk(color);
+    float wpoint = max(color.r, max(color.g, color.b)); wpoint /= wpoint;
+
+    color.rgb *= pow(abs(max(color.r, max(color.g, color.b))), float(BlackLevels));
 
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
+
     if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
+    if (TonemapType == 2) { color.rgb = FilmicALU(color.rgb); }
 
     // RGB -> XYZ conversion
     static const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -422,9 +428,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
     // XYZ -> Yxy conversion
     float3 Yxy;
 
-    Yxy.r = XYZ.g;                              // copy luminance Y
-    Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b);    // x = X / (X + Y + Z)
-    Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b);    // y = Y / (X + Y + Z)
+    Yxy.r = XYZ.g;                                  // copy luminance Y
+    Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b);        // x = X / (X + Y + Z)
+    Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b);        // y = Y / (X + Y + Z)
 
     if (CorrectionPalette == 2) { Yxy = ColorCorrection(Yxy); }
     if (TonemapType == 2) { Yxy.r = FilmicCurve(Yxy).r; }
