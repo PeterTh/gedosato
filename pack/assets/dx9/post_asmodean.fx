@@ -38,7 +38,8 @@
 #define BloomType BlendGlow                 //[BlendGlow, BlendLuma, BlendAddLight, BlendScreen, BlendOverlay] The type of blending for the bloom.
 #define BloomStrength 0.220                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
-#define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'glow' spread. Scales with BloomStrength. (Default: 4.000).
+#define BloomDefocus 2.200                  //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
+#define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'soft glow' spread. Scales with BloomStrength. (Default: 4.000).
 #define BloomReds 0.010                     //[0.000 to 1.000] Bloom-exclusive colour correction of the red channel. Adjust for desired manipulation of reds.
 #define BloomGreens 0.005                   //[0.000 to 1.000] Bloom-exclusive colour correction of the green channel. Adjust for desired manipulation of greens.
 #define BloomBlues 0.005                    //[0.000 to 1.000] Bloom-exclusive colour correction of the blue channel. Adjust for desired manipulation of blues.
@@ -98,11 +99,11 @@
                              [GLOBALS/FUNCTIONS]
 ------------------------------------------------------------------------------*/
 
+static float delta = 0.001;
 static float2 pixelSize = PIXEL_SIZE;
 static float2 screenSize = SCREEN_SIZE;
 static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
 static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
-static const float delta = 0.001;
 
 texture thisframeTex;
 sampler s0 = sampler_state
@@ -218,34 +219,35 @@ float4 GammaPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (BLENDED_BLOOM == 1)
-float3 BlendAddLight(float3 color, float3 bloom)
+float3 BlendAddLight(float3 bloom, float3 blend)
 {
-    return saturate(color + bloom);
+    return saturate(bloom + blend);
 }
 
-float3 BlendScreen(float3 color, float3 bloom)
+float3 BlendScreen(float3 bloom, float3 blend)
 {
-    return (color + bloom) - (color * bloom);
+    return (bloom + blend) - (bloom * blend);
 }
 
-float3 BlendLuma(float3 color, float3 bloom)
+float3 BlendLuma(float3 bloom, float3 blend)
 {
-    float lumavg = AvgLuminance(color + bloom);
-    return lerp((color * bloom), (1.0 - ((1.0 - color) * (1.0 - bloom))), lumavg);
+    float lumavg = AvgLuminance(bloom + blend);
+    return lerp((bloom * blend), (1.0 -
+    ((1.0 - bloom) * (1.0 - blend))), lumavg);
 }
 
-float3 BlendGlow(float3 color, float3 bloom)
+float3 BlendGlow(float3 bloom, float3 blend)
 {
-    float glow = smoothstep(0.0, 1.0, AvgLuminance(color));
-    return lerp((color + bloom) - (color * bloom), (bloom + bloom) - (bloom * bloom), glow);
+    float glow = smoothstep(0.0, 1.0, AvgLuminance(bloom));
+    return lerp((bloom + blend) - (bloom * blend),
+    (blend + blend) - (blend * blend), glow);
 }
 
-float3 BlendOverlay(float3 color, float3 bloom)
+float3 BlendOverlay(float3 bloom, float3 blend)
 {
-    float3 overlay = step(0.5, color);
-    overlay = lerp((color * bloom * 2.0), (1.0 - (2.0 * (1.0 - color) * (1.0 - bloom))), overlay);
-
-    return overlay;
+    float3 overlay = step(0.5, bloom);
+    return lerp((bloom * blend * 2.0), (1.0 - (2.0 *
+    (1.0 - bloom) * (1.0 - blend))), overlay);
 }
 
 float4 PyramidFilter(sampler tex, float2 texcoord, float2 width)
@@ -277,8 +279,8 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    float defocus = 1.33;
     float anflare = 4.00;
+    float defocus = float(BloomDefocus);
 
     float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
@@ -288,39 +290,39 @@ float4 BloomPass(float4 color, float2 texcoord)
     float2 mdx = mul(2.0, dx);
     float2 mdy = mul(2.0, dy);
 
-    float4 bloomBlend = bloom * 0.22520613262190495;
+    float4 blend = bloom * 0.22520613262190495;
 
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord - mdx + mdy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx + mdy);
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord + mdy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx + mdy);
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + mdx + mdy);
+    blend += 0.002589001911021066 * tex2D(s0, texcoord - mdx + mdy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord - dx + mdy);
+    blend += 0.024146616900339800 * tex2D(s0, texcoord + mdy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord + dx + mdy);
+    blend += 0.002589001911021066 * tex2D(s0, texcoord + mdx + mdy);
 
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - mdx + dy);
-    bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord - dx + dy);
-    bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord + dy);
-    bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord + dx + dy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + mdx + dy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord - mdx + dy);
+    blend += 0.044875475183061630 * tex2D(s0, texcoord - dx + dy);
+    blend += 0.100529757860782610 * tex2D(s0, texcoord + dy);
+    blend += 0.044875475183061630 * tex2D(s0, texcoord + dx + dy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord + mdx + dy);
 
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - mdx);
-    bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord - dx);
-    bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord + dx);
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord + mdx);
+    blend += 0.024146616900339800 * tex2D(s0, texcoord - mdx);
+    blend += 0.100529757860782610 * tex2D(s0, texcoord - dx);
+    blend += 0.100529757860782610 * tex2D(s0, texcoord + dx);
+    blend += 0.024146616900339800 * tex2D(s0, texcoord + mdx);
 
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - mdx - dy);
-    bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord - dx - dy);
-    bloomBlend += 0.100529757860782610 * tex2D(s0, texcoord - dy);
-    bloomBlend += 0.044875475183061630 * tex2D(s0, texcoord + dx - dy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + mdx - dy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord - mdx - dy);
+    blend += 0.044875475183061630 * tex2D(s0, texcoord - dx - dy);
+    blend += 0.100529757860782610 * tex2D(s0, texcoord - dy);
+    blend += 0.044875475183061630 * tex2D(s0, texcoord + dx - dy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord + mdx - dy);
 
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord - mdx - mdy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord - dx - mdy);
-    bloomBlend += 0.024146616900339800 * tex2D(s0, texcoord - mdy);
-    bloomBlend += 0.010778807494659370 * tex2D(s0, texcoord + dx - mdy);
-    bloomBlend += 0.002589001911021066 * tex2D(s0, texcoord + mdx - mdy);
-    bloomBlend = lerp(color, bloomBlend, float(BlendStrength));
+    blend += 0.002589001911021066 * tex2D(s0, texcoord - mdx - mdy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord - dx - mdy);
+    blend += 0.024146616900339800 * tex2D(s0, texcoord - mdy);
+    blend += 0.010778807494659370 * tex2D(s0, texcoord + dx - mdy);
+    blend += 0.002589001911021066 * tex2D(s0, texcoord + mdx - mdy);
+    blend = lerp(color, blend, float(BlendStrength));
 
-    bloom.xyz = BloomType(bloom.xyz, bloomBlend.xyz);
+    bloom.xyz = BloomType(bloom.xyz, blend.xyz);
     bloom.xyz = BloomCorrection(bloom.xyz);
 
     color.a = AvgLuminance(color.xyz);
@@ -407,6 +409,7 @@ float3 ColorCorrection(float3 color)
 
 float4 TonemapPass(float4 color, float2 texcoord)
 {
+    float avgluminance = AvgLuminance(Luminance);
     float wpoint = max(color.r, max(color.g, color.b)); wpoint /= wpoint;
 
     color.rgb *= pow(abs(max(color.r, max(color.g, color.b))), float(BlackLevels));
@@ -435,7 +438,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     if (TonemapType == 2) { Yxy.r = FilmicCurve(Yxy).r; }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
-    float Lp = Yxy.r * float(Exposure) / (float(Luminance) + delta);
+    float Lp = Yxy.r * float(Exposure) / (avgluminance + delta);
 
     // (Ld) Scale all luminance within a displayable range of 0 to 1
     Yxy.r = (Lp * (1.0 + Lp / wpoint)) / (1.0 + Lp);
