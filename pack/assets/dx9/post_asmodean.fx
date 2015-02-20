@@ -45,9 +45,9 @@
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic ALU(cinematic).
-#define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter. (Default: ~ 0.20)
-#define BlackLevels 0.06                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them. (Default: ~ 0.10)
-#define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more Exposure, lower for less.
+#define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter.
+#define BlackLevels 0.06                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
+#define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more scene exposure, lower for less.
 #define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
 #define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint average (lum correction). The actual white point is handled by the tone map logic. This is just an offset value.
 
@@ -102,6 +102,7 @@ static float2 pixelSize = PIXEL_SIZE;
 static float2 screenSize = SCREEN_SIZE;
 static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
 static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
+static const float delta = 0.001;
 
 texture thisframeTex;
 sampler s0 = sampler_state
@@ -112,13 +113,12 @@ sampler s0 = sampler_state
     MipFilter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
-    MaxAnisotropy = 16;
     SRGBTexture = USE_SRGB;
 };
 
 struct VS_INPUT
 {
-    float4 vertPos : POSITION;
+    float4 vertPos : POSITION0;
     float2 UVCoord : TEXCOORD0;
 };
 
@@ -141,6 +141,11 @@ float AvgLuminance(float3 color)
 }
 
 /*
+float RGBLuminance(float3 color)
+{
+    return dot(color.xyz, lumCoeff);
+}
+
 float4 DebugClipping(float4 color)
 {
     if (color.x >= 0.99999 && color.y >= 0.99999 &&
@@ -149,11 +154,6 @@ float4 DebugClipping(float4 color)
     color.z <= 0.00001) color.xyz = float3(0.0f, 0.0f, 1.0f);
 
     return color;
-}
-
-float RGBLuminance(float3 color)
-{
-    return dot(color.xyz, lumCoeff);
 }
 */
 
@@ -341,29 +341,29 @@ float4 BloomPass(float4 color, float2 texcoord)
 float3 FilmicALU(float3 color)
 {
     float3 tone = color;
+    static const float gamma = 2.233;
 
-    tone = max(0, tone - 0.004f);
+    tone = max(0, tone - 0.004);
     tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.7) + 0.06);
-    tone = pow(tone, 2.233);
+    tone = pow(tone, gamma);
 
-    return lerp(color, tone, float(ToneAmount));
+    return lerp(color, tone, float(ToneAmount) / 1.2);
 
 }
 
 float3 FilmicCurve(float3 color)
 {
-    float delta = 0.001;
-    float3 Q = color;
+    float3 X = color;
 
     float A = 0.10;
     float B = 0.30;
     float C = 0.10;
     float D = float(ToneAmount);
     float E = 0.02 + delta;
-    float F = 0.33;
+    float F = 0.30;
     float W = float(WhitePoint);
 
-    float3 numerator = ((Q*(A*Q + C*B) + D*E) / (Q*(A*Q + B) + D*F)) - E / F;
+    float3 numerator = ((X*(A*X + C*B) + D*E) / (X*(A*X + B) + D*F)) - E / F;
     float denominator = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
 
     color = numerator / denominator;
@@ -407,13 +407,12 @@ float3 ColorCorrection(float3 color)
 
 float4 TonemapPass(float4 color, float2 texcoord)
 {
-    const float delta = 0.001;
     float wpoint = max(color.r, max(color.g, color.b)); wpoint /= wpoint;
 
     color.rgb *= pow(abs(max(color.r, max(color.g, color.b))), float(BlackLevels));
 
-    if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
+    if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
 
     if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
     if (TonemapType == 2) { color.rgb = FilmicALU(color.rgb); }
