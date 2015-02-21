@@ -10,7 +10,7 @@
 ||          This program is distributed in the hope that it will be useful,      ||
 ||          but WITHOUT ANY WARRANTY; without even the implied warranty of       ||
 ||          MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        ||
-||          GNU General Public License for more details. (c)2014                 ||
+||          GNU General Public License for more details. (c)2015                 ||
 ||                                                                               ||
 |#################################################################################|
 \*===============================================================================*/
@@ -47,7 +47,7 @@
 //##[TONEMAP OPTIONS]##
 #define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic ALU(cinematic).
 #define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter.
-#define BlackLevels 0.06                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
+#define BlackLevels 0.05                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more scene exposure, lower for less.
 #define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
 #define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint average (lum correction). The actual white point is handled by the tone map logic. This is just an offset value.
@@ -59,7 +59,7 @@
 #define BlueCurve 1.00                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[FILMIC OPTIONS]##
-#define FilmicProcess 1                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
+#define FilmicProcess 0                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
 #define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic processing. Alters the blue balance of the shift.
@@ -425,10 +425,10 @@ float4 TonemapPass(float4 color, float2 texcoord)
     color.rgb *= pow(abs(max(color.r, max(color.g, color.b))), float(BlackLevels));
 
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
-    if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
-
     if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
+
     if (TonemapType == 2) { color.rgb = FilmicALU(color.rgb); }
+    if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
 
     // RGB -> XYZ conversion
     static const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -444,8 +444,8 @@ float4 TonemapPass(float4 color, float2 texcoord)
     Yxy.g = XYZ.r / (XYZ.r + XYZ.g + XYZ.b);        // x = X / (X + Y + Z)
     Yxy.b = XYZ.g / (XYZ.r + XYZ.g + XYZ.b);        // y = Y / (X + Y + Z)
 
-    if (CorrectionPalette == 2) { Yxy = ColorCorrection(Yxy); }
     if (TonemapType == 2) { Yxy.r = FilmicCurve(Yxy).r; }
+    if (CorrectionPalette == 2) { Yxy = ColorCorrection(Yxy); }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
     float Lp = Yxy.r * float(Exposure) / (avgluminance + delta);
@@ -458,8 +458,8 @@ float4 TonemapPass(float4 color, float2 texcoord)
     XYZ.g = Yxy.r;                                  // copy luminance Y
     XYZ.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;  // Z = Y * (1-x-y) / y
 
-    if (CorrectionPalette == 3) { XYZ = ColorCorrection(XYZ); }
     if (FilmicProcess == 2) { XYZ = CrossShift(XYZ); }
+    if (CorrectionPalette == 3) { XYZ = ColorCorrection(XYZ); }
 
     // XYZ -> RGB conversion
     static const float3x3 XYZ2RGB = { 3.2404542,-1.5371385,-0.4985314,
