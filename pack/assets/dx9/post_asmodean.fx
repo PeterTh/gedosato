@@ -1,5 +1,5 @@
 /*===============================================================================*\
-|########################    [GSFx Shader Suite v1.60]    ########################|
+|########################    [GSFx Shader Suite v1.65]    ########################|
 |##########################        By Asmodean          ##########################|
 ||                                                                               ||
 ||          This program is free software; you can redistribute it and/or        ||
@@ -35,7 +35,7 @@
 ------------------------------------------------------------------------------*/
 
 //##[BLOOM OPTIONS]##
-#define BloomType BlendGlow                 //[BlendGlow, BlendLuma, BlendAddLight, BlendScreen, BlendOverlay] The type of blending for the bloom.
+#define BloomType BlendAddGlow              //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom.
 #define BloomStrength 0.220                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BloomDefocus 2.200                  //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
@@ -59,7 +59,7 @@
 #define BlueCurve 1.00                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[FILMIC OPTIONS]##
-#define FilmicProcess 0                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
+#define FilmicProcess 1                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
 #define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic processing. Alters the blue balance of the shift.
@@ -87,7 +87,7 @@
 #define Vibrance 0.20                       //[-1.00 to 1.00] Locally adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
 
 //##[CONTRAST OPTIONS]##
-#define Contrast 0.35                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
+#define Contrast 0.30                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
 
 //[END OF USER OPTIONS]##
 
@@ -236,6 +236,13 @@ float3 BlendLuma(float3 bloom, float3 blend)
     ((1.0 - bloom) * (1.0 - blend))), lumavg);
 }
 
+float3 BlendAddGlow(float3 bloom, float3 blend)
+{
+    float glow = smoothstep(0.0, 1.0, AvgLuminance(bloom));
+    return lerp(saturate(bloom + blend),
+    (blend + blend) - (blend * blend), glow);
+}
+
 float3 BlendGlow(float3 bloom, float3 blend)
 {
     float glow = smoothstep(0.0, 1.0, AvgLuminance(bloom));
@@ -347,7 +354,10 @@ float3 FilmicALU(float3 color)
 
     tone = max(0, tone - 0.004);
     tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.7) + 0.06);
-    tone = pow(tone, gamma);
+
+    tone.r = pow(tone.r, gamma);
+    tone.g = pow(tone.g, gamma);
+    tone.b = pow(tone.b, gamma);
 
     return lerp(color, tone, float(ToneAmount) / 1.2);
 
