@@ -365,7 +365,7 @@ float3 FilmicALU(float3 color)
     tone.g = pow(tone.g, gamma);
     tone.b = pow(tone.b, gamma);
 
-    return lerp(color, tone, float(ToneAmount) / 1.2);
+    return lerp(color, tone, float(ToneAmount));
 
 }
 
