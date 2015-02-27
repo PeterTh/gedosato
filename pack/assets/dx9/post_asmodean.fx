@@ -35,10 +35,10 @@
 ------------------------------------------------------------------------------*/
 
 //##[BLOOM OPTIONS]##
-#define BloomType BlendAddGlow              //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom.
-#define BloomStrength 0.220                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
+#define BloomType BlendGlow                 //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom.
+#define BloomStrength 0.225                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
-#define BloomDefocus 2.200                  //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
+#define BloomDefocus 2.000                  //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
 #define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'soft glow' spread. Scales with BloomStrength. (Default: 4.000).
 #define BloomReds 0.010                     //[0.000 to 1.000] Bloom-exclusive colour correction of the red channel. Adjust for desired manipulation of reds.
 #define BloomGreens 0.005                   //[0.000 to 1.000] Bloom-exclusive colour correction of the green channel. Adjust for desired manipulation of greens.
@@ -49,8 +49,8 @@
 #define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter.
 #define BlackLevels 0.05                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more scene exposure, lower for less.
-#define Luminance 1.02                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
-#define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint average (lum correction). The actual white point is handled by the tone map logic. This is just an offset value.
+#define Luminance 1.01                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
+#define WhitePoint 1.01                     //[0.10 to 2.00] Whitepoint average (lum correction). The actual white point is handled by the tone map logic. This is just an offset value.
 
 //##[CORRECTION OPTIONS]##
 #define CorrectionPalette 3                 //[0|1|2|3] The colour correction palette type. 1: RGB, 2: YUV, 3: XYZ, 0: off. 1 is default. This requires tone mapping enabled.
@@ -427,13 +427,12 @@ float4 TonemapPass(float4 color, float2 texcoord)
 {
     float avgluminance = AvgLuminance(Luminance);
     float wpoint = max(color.r, max(color.g, color.b)); wpoint /= wpoint;
-
-    color.rgb *= pow(abs(max(color.r, max(color.g, color.b))), float(BlackLevels));
-
-    if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
-    if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
+    color.rgb *= pow(saturate(max(color.r, max(color.g, color.b))), float(BlackLevels));
 
     if (TonemapType == 2) { color.rgb = FilmicALU(color.rgb); }
+    if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
+
+    if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
     if (CorrectionPalette == 1) { color.rgb = ColorCorrection(color.rgb); }
 
     // RGB -> XYZ conversion
@@ -716,6 +715,10 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
     float2 tex = Input.UVCoord;
     float4 c0 = tex2D(s0, tex);
 
+    #if (TEXTURE_SHARPEN == 1)
+        c0 = TexSharpenPass(c0, tex);
+    #endif
+
     #if (GAMMA_CORRECTION == 1)
         c0 = GammaPass(c0, tex);
     #endif
@@ -726,10 +729,6 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
 
     #if (CEL_SHADING == 1)
         c0 = CelPass(c0, tex);
-    #endif
-    
-    #if (TEXTURE_SHARPEN == 1)
-        c0 = TexSharpenPass(c0, tex);
     #endif
 
     #if (BLENDED_BLOOM == 1)
