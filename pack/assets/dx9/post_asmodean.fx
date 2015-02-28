@@ -46,11 +46,11 @@
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic ALU(cinematic).
-#define ToneAmount 0.20                     //[0.00 to 1.00] Tonemap strength (scene correction) higher for stronger tone mapping, lower for lighter.
-#define BlackLevels 0.05                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
-#define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness) Higher values for more scene exposure, lower for less.
-#define Luminance 1.01                      //[0.10 to 2.00] Luminance average (luminance correction) Higher values to decrease luminance average, lower values to increase luminance.
-#define WhitePoint 1.01                     //[0.10 to 2.00] Whitepoint average (lum correction). The actual white point is handled by the tone map logic. This is just an offset value.
+#define ToneAmount 0.20                     //[0.05 to 1.00] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
+#define BlackLevels 0.06                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
+#define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness). Higher values for more scene exposure, lower for less.
+#define Luminance 1.01                      //[0.10 to 2.00] Luminance average (luminance correction). Higher values will lower scene luminance average.
+#define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
 
 //##[CORRECTION OPTIONS]##
 #define CorrectionPalette 3                 //[0|1|2|3] The colour correction palette type. 1: RGB, 2: YUV, 3: XYZ, 0: off. 1 is default. This requires tone mapping enabled.
@@ -372,14 +372,15 @@ float3 FilmicALU(float3 color)
 float3 FilmicCurve(float3 color)
 {
     float3 X = color;
+    float TA = ToneAmount;
 
     float A = 0.10;
     float B = 0.30;
     float C = 0.10;
-    float D = float(ToneAmount);
-    float E = 0.02 + delta;
+    float D = TA;
+    float E = 0.02;
     float F = 0.30;
-    float W = float(WhitePoint);
+    float W = 1.00;
 
     float3 sum = ((X*(A*X + C*B) + D*E) / (X*(A*X + B) + D*F)) - E / F;
     float denom = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
@@ -429,7 +430,7 @@ float3 ColorCorrection(float3 color)
 float4 TonemapPass(float4 color, float2 texcoord)
 {
     float avgluminance = AvgLuminance(Luminance);
-    float wpoint = max(color.r, max(color.g, color.b)); wpoint /= wpoint;
+    float wpoint = dot(normalize(max(color.r, max(color.g, color.b))), float(WhitePoint));
 
     float blevel = pow(saturate(max(color.r, max(color.g, color.b))), float(BlackLevels));
     color.rgb = color.rgb * blevel;
