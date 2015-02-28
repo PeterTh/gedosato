@@ -394,17 +394,20 @@ float3 CrossShift(float3 color)
     float3 cross;
 
     float2 CrossMatrix[3] = {
-    float2 (0.96, 0.04),
-    float2 (0.99, 0.01),
-    float2 (0.97, 0.03), };
+    float2 (0.96, 0.04 * color.r),
+    float2 (0.98, 0.02 * color.g),
+    float2 (0.97, 0.03 * color.b), };
 
     cross.r = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
     cross.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
     cross.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
     float lum = AvgLuminance(color);
-    cross = lerp(0.0, cross, saturate(lum * 2.0));
-    cross = lerp(cross, 1.0, saturate(lum - 0.5) * 2.0);
+    float3 black = float3(0.0, 0.0, 0.0);
+    float3 white = float3(1.0, 1.0, 1.0);
+
+    cross = lerp(black, cross, saturate(lum * 2.0));
+    cross = lerp(cross, white, saturate(lum - 0.5) * 2.0);
     color = lerp(color, cross, saturate(lum * float(ShiftRatio)));
 
     return color;
@@ -427,7 +430,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
 {
     float avgluminance = AvgLuminance(Luminance);
     float wpoint = max(color.r, max(color.g, color.b)); wpoint /= wpoint;
-    color.rgb *= pow(saturate(max(color.r, max(color.g, color.b))), float(BlackLevels));
+
+    float blevel = pow(saturate(max(color.r, max(color.g, color.b))), float(BlackLevels));
+    color.rgb = color.rgb * blevel;
 
     if (TonemapType == 2) { color.rgb = FilmicALU(color.rgb); }
     if (FilmicProcess == 1) { color.rgb = CrossShift(color.rgb); }
