@@ -61,7 +61,7 @@
 //##[FILMIC OPTIONS]##
 #define FilmicProcess 0                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
 #define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic processing. Alters the red balance of the shift.
-#define GreenShift 0.45                     //[0.10 to 1.00] Green colour component shift of the filmic processing. Alters the green balance of the shift.
+#define GreenShift 0.46                     //[0.10 to 1.00] Green colour component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic processing. Alters the blue balance of the shift.
 #define ShiftRatio 0.25                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. 
 
@@ -293,7 +293,7 @@ float3 BloomCorrection(float3 color)
 float4 BloomPass(float4 color, float2 texcoord)
 {
     float anflare = 4.00;
-    float defocus = float(BloomDefocus);
+    float defocus = BloomDefocus;
 
     float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
@@ -359,13 +359,15 @@ float3 FilmicALU(float3 color)
     static const float gamma = 2.233;
 
     tone = max(0, tone - 0.004);
-    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.7) + 0.06);
+    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.7) + 0.066);
 
     tone.r = pow(tone.r, gamma);
     tone.g = pow(tone.g, gamma);
     tone.b = pow(tone.b, gamma);
 
-    return lerp(color, tone, float(ToneAmount));
+    color = lerp(color, tone, float(ToneAmount));
+
+    return color;
 
 }
 
