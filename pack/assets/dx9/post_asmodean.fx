@@ -29,6 +29,7 @@
 #define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
 #define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated style games.
+#define SW_DITHERING                 0      //#SW Sub-pixel Dithering. Simulates more colors than your monitor can display. This can reduce color banding.
 
 /*------------------------------------------------------------------------------
                           [EFFECT CONFIG OPTIONS]
@@ -88,6 +89,9 @@
 
 //##[CONTRAST OPTIONS]##
 #define Contrast 0.35                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
+
+//##[DITHERING OPTIONS]##
+#define DitherMethod 1                      //[1 or 2] 1: Ordered grid dithering(faster), 2: time-based random dithering(higher quality). Hardware dithering is also enabled by default.
 
 //[END OF USER OPTIONS]##
 
@@ -657,6 +661,71 @@ float4 CelPass(float4 color, float2 uv0)
 #endif
 
 /*------------------------------------------------------------------------------
+                      [SUBPIXEL DITHERING CODE SECTION]
+------------------------------------------------------------------------------*/
+
+#if (SW_DITHERING == 1)
+const float timer;
+
+float2 CoordRot(float2 tc, float t)
+{
+    float aspect = screenSize.x / screenSize.y;
+
+    float rotX = ((tc.x * 2.0 - 1.0) * aspect * cos(t)) - ((tc.y * 2.0 - 1.0) * sin(t));
+    float rotY = ((tc.y * 2.0 - 1.0) * cos(t)) + ((tc.x * 2.0 - 1.0) * aspect * sin(t));
+
+    rotX = ((rotX / aspect) * 0.5 + 0.5);
+    rotY = rotY * 0.5 + 0.5;
+
+    return float2(rotX, rotY);
+}
+
+float4 Randomize(float2 texcoord)
+{
+    float2 tex = CoordRot(texcoord, timer);
+
+    float noise = frac(sin(dot(tex, float2(12.9898, 78.233) * 2.0)) * 43758.5453);
+
+    float noiseR = frac(noise) * 2.0 - 1.0;
+    float noiseG = frac(noise * 1.2154) * 2.0 - 1.0;
+    float noiseB = frac(noise * 1.3453) * 2.0 - 1.0;
+    float noiseA = frac(noise * 1.3647) * 2.0 - 1.0;
+
+    return float4(noiseR, noiseG, noiseB, noiseA);
+}
+
+float4 DitherPass(float4 color, float2 texcoord)
+{
+    float ditherBits = 8.0;
+
+    #if DitherMethod == 2       //random dithering
+
+    float noise = Randomize(texcoord).x;
+    float ditherShift = (1.0 / (pow(2.0, ditherBits) - 1.0));
+    float ditherHalfShift = (ditherShift * 0.5);
+    ditherShift = ditherShift * noise - ditherHalfShift;
+
+    color.rgb += float3(-ditherShift, ditherShift, -ditherShift);
+
+    #elif DitherMethod == 1     //ordered dithering
+
+    float2 ditherSize = float2(1.0 / 16.0, 10.0 / 36.0);
+    float gridPosition = frac(dot(texcoord, (screenSize * ditherSize)) + 0.25);
+    float ditherShift = (0.25) * (1.0 / (pow(2.0, ditherBits) - 1.0));
+
+    float3 RGBShift = float3(ditherShift, -ditherShift, ditherShift);
+    RGBShift = lerp(2.0 * RGBShift, -2.0 * RGBShift, gridPosition);
+
+    color.rgb += RGBShift;
+    #endif
+
+    color.a = AvgLuminance(color.rgb);
+
+    return color;
+}
+#endif
+
+/*------------------------------------------------------------------------------
                           [CONTRAST CODE SECTION]
 ------------------------------------------------------------------------------*/
 
@@ -751,6 +820,10 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
         c0 = ContrastPass(c0, tex);
     #endif
 
+    #if (SW_DITHERING == 1)
+        c0 = DitherPass(c0, tex);
+    #endif
+
     Output.color = c0;
 
     return Output;
@@ -771,6 +844,7 @@ technique t0
         ShadeMode = Phong;
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
+        DitherEnable = true;
         SRGBWriteEnable = USE_SRGB;
         ColorWriteEnable = RED|GREEN|BLUE|ALPHA;
     }
