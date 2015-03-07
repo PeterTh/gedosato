@@ -47,8 +47,8 @@
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic ALU(cinematic).
-#define ToneAmount 0.20                     //[0.05 to 1.00] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
-#define BlackLevels 0.06                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
+#define ToneAmount 0.25                     //[0.05 to 1.00] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
+#define BlackLevels 0.05                    //[0.00 to 1.00] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.00                       //[0.10 to 2.00] White correction (brightness). Higher values for more scene exposure, lower for less.
 #define Luminance 1.01                      //[0.10 to 2.00] Luminance average (luminance correction). Higher values will lower scene luminance average.
 #define WhitePoint 1.02                     //[0.10 to 2.00] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
@@ -187,7 +187,7 @@ VS_OUTPUT FrameVS(VS_INPUT Input)
 ------------------------------------------------------------------------------*/
 
 #if (GAMMA_CORRECTION == 1)
-float3 RGBGammaToLinear(float3 color, float gamma)
+float3 EncodeGamma(float3 color, float gamma)
 {
     color = saturate(color);
     color.r = (color.r <= 0.0404482362771082) ?
@@ -200,7 +200,7 @@ float3 RGBGammaToLinear(float3 color, float gamma)
     return color;
 }
 
-float3 LinearToRGBGamma(float3 color, float gamma)
+float3 DecodeGamma(float3 color, float gamma)
 {
     color = saturate(color);
     color.r = (color.r <= 0.00313066844250063) ?
@@ -215,9 +215,9 @@ float3 LinearToRGBGamma(float3 color, float gamma)
 
 float4 GammaPass(float4 color, float2 texcoord)
 {
-    static const float GammaConst = 2.233;
-    color.rgb = RGBGammaToLinear(color.rgb, GammaConst);
-    color.rgb = LinearToRGBGamma(color.rgb, float(Gamma));
+    static const float GammaConst = 2.233333;
+    color.rgb = EncodeGamma(color.rgb, GammaConst);
+    color.rgb = DecodeGamma(color.rgb, float(Gamma));
     color.a = AvgLuminance(color.rgb);
 
     return color;
@@ -360,16 +360,12 @@ float4 BloomPass(float4 color, float2 texcoord)
 float3 FilmicALU(float3 color)
 {
     float3 tone = color;
-    static const float gamma = 2.233;
+    static const float3 gamma = (float3)2.233333;
 
-    tone = max(0, tone - 0.004);
-    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.7) + 0.066);
+    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.6) + 0.066);
+    tone = pow(tone, gamma);
 
-    tone.r = pow(tone.r, gamma);
-    tone.g = pow(tone.g, gamma);
-    tone.b = pow(tone.b, gamma);
-
-    color = lerp(color, tone, float(ToneAmount));
+    color = lerp(color, tone, 0.25);
 
     return color;
 
