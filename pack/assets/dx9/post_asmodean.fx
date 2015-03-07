@@ -1,5 +1,5 @@
 /*===============================================================================*\
-|########################    [GSFx Shader Suite v1.65]    ########################|
+|########################    [GSFx Shader Suite v1.70]    ########################|
 |##########################        By Asmodean          ##########################|
 ||                                                                               ||
 ||          This program is free software; you can redistribute it and/or        ||
@@ -37,13 +37,13 @@
 
 //##[BLOOM OPTIONS]##
 #define BloomType BlendGlow                 //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom.
-#define BloomStrength 0.225                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
+#define BloomStrength 0.220                 //[0.100 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                 //[0.100 to 1.000] Strength of the bloom blend. Lower for less blending, higher for more. (Default: 1.000).
 #define BloomDefocus 2.000                  //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
-#define BloomWidth 4.000                    //[1.000 to 8.000] Width of the bloom 'soft glow' spread. Scales with BloomStrength. (Default: 4.000).
-#define BloomReds 0.010                     //[0.000 to 1.000] Bloom-exclusive colour correction of the red channel. Adjust for desired manipulation of reds.
-#define BloomGreens 0.005                   //[0.000 to 1.000] Bloom-exclusive colour correction of the green channel. Adjust for desired manipulation of greens.
-#define BloomBlues 0.005                    //[0.000 to 1.000] Bloom-exclusive colour correction of the blue channel. Adjust for desired manipulation of blues.
+#define BloomWidth 3.200                    //[1.000 to 8.000] Width of the bloom's soft glow. Scales with BloomStrength. Increase for a wider spread.
+#define BloomReds 0.020                     //[0.000 to 1.000] Bloom-exclusive colour correction of the red channel. Adjust for desired manipulation of reds.
+#define BloomGreens 0.010                   //[0.000 to 1.000] Bloom-exclusive colour correction of the green channel. Adjust for desired manipulation of greens.
+#define BloomBlues 0.010                    //[0.000 to 1.000] Bloom-exclusive colour correction of the blue channel. Adjust for desired manipulation of blues.
 
 //##[TONEMAP OPTIONS]##
 #define TonemapType 2                       //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic ALU(cinematic).
@@ -91,7 +91,8 @@
 #define Contrast 0.35                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
 
 //##[DITHERING OPTIONS]##
-#define DitherMethod 1                      //[1 or 2] 1: Ordered grid dithering(faster), 2: time-based random dithering(higher quality). Hardware dithering is also enabled by default.
+#define DitherMethod 2                      //[1 or 2] 1: Ordered grid dithering(faster), 2: time-based random dithering(higher quality). Hardware dithering is also enabled by default.
+#define ShowMethod 0                        //[0 or 1] Shows the dithering method, based of the type of dithering selected. Useful for debugging, and confirmation of working order.
 
 //[END OF USER OPTIONS]##
 
@@ -106,7 +107,6 @@
 static float delta = 0.001;
 static float2 pixelSize = PIXEL_SIZE;
 static float2 screenSize = SCREEN_SIZE;
-static float2 invDefocus = float2(1.0 / 3840.0, 1.0 / 2160.0);
 static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
 
 texture thisframeTex;
@@ -301,8 +301,8 @@ float4 BloomPass(float4 color, float2 texcoord)
 
     float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
-    float2 dx = float2(invDefocus.x * float(BloomWidth), 0.0);
-    float2 dy = float2(0.0, invDefocus.y * float(BloomWidth));
+    float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
+    float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
 
     float2 mdx = mul(2.0, dx);
     float2 mdy = mul(2.0, dy);
@@ -360,9 +360,9 @@ float4 BloomPass(float4 color, float2 texcoord)
 float3 FilmicALU(float3 color)
 {
     float3 tone = color;
-    static const float3 gamma = (float3)2.233333;
 
-    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.6) + 0.066);
+    static const float3 gamma = (float3)2.233333;
+    tone = (tone * (6.2 * tone + 0.5)) / (tone * (6.2 * tone + 1.66) + 0.066);
     tone = pow(tone, gamma);
 
     color = lerp(color, tone, 0.25);
@@ -432,7 +432,7 @@ float3 ColorCorrection(float3 color)
 float4 TonemapPass(float4 color, float2 texcoord)
 {
     float avgluminance = AvgLuminance(Luminance);
-    float wpoint = dot(normalize(max(color.r, max(color.g, color.b))), float(WhitePoint));
+    float wpoint = dot(abs(normalize(max(color.r, max(color.g, color.b)))), float(WhitePoint));
 
     float blevel = pow(saturate(max(color.r, max(color.g, color.b))), float(BlackLevels));
     color.rgb = color.rgb * blevel;
@@ -681,7 +681,6 @@ float4 Randomize(float2 texcoord)
     float2 tex = CoordRot(texcoord, timer);
 
     float noise = frac(sin(dot(tex, float2(12.9898, 78.233) * 2.0)) * 43758.5453);
-
     float noiseR = frac(noise) * 2.0 - 1.0;
     float noiseG = frac(noise * 1.2154) * 2.0 - 1.0;
     float noiseB = frac(noise * 1.3453) * 2.0 - 1.0;
@@ -703,6 +702,10 @@ float4 DitherPass(float4 color, float2 texcoord)
 
     color.rgb += float3(-ditherShift, ditherShift, -ditherShift);
 
+    #if ShowMethod == 1
+        color.rgb = noise;
+    #endif
+
     #elif DitherMethod == 1     //ordered dithering
 
     float2 ditherSize = float2(1.0 / 16.0, 10.0 / 36.0);
@@ -713,6 +716,11 @@ float4 DitherPass(float4 color, float2 texcoord)
     RGBShift = lerp(2.0 * RGBShift, -2.0 * RGBShift, gridPosition);
 
     color.rgb += RGBShift;
+
+    #if ShowMethod == 1
+        color.rgb = gridPosition;
+    #endif
+
     #endif
 
     color.a = AvgLuminance(color.rgb);
