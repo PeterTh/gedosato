@@ -25,11 +25,11 @@
 #define BLENDED_BLOOM                1      //#High Quality Bloom, using blend techniques. Blooms naturally, per environment.
 #define SCENE_TONEMAPPING            1      //#HDR Scene Tonemapping & RGB Colour Correction. Corrects colour, and tone maps the scene.
 #define GAMMA_CORRECTION             1      //#RGB Gamma Correction. sRGB->Linear->sRGB correction curve. Enable for games with incorrect gamma.
+#define PIXEL_VIBRANCE               1      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define TEXTURE_SHARPEN              0      //#Bicubic Texture Unsharpen Mask. Looks similar to a negative texture LOD bias. Enhances texture fidelity.
-#define PIXEL_VIBRANCE               0      //#Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original saturation.
 #define S_CURVE_CONTRAST             0      //#S-Curve Scene Contrast Enhancement. Locally adjusts contrast using S-curves.
 #define CEL_SHADING                  0      //#PX Cel Shading. Simulates the look of animation/toon. Typically best suited for animated style games.
-#define SW_DITHERING                 0      //#SW Sub-pixel Dithering. Simulates more colors than your monitor can display. This can reduce color banding.
+#define SW_DITHERING                 0      //#SW Sub-pixel Dithering. Simulates more colors than your monitor can display. This can reduce colour banding.
 
 /*------------------------------------------------------------------------------
                           [EFFECT CONFIG OPTIONS]
@@ -55,22 +55,28 @@
 
 //##[CORRECTION OPTIONS]##
 #define CorrectionPalette 3                 //[0|1|2|3] The colour correction palette type. 1: RGB, 2: YUV, 3: XYZ, 0: off. 1 is default. This requires tone mapping enabled.
-#define RedCurve 1.25                       //[1.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
-#define GreenCurve 1.25                     //[1.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
+#define RedCurve 1.30                       //[1.00 to 8.00] Red channel component of the RGB correction curve. Higher values equals red reduction. 1.00 is default.
+#define GreenCurve 1.30                     //[1.00 to 8.00] Green channel component of the RGB correction curve. Higher values equals green reduction. 1.00 is default.
 #define BlueCurve 1.25                      //[1.00 to 8.00] Blue channel component of the RGB correction curve. Higher values equals blue reduction. 1.00 is default.
 
 //##[FILMIC OPTIONS]##
-#define FilmicProcess 0                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
-#define RedShift 0.50                       //[0.10 to 1.00] Red colour component shift of the filmic processing. Alters the red balance of the shift.
+#define FilmicProcess 1                     //[0|1|2] Filmic cross processing. Alters the tone of the scene, for more of a filmic look. 0: off, 1|2: process type.
+#define RedShift 0.52                       //[0.10 to 1.00] Red colour component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.46                     //[0.10 to 1.00] Green colour component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.45                      //[0.10 to 1.00] Blue colour component shift of the filmic processing. Alters the blue balance of the shift.
-#define ShiftRatio 0.25                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. 
+#define ShiftRatio 0.30                     //[0.10 to 1.00] The blending ratio for the base colour and the colour shift. Higher for a stronger effect. 
 
 //##[SHARPEN OPTIONS]##
 #define SharpenStrength 0.75                //[0.10 to 1.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
 #define SharpenClamp 0.015                  //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
 #define SharpenBias 1.00                    //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                      //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
+
+//##[VIBRANCE OPTIONS]##
+#define Vibrance 0.12                       //[-1.00 to 1.00] Overall vibrance strength. Locally adjusts the vibrance of pixels depending on their original saturation.
+#define RedVibrance 1.00                    //[-8.00 to 8.00] Red channel coefficient of the vibrance strength. Adjusting the vibrance of the red channel independently.
+#define GreenVibrance 1.00                  //[-8.00 to 8.00] Green channel coefficient of the vibrance strength. Adjusting the vibrance of the green channel independently.
+#define BlueVibrance 1.00                   //[-8.00 to 8.00] Blue channel coefficient of the vibrance strength. Adjusting the vibrance of the blue channel independently.
 
 //##[CSHADE OPTIONS]##
 #define EdgeStrength 1.50                   //[0.00 to 4.00] Overall strength of the cel edge outline effect.  0.00: no outlines.
@@ -83,9 +89,6 @@
 
 //##[GAMMA OPTIONS]##
 #define Gamma 2.20                          //[1.5 to 4.0] Gamma correction. Decrease for lower gamma(darker). Increase for higher gamma(brighter). (Default: 2.2)
-
-//##[VIBRANCE OPTIONS]##
-#define Vibrance 0.20                       //[-1.00 to 1.00] Locally adjust the vibrance of pixels depending on their original saturation. 0.00 is original vibrance.
 
 //##[CONTRAST OPTIONS]##
 #define Contrast 0.35                       //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
@@ -123,13 +126,13 @@ sampler s0 = sampler_state
 
 struct VS_INPUT
 {
-    float4 vertPos : POSITION0;
+    float4 vertPos : POSITION;
     float2 UVCoord : TEXCOORD0;
 };
 
 struct VS_OUTPUT
 {
-    float4 vertPos : POSITION0;
+    float4 vertPos : POSITION;
     float2 UVCoord : TEXCOORD0;
 };
 
@@ -279,7 +282,7 @@ float4 PyramidFilter(sampler tex, float2 texcoord, float2 width)
 
 float3 BloomCorrection(float3 color)
 {
-    float3 bloom = (color.rgb - 0.5) * 2.0;
+    float3 bloom = (color - 0.5) * 2.0;
 
     bloom.r = 2.0 / 3.0 * (1.0 - (bloom.r * bloom.r));
     bloom.g = 2.0 / 3.0 * (1.0 - (bloom.g * bloom.g));
@@ -296,16 +299,16 @@ float3 BloomCorrection(float3 color)
 
 float4 BloomPass(float4 color, float2 texcoord)
 {
-    float anflare = 4.00;
-    float defocus = BloomDefocus;
+    float anflare = 4.0;
 
+    float2 defocus = float2(BloomDefocus, BloomDefocus);
     float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
 
     float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
 
-    float2 mdx = mul(2.0, dx);
-    float2 mdy = mul(2.0, dy);
+    float2 mdx = mul(dx, 2.0);
+    float2 mdy = mul(dy, 2.0);
 
     float4 blend = bloom * 0.22520613262190495;
 
@@ -357,6 +360,13 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if (SCENE_TONEMAPPING == 1)
+float MidLuminance(float3 color)
+{
+    return sqrt((pow(color.x, 2.0) * 0.3333) +
+                (pow(color.y, 2.0) * 0.3333) +
+                (pow(color.z, 2.0) * 0.3333));
+}
+
 float3 FilmicALU(float3 color)
 {
     float3 tone = color;
@@ -368,7 +378,6 @@ float3 FilmicALU(float3 color)
     color = lerp(color, tone, 0.25);
 
     return color;
-
 }
 
 float3 FilmicCurve(float3 color)
@@ -405,7 +414,7 @@ float3 CrossShift(float3 color)
     cross.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
     cross.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
-    float lum = AvgLuminance(color);
+    float lum = MidLuminance(color);
     float3 black = float3(0.0, 0.0, 0.0);
     float3 white = float3(1.0, 1.0, 1.0);
 
@@ -770,15 +779,16 @@ float4 ContrastPass(float4 color, float2 texcoord)
 #if (PIXEL_VIBRANCE == 1)
 float4 VibrancePass(float4 color, float2 texcoord)
 {
-    float cVibrance = Vibrance;
+    float vib = Vibrance;
     float luma = AvgLuminance(color.rgb);
 
     float colorMax = max(color.r, max(color.g, color.b));
     float colorMin = min(color.r, min(color.g, color.b));
 
     float colorSaturation = colorMax - colorMin;
+    float3 colorCoeff = float3(RedVibrance * vib, GreenVibrance * vib, BlueVibrance * vib);
 
-    color.rgb = lerp(luma, color.rgb, (1.0 + (cVibrance * (1.0 - (sign(cVibrance) * colorSaturation)))));
+    color.rgb = lerp(luma, color.rgb, (1.0 + (colorCoeff * (1.0 - (sign(colorCoeff) * colorSaturation)))));
     color.a = AvgLuminance(color.rgb);
 
     return saturate(color); //Debug: return colorSaturation.xxxx;
@@ -844,7 +854,7 @@ technique t0
         VertexShader = compile vs_3_0 FrameVS();
         PixelShader = compile ps_3_0 postProcessing();
         ZEnable = false;
-        CullMode = NONE;
+        CullMode = None;
         ShadeMode = Phong;
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
