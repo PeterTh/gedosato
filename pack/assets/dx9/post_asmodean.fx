@@ -53,13 +53,13 @@
 #define FilmOperator 1                     //[0 or 1] Enables the use of Filmic ALU tone mapping operations that can produce a nice cinematic look.
 #define FilmStrength 0.25                  //[0.000 to 1.000] Strength of the filmic tone mapping. Higher for a stronger effect. This is a dependency of FilmicALU.
 #define ToneAmount 0.300                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
-#define BlackLevels 0.030                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
+#define BlackLevels 0.040                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.000                     //[0.100 to 2.000] White correction (brightness). Higher values for more scene exposure, lower for less.
 #define Luminance 1.002                    //[0.100 to 2.000] Luminance average (luminance correction). Higher values will lower scene luminance average.
 #define WhitePoint 1.022                   //[0.100 to 2.000] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
 
 //##[COLOR CORRECTION]
-#define CorrectionPalette 2                //[1|2|3|4|5] The colorspace palette type. 1: RGB, 2: YXY, 3: XYZ, 4: HSV, 5: YUV. Each one will produce a different combination of shades & hues.
+#define CorrectionPalette 3                //[1|2|3|4|5] The colorspace palette type. 1: RGB, 2: YXY, 3: XYZ, 4: HSV, 5: YUV. Each one will produce a different combination of shades & hues.
 #define ChannelR 1.40                      //[0.00 to 8.00] R(1), Y(2), X(3), H(4), Y(5) component channel varies with the colorspace used. Higher values reduce red strength.
 #define ChannelG 1.20                      //[0.00 to 8.00] G(1), X(2), Y(3), S(4), U(5) component channel varies with the colorspace used. Higher values reduce green strength.
 #define ChannelB 1.60                      //[0.00 to 8.00] B(1), Y(2), Z(3), V(4), V(5) component channel varies with the colorspace used. Higher values reduce blue strength.
@@ -437,22 +437,26 @@ float4 BloomPass(float4 color, float2 texcoord)
 #if SCENE_TONEMAPPING == 1
 float3 FilmicCurve(float3 color)
 {
-    float3 X = color;
-    float TMA = ToneAmount;
+    float3 T = color;
+    float tnamn = ToneAmount;
 
-    float A = 0.10;
-    float B = 0.30;
-    float C = 0.10;
-    float D = TMA;
-    float E = 0.02;
-    float F = 0.30;
-    float W = 1.00;
+    float A = 0.100;
+    float B = 0.300;
+    float C = 0.100;
+    float D = tnamn;
+    float E = 0.020;
+    float F = 0.300;
+    float W = 1.012;
 
-    float3 sum = ((X*(A*X + C*B) + D*E) / (X*(A*X + B) + D*F)) - E / F;
+    T.r = ((T.r*(A*T.r + C*B) + D*E) / (T.r*(A*T.r + B) + D*F)) - E / F;
+    T.g = ((T.g*(A*T.g + C*B) + D*E) / (T.g*(A*T.g + B) + D*F)) - E / F;
+    T.b = ((T.b*(A*T.b + C*B) + D*E) / (T.b*(A*T.b + B) + D*F)) - E / F;
+
     float denom = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
+    float3 white = float3(denom, denom, denom);
 
-    sum = sum / denom;
-    color = saturate(sum);
+    T = T / white;
+    color = saturate(T);
 
     return color;
 }
@@ -460,9 +464,10 @@ float3 FilmicCurve(float3 color)
 float3 FilmicTonemap(float3 color)
 {
     float3 tone = color;
-    float3 black = float3(0.0, 0.0, 0.0);
 
+    float3 black = float3(0.0, 0.0, 0.0);
     tone = max(black, tone);
+
     tone.r = (tone.r * (6.2 * tone.r + 0.5)) / (tone.r * (6.2 * tone.r + 1.66) + 0.066);
     tone.g = (tone.g * (6.2 * tone.g + 0.5)) / (tone.g * (6.2 * tone.g + 1.66) + 0.066);
     tone.b = (tone.b * (6.2 * tone.b + 0.5)) / (tone.b * (6.2 * tone.b + 1.66) + 0.066);
@@ -1138,47 +1143,47 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
     float4 c0 = tex2D(s0, tex);
 
     #if TEXTURE_SHARPEN == 1
-        c0 = TexSharpenPass(c0, tex);
+    c0 = TexSharpenPass(c0, tex);
     #endif
 
     #if GAMMA_CORRECTION == 1
-        c0 = GammaPass(c0, tex);
+    c0 = GammaPass(c0, tex);
     #endif
 
     #if PAINT_SHADING == 1
-        c0 = PaintPass(c0, tex);
+    c0 = PaintPass(c0, tex);
     #endif
 
     #if CEL_SHADING == 1
-        c0 = CelPass(c0, tex);
+    c0 = CelPass(c0, tex);
     #endif
 
     #if PIXEL_VIBRANCE == 1
-        c0 = VibrancePass(c0, tex);
-    #endif
-
-    #if BLENDED_BLOOM == 1
-        c0 = BloomPass(c0, tex);
+    c0 = VibrancePass(c0, tex);
     #endif
 
     #if SCENE_TONEMAPPING == 1
-        c0 = TonemapPass(c0, tex);
+    c0 = TonemapPass(c0, tex);
+    #endif
+
+    #if BLENDED_BLOOM == 1
+    c0 = BloomPass(c0, tex);
     #endif
 
     #if CROSS_PROCESSING == 1
-        c0 = CrossPass(c0, tex);
+    c0 = CrossPass(c0, tex);
     #endif
 
     #if COLOR_CORRECTION == 1
-        c0 = CorrectionPass(c0, tex);
+    c0 = CorrectionPass(c0, tex);
     #endif
 
     #if CURVE_CONTRAST == 1
-        c0 = ContrastPass(c0, tex);
+    c0 = ContrastPass(c0, tex);
     #endif
 
     #if SW_DITHERING == 1
-        c0 = DitherPass(c0, tex);
+    c0 = DitherPass(c0, tex);
     #endif
 
     Output.color = c0;
