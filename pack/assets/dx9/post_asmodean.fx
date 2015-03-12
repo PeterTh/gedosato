@@ -60,9 +60,9 @@
 
 //##[COLOR CORRECTION]
 #define CorrectionPalette 3                //[1|2|3|4|5] The colorspace palette type. 1: RGB, 2: YXY, 3: XYZ, 4: HSV, 5: YUV. Each one will produce a different combination of shades & hues.
-#define ChannelR 1.40                      //[0.00 to 8.00] R(1), Y(2), X(3), H(4), Y(5) component channel varies with the colorspace used. Higher values reduce red strength.
-#define ChannelG 1.20                      //[0.00 to 8.00] G(1), X(2), Y(3), S(4), U(5) component channel varies with the colorspace used. Higher values reduce green strength.
-#define ChannelB 1.60                      //[0.00 to 8.00] B(1), Y(2), Z(3), V(4), V(5) component channel varies with the colorspace used. Higher values reduce blue strength.
+#define ChannelR 2.00                      //[0.00 to 8.00] R(1), Y(2), X(3), H(4), Y(5) component channel varies with the colorspace used. Higher values increase correction strength.
+#define ChannelG 1.20                      //[0.00 to 8.00] G(1), X(2), Y(3), S(4), U(5) component channel varies with the colorspace used. Higher values increase correction strength.
+#define ChannelB 1.60                      //[0.00 to 8.00] B(1), Y(2), Z(3), V(4), V(5) component channel varies with the colorspace used. Higher values increase correction strength.
 #define PaletteStrength 1.00               //[0.00 to 2.00] The interpolated strength ratio between the base color, and the corrected color. Raise to increase saturation.
 
 //##[CROSS PROCESSING]
@@ -70,10 +70,10 @@
 #define RedShift 0.55                      //[0.10 to 1.00] Red color component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.50                    //[0.10 to 1.00] Green color component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.55                     //[0.10 to 1.00] Blue color component shift of the filmic processing. Alters the blue balance of the shift.
-#define ShiftRatio 0.35                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
+#define ShiftRatio 0.50                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
 
 //##[TEXTURE SHARPEN]
-#define SharpenStrength 0.75               //[0.10 to 1.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
+#define SharpenStrength 0.75               //[0.10 to 2.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
 #define SharpenClamp 0.015                 //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
 #define SharpenBias 1.00                   //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                     //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
@@ -123,7 +123,7 @@ static float2 pixelSize = PIXEL_SIZE;
 static float2 screenSize = SCREEN_SIZE;
 static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
 
-texture thisframeTex;
+Texture2D thisframeTex;
 sampler s0 = sampler_state
 {
     Texture = <thisframeTex>;
@@ -243,7 +243,7 @@ struct VS_OUTPUT
 
 struct PS_OUTPUT
 {
-    float4 color : COLOR0;
+    float4 Color : COLOR;
 };
 
 /*------------------------------------------------------------------------------
@@ -608,9 +608,9 @@ float4 CrossPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if COLOR_CORRECTION == 1
-float Epsilon = 1e-10;
+float Epsilon = 1e-10; // Machine epsilon
 
-//Converting pure hue to RGB
+// Converting pure hue to RGB
 float3 HUEtoRGB(float H)
 {
     float R = abs(H * 6.0 - 3.0) - 1.0;
@@ -620,7 +620,7 @@ float3 HUEtoRGB(float H)
     return saturate(float3(R, G, B));
 }
 
-//Converting RGB to hue / chroma / value
+// Converting RGB to hue/chroma/value
 float3 RGBtoHCV(float3 RGB)
 {
     float4 BG = float4(RGB.bg,-1.0, 2.0 / 3.0);
@@ -639,7 +639,7 @@ float3 RGBtoHCV(float3 RGB)
     return float3(H, C, Q.x);
 }
 
-//Converting RGB to HSV
+// Converting RGB to HSV
 float3 RGBtoHSV(float3 RGB)
 {
     float3 HCV = RGBtoHCV(RGB);
@@ -648,12 +648,14 @@ float3 RGBtoHSV(float3 RGB)
     return float3(HCV.x, S, HCV.z);
 }
 
+// Converting HSV to RGB
 float3 HSVtoRGB(float3 HSV)
 {
     float3 RGB = HUEtoRGB(HSV.x);
     return ((RGB - 1.0) * HSV.y + 1.0) * HSV.z;
 }
 
+// Pre correction color mask
 float3 PreCorrection(float3 color)
 {
     float3 RGB = color;
@@ -757,26 +759,27 @@ float4 SampleBicubic(sampler texSample, float2 TexCoord)
     int nX = int(TexCoord.x * screenSize.x);
     int nY = int(TexCoord.y * screenSize.y);
 
-    float2 uvCoord = float2(float(nX) / screenSize.x, float(nY) / screenSize.y);
+    float2 uvCoord = float2(float(nX) / screenSize.x,
+                            float(nY) / screenSize.y);
 
-    for (int m = -1; m <= 2; m++)
-    {
-        for (int n = -1; n <= 2; n++)
-        {
-            float4 Samples = tex2D(texSample, uvCoord +
-            float2(texelSizeX * float(m), texelSizeY * float(n)));
+    for (int m = -1; m <= 2; m++) {
+    for (int n = -1; n <= 2; n++) {
 
-            float vc1 = Cubic(float(m) - a);
-            float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
+    float4 Samples = tex2D(texSample, uvCoord +
+    float2(texelSizeX * float(m), texelSizeY * float(n)));
 
-            float vc2 = Cubic(-(float(n) - b));
-            float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
+    float vc1 = Cubic(float(m) - a);
+    float4 vecCoeff1 = float4(vc1, vc1, vc1, vc1);
 
-            nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
-            nDenom = nDenom + (vecCoeff2 * vecCoeff1);
-        }
-    }
-    return nSum / nDenom;
+    float vc2 = Cubic(-(float(n) - b));
+    float4 vecCoeff2 = float4(vc2, vc2, vc2, vc2);
+
+    nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
+    nDenom = nDenom + (vecCoeff2 * vecCoeff1); }}
+
+    nSum = nSum / nDenom;
+
+    return nSum;
 }
 
 float4 TexSharpenPass(float4 color, float2 texcoord)
@@ -793,7 +796,7 @@ float4 TexSharpenPass(float4 color, float2 texcoord)
     color.a = AvgLuminance(color.rgb);
 
     #if DebugSharpen == 1
-        color = saturate(0.5f + (sharpenLuma * 4)).rrrr;
+        color = saturate(0.5f + (sharpenLuma * 4)).xxxx;
     #endif
 
     return saturate(color);
@@ -1146,16 +1149,16 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
     c0 = TexSharpenPass(c0, tex);
     #endif
 
-    #if GAMMA_CORRECTION == 1
-    c0 = GammaPass(c0, tex);
-    #endif
-
     #if PAINT_SHADING == 1
     c0 = PaintPass(c0, tex);
     #endif
 
     #if CEL_SHADING == 1
     c0 = CelPass(c0, tex);
+    #endif
+
+    #if GAMMA_CORRECTION == 1
+    c0 = GammaPass(c0, tex);
     #endif
 
     #if PIXEL_VIBRANCE == 1
@@ -1166,16 +1169,16 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
     c0 = TonemapPass(c0, tex);
     #endif
 
-    #if BLENDED_BLOOM == 1
-    c0 = BloomPass(c0, tex);
+    #if COLOR_CORRECTION == 1
+    c0 = CorrectionPass(c0, tex);
     #endif
 
     #if CROSS_PROCESSING == 1
     c0 = CrossPass(c0, tex);
     #endif
 
-    #if COLOR_CORRECTION == 1
-    c0 = CorrectionPass(c0, tex);
+    #if BLENDED_BLOOM == 1
+    c0 = BloomPass(c0, tex);
     #endif
 
     #if CURVE_CONTRAST == 1
@@ -1186,7 +1189,7 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
     c0 = DitherPass(c0, tex);
     #endif
 
-    Output.color = c0;
+    Output.Color = c0;
 
     return Output;
 }
