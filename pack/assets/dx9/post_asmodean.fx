@@ -55,7 +55,7 @@
 #define ToneAmount 0.300                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
 #define BlackLevels 0.040                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.000                     //[0.100 to 2.000] White correction (brightness). Higher values for more scene exposure, lower for less.
-#define Luminance 1.002                    //[0.100 to 2.000] Luminance average (luminance correction). Higher values will lower scene luminance average.
+#define Luminance 1.000                    //[0.100 to 2.000] Luminance average (luminance correction). Higher values will lower scene luminance average.
 #define WhitePoint 1.022                   //[0.100 to 2.000] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
 
 //##[COLOR CORRECTION]
@@ -69,8 +69,8 @@
 #define FilmicProcess 1                    //[1|2|3] The color conversion type for the cross process. 1: cool, 2: warm, 3: dusk. You can achieve different results with each.
 #define RedShift 0.55                      //[0.10 to 1.00] Red color component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.50                    //[0.10 to 1.00] Green color component shift of the filmic processing. Alters the green balance of the shift.
-#define BlueShift 0.55                     //[0.10 to 1.00] Blue color component shift of the filmic processing. Alters the blue balance of the shift.
-#define ShiftRatio 0.50                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
+#define BlueShift 0.50                     //[0.10 to 1.00] Blue color component shift of the filmic processing. Alters the blue balance of the shift.
+#define ShiftRatio 0.35                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
 
 //##[TEXTURE SHARPEN]
 #define SharpenStrength 0.75               //[0.10 to 2.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
@@ -118,7 +118,7 @@
                              [GLOBALS/FUNCTIONS]
 ------------------------------------------------------------------------------*/
 
-static float delta = 0.001;
+static float Epsilon = 1e-10;
 static float2 pixelSize = PIXEL_SIZE;
 static float2 screenSize = SCREEN_SIZE;
 static const float3 lumCoeff = float3(0.2126729, 0.7151522, 0.0721750);
@@ -511,7 +511,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     if (TonemapType == 2) { Yxy.r = FilmicCurve(Yxy).r; }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
-    float Lp = Yxy.r * float(Exposure) / (luminanceAverage + delta);
+    float Lp = Yxy.r * float(Exposure) / (luminanceAverage + Epsilon);
 
     // (Wp) White point calculated, based on the toned white, and input modifier
     float Wp = dot(abs(Wt), float(WhitePoint));
@@ -541,28 +541,20 @@ float4 TonemapPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if CROSS_PROCESSING == 1
-float MidLuminance(float3 color)
-{
-    return sqrt(
-    (color.x * color.x * 0.3333) +
-    (color.y * color.y * 0.3333) +
-    (color.z * color.z * 0.3333));
-}
-
 float3 CrossShift(float3 color)
 {
     float3 cross;
 
     float2 CrossMatrix[3] = {
-    float2 (0.96, 0.04 * color.r),
-    float2 (0.98, 0.02 * color.g),
-    float2 (0.97, 0.03 * color.b), };
+    float2 (0.960, 0.040 * color.x),
+    float2 (0.980, 0.020 * color.y),
+    float2 (0.970, 0.030 * color.z), };
 
-    cross.r = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
-    cross.g = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
-    cross.b = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
+    cross.x = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
+    cross.y = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
+    cross.z = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
 
-    float lum = MidLuminance(color);
+    float lum = AvgLuminance(color);
     float3 black = float3(0.0, 0.0, 0.0);
     float3 white = float3(1.0, 1.0, 1.0);
 
@@ -608,8 +600,6 @@ float4 CrossPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if COLOR_CORRECTION == 1
-float Epsilon = 1e-10; // Machine epsilon
-
 // Converting pure hue to RGB
 float3 HUEtoRGB(float H)
 {
