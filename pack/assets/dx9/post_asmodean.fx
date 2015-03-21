@@ -40,7 +40,7 @@
 
 //##[BLENDED BLOOM]
 #define BloomType BlendGlow                //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom. Light<->Dark.
-#define BloomStrength 0.220                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
+#define BloomStrength 0.200                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                //[0.000 to 1.000] Strength of the blending. This is a modifier based on bloom. 1.0 equates to 100% strength.
 #define BloomDefocus 2.000                 //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
 #define BloomWidth 3.200                   //[1.000 to 8.000] Width of the bloom. Adjusts the width of the spread and soft glow. Scales with BloomStrength.
