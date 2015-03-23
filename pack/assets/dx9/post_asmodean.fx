@@ -50,8 +50,8 @@
 
 //##[SCENE TONEMAPPING]
 #define TonemapType 2                      //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic(slight grading).
-#define TonemapMask 1                      //[0 or 1] Enables the use of Filmic ALU tone mask operations that can produce a nice cinematic look.
-#define MaskStrength 0.25                  //[0.000 to 1.000] Strength of the filmic tone mapping. Higher for a stronger effect. This is a dependency of FilmicALU.
+#define TonemapMask 1                      //[0 or 1] Enables the use of Filmic ALU tone mask operations. This can produce a nice cinematic look.
+#define MaskStrength 0.25                  //[0.000 to 1.000] Strength of the tone masking. Higher for a stronger effect. This is a dependency of TonemapMask.
 #define ToneAmount 0.300                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
 #define BlackLevels 0.060                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.000                     //[0.100 to 2.000] White correction (brightness). Higher values for more scene exposure, lower for less.
