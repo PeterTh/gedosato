@@ -24,7 +24,7 @@
 //##[POST EFFECTS]             [1=ON|0=OFF]
 #define BLENDED_BLOOM               1      //# High Quality SP Bloom. Soft lighting with blending techniques, for a natural looking bloom.
 #define SCENE_TONEMAPPING           1      //# HDR Scene Tonemapping. Layered component conversion, and applies scene tone mapping.
-#define COLOR_CORRECTION            0      //# Component Color Correction. Colorspace conversion, with correction curves, and multiple palette types.
+#define COLOR_CORRECTION            0      //# Multiform Color Correction. Colorspace conversion, with correction curves, and multiple palette types.
 #define CROSS_PROCESSING            0      //# Filmic Cross Processing. Alters the tone of the scene, crossing the game's color set, with another.
 #define GAMMA_CORRECTION            0      //# RGB Gamma Correction. Fixed expansion to variable compression gamma correction curve.
 #define PIXEL_VIBRANCE              0      //# Pixel Vibrance. Intelligently adjusts pixel vibrance depending on original color saturation.
@@ -43,17 +43,17 @@
 #define BloomStrength 0.200                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                //[0.000 to 1.000] Strength of the blending. This is a modifier based on bloom. 1.0 equates to 100% strength.
 #define BloomDefocus 2.000                 //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
-#define BloomWidth 3.200                   //[1.000 to 8.000] Width of the bloom. Adjusts the width of the spread and soft glow. Scales with BloomStrength.
-#define BloomReds 0.020                    //[0.000 to 1.000] Red channel correction of the bloom. Raising will increase the bloom of reds.
-#define BloomGreens 0.010                  //[0.000 to 1.000] Green channel correction of the bloom. Raising will increase the bloom of greens.
-#define BloomBlues 0.010                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
+#define BloomWidth 3.500                   //[1.000 to 8.000] Width of the bloom. Adjusts the width of the spread and soft glow. Scales with BloomStrength.
+#define BloomReds 0.040                    //[0.000 to 1.000] Red channel correction of the bloom. Raising will increase the bloom of reds.
+#define BloomGreens 0.023                  //[0.000 to 1.000] Green channel correction of the bloom. Raising will increase the bloom of greens.
+#define BloomBlues 0.025                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
 
 //##[SCENE TONEMAPPING]
 #define TonemapType 2                      //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic(slight grading).
-#define FilmOperator 1                     //[0 or 1] Enables the use of Filmic ALU tone mapping operations that can produce a nice cinematic look.
-#define FilmStrength 0.25                  //[0.000 to 1.000] Strength of the filmic tone mapping. Higher for a stronger effect. This is a dependency of FilmicALU.
+#define TonemapMask 1                      //[0 or 1] Enables the use of Filmic ALU tone mask operations that can produce a nice cinematic look.
+#define MaskStrength 0.25                  //[0.000 to 1.000] Strength of the filmic tone mapping. Higher for a stronger effect. This is a dependency of FilmicALU.
 #define ToneAmount 0.300                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
-#define BlackLevels 0.040                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
+#define BlackLevels 0.060                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.000                     //[0.100 to 2.000] White correction (brightness). Higher values for more scene exposure, lower for less.
 #define Luminance 1.000                    //[0.100 to 2.000] Luminance average (luminance correction). Higher values will lower scene luminance average.
 #define WhitePoint 1.022                   //[0.100 to 2.000] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
@@ -70,7 +70,7 @@
 #define RedShift 0.55                      //[0.10 to 1.00] Red color component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.50                    //[0.10 to 1.00] Green color component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.50                     //[0.10 to 1.00] Blue color component shift of the filmic processing. Alters the blue balance of the shift.
-#define ShiftRatio 0.35                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
+#define ShiftRatio 0.25                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
 
 //##[TEXTURE SHARPEN]
 #define SharpenStrength 0.75               //[0.10 to 2.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
@@ -382,8 +382,8 @@ float4 BloomPass(float4 color, float2 texcoord)
     float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
 
-    float2 mdx = mul(dx, 2.0);
-    float2 mdy = mul(dy, 2.0);
+    float2 mdx = mul(defocus.x, dx);
+    float2 mdy = mul(defocus.y, dy);
 
     float4 blend = bloom * 0.22520613262190495;
 
@@ -468,35 +468,37 @@ float3 FilmicTonemap(float3 color)
     float3 black = float3(0.0, 0.0, 0.0);
     tone = max(black, tone);
 
-    tone.r = (tone.r * (6.2 * tone.r + 0.5)) / (tone.r * (6.2 * tone.r + 1.66) + 0.066);
-    tone.g = (tone.g * (6.2 * tone.g + 0.5)) / (tone.g * (6.2 * tone.g + 1.66) + 0.066);
-    tone.b = (tone.b * (6.2 * tone.b + 0.5)) / (tone.b * (6.2 * tone.b + 1.66) + 0.066);
+    tone.r = (tone.r * (6.2 * tone.r + 0.5)) / (tone.r * (6.2 * tone.r + 1.62) + 0.066);
+    tone.g = (tone.g * (6.2 * tone.g + 0.5)) / (tone.g * (6.2 * tone.g + 1.62) + 0.066);
+    tone.b = (tone.b * (6.2 * tone.b + 0.5)) / (tone.b * (6.2 * tone.b + 1.62) + 0.066);
 
     static const float gamma = 2.42;
     tone = EncodeGamma(tone, gamma);
 
-    color = lerp(color, tone, float(FilmStrength));
+    color = lerp(color, tone, float(MaskStrength));
 
     return color;
 }
 
 float4 TonemapPass(float4 color, float2 texcoord)
 {
-    float luminanceAverage = AvgLuminance(Luminance);
-    float bmax = max(color.r, max(color.g, color.b));
+    float3 tonemap = color.rgb;
     
-    float blevel = pow(saturate(bmax), float(BlackLevels));
-    color.rgb = color.rgb * blevel;
+    float blackLevel = length(tonemap);
+    float luminanceAverage = AvgLuminance(Luminance);
+    
+    float shadowmask = pow(saturate(blackLevel), float(BlackLevels));
+    tonemap = tonemap * shadowmask;
 
-    if (FilmOperator == 1) { color.rgb = FilmicTonemap(color.rgb); }
-    if (TonemapType == 1) { color.rgb = FilmicCurve(color.rgb); }
+    if (TonemapMask == 1) { tonemap = FilmicTonemap(tonemap); }
+    if (TonemapType == 1) { tonemap = FilmicCurve(tonemap); }
 
     // RGB -> XYZ conversion
     static const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
                                       0.2126729, 0.7151522, 0.0721750,
                                       0.0193339, 0.1191920, 0.9503041 };
 
-    float3 XYZ = mul(RGB2XYZ, color.rgb);
+    float3 XYZ = mul(RGB2XYZ, tonemap);
 
     // XYZ -> Yxy conversion
     float3 Yxy;
@@ -529,7 +531,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
                                      -0.9692660, 1.8760108, 0.0415560,
                                       0.0556434,-0.2040259, 1.0572252 };
 
-    color.rgb = mul(XYZ2RGB, XYZ);
+    tonemap = mul(XYZ2RGB, XYZ);
+
+    color.rgb = tonemap;
     color.a = AvgLuminance(color.rgb);
 
     return color;
@@ -1155,16 +1159,16 @@ PS_OUTPUT postProcessing(VS_OUTPUT Input)
     c0 = VibrancePass(c0, tex);
     #endif
 
-    #if SCENE_TONEMAPPING == 1
-    c0 = TonemapPass(c0, tex);
-    #endif
-
     #if COLOR_CORRECTION == 1
     c0 = CorrectionPass(c0, tex);
     #endif
 
     #if CROSS_PROCESSING == 1
     c0 = CrossPass(c0, tex);
+    #endif
+
+    #if SCENE_TONEMAPPING == 1
+    c0 = TonemapPass(c0, tex);
     #endif
 
     #if BLENDED_BLOOM == 1
