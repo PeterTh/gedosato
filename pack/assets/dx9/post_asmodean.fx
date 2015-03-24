@@ -51,8 +51,8 @@
 //##[SCENE TONEMAPPING]
 #define TonemapType 2                      //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic(slight grading).
 #define TonemapMask 1                      //[0 or 1] Enables the use of Filmic ALU tone mask operations. This can produce a nice cinematic look.
-#define MaskStrength 0.25                  //[0.000 to 1.000] Strength of the tone masking. Higher for a stronger effect. This is a dependency of TonemapMask.
-#define ToneAmount 0.300                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
+#define MaskStrength 0.32                  //[0.000 to 1.000] Strength of the tone masking. Higher for a stronger effect. This is a dependency of TonemapMask.
+#define ToneAmount 0.320                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
 #define BlackLevels 0.060                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.000                     //[0.100 to 2.000] White correction (brightness). Higher values for more scene exposure, lower for less.
 #define Luminance 1.000                    //[0.100 to 2.000] Luminance average (luminance correction). Higher values will lower scene luminance average.
@@ -127,8 +127,8 @@ Texture2D thisframeTex;
 sampler s0 = sampler_state
 {
     Texture = <thisframeTex>;
-    MinFilter = Linear;
     MagFilter = Linear;
+    MinFilter = Linear;
     MipFilter = Linear;
     AddressU = Clamp;
     AddressV = Clamp;
@@ -317,17 +317,17 @@ float3 BlendScreen(float3 bloom, float3 blend)
     return (bloom + blend) - (bloom * blend);
 }
 
+float3 BlendGlow(float3 bloom, float3 blend)
+{
+    float glow = AvgLuminance(bloom);
+    return lerp((bloom + blend) - (bloom * blend),
+    (blend + blend) - (blend * blend), glow);
+}
+
 float3 BlendAddGlow(float3 bloom, float3 blend)
 {
     float glow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
     return lerp(saturate(bloom + blend),
-    (blend + blend) - (blend * blend), glow);
-}
-
-float3 BlendGlow(float3 bloom, float3 blend)
-{
-    float glow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
-    return lerp((bloom + blend) - (bloom * blend),
     (blend + blend) - (blend * blend), glow);
 }
 
