@@ -49,8 +49,8 @@
 #define BloomBlues 0.025                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
 
 //##[SCENE TONEMAPPING]
-#define TonemapType 2                      //[0|1|2] Type of base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 is HDR Filmic(slight grading).
-#define TonemapMask 1                      //[0 or 1] Enables the use of Filmic ALU tone mask operations. This can produce a nice cinematic look.
+#define TonemapType 2                      //[0|1|2|3] The base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 & 3 are Filmic HDR(slight grading).
+#define TonemapMask 1                      //[0 or 1] Enables an ALU tone masking curve. Produces a nice cinematic look, but also lowers contrast range.
 #define MaskStrength 0.32                  //[0.000 to 1.000] Strength of the tone masking. Higher for a stronger effect. This is a dependency of TonemapMask.
 #define ToneAmount 0.320                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
 #define BlackLevels 0.060                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
@@ -435,17 +435,37 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if SCENE_TONEMAPPING == 1
-float3 FilmicCurve(float3 color)
+float3 TmMask(float3 color)
+{
+    float3 tone = color;
+
+    float highTone = 6.2; float greyTone = 0.5;
+    float midTone = 1.620; float lowTone = 0.066;
+
+    tone.r = (tone.r * (highTone * tone.r + greyTone))/(
+    tone.r * (highTone * tone.r + midTone) + lowTone);
+    tone.g = (tone.g * (highTone * tone.g + greyTone))/(
+    tone.g * (highTone * tone.g + midTone) + lowTone);
+    tone.b = (tone.b * (highTone * tone.b + greyTone))/(
+    tone.b * (highTone * tone.b + midTone) + lowTone);
+
+    static const float gamma = 2.42;
+    tone = EncodeGamma(tone, gamma);
+
+    color = lerp(color, tone, float(MaskStrength));
+
+    return color;
+}
+
+float3 TmCurve(float3 color)
 {
     float3 T = color;
     float tnamn = ToneAmount;
 
-    float A = 0.100;
-    float B = 0.300;
-    float C = 0.100;
-    float D = tnamn;
-    float E = 0.020;
-    float F = 0.300;
+    float A = 0.100; float B = 0.300;
+    float C = 0.100; float D = tnamn;
+    float E = 0.020; float F = 0.300;
+
     float W = 1.012;
 
     T.r = ((T.r*(A*T.r + C*B) + D*E) / (T.r*(A*T.r + B) + D*F)) - E / F;
@@ -461,25 +481,6 @@ float3 FilmicCurve(float3 color)
     return color;
 }
 
-float3 FilmicTonemap(float3 color)
-{
-    float3 tone = color;
-
-    float3 black = float3(0.0, 0.0, 0.0);
-    tone = max(black, tone);
-
-    tone.r = (tone.r * (6.2 * tone.r + 0.5)) / (tone.r * (6.2 * tone.r + 1.62) + 0.066);
-    tone.g = (tone.g * (6.2 * tone.g + 0.5)) / (tone.g * (6.2 * tone.g + 1.62) + 0.066);
-    tone.b = (tone.b * (6.2 * tone.b + 0.5)) / (tone.b * (6.2 * tone.b + 1.62) + 0.066);
-
-    static const float gamma = 2.42;
-    tone = EncodeGamma(tone, gamma);
-
-    color = lerp(color, tone, float(MaskStrength));
-
-    return color;
-}
-
 float4 TonemapPass(float4 color, float2 texcoord)
 {
     float3 tonemap = color.rgb;
@@ -490,8 +491,8 @@ float4 TonemapPass(float4 color, float2 texcoord)
     float shadowmask = pow(saturate(blackLevel), float(BlackLevels));
     tonemap = tonemap * shadowmask;
 
-    if (TonemapMask == 1) { tonemap = FilmicTonemap(tonemap); }
-    if (TonemapType == 1) { tonemap = FilmicCurve(tonemap); }
+    if (TonemapMask == 1) { tonemap = TmMask(tonemap); }
+    if (TonemapType == 1) { tonemap = TmCurve(tonemap); }
 
     // RGB -> XYZ conversion
     static const float3x3 RGB2XYZ = { 0.4124564, 0.3575761, 0.1804375,
@@ -510,7 +511,7 @@ float4 TonemapPass(float4 color, float2 texcoord)
     // (Wt) Tone mapped scaling of the initial wp before input modifiers
     float Wt = saturate(Yxy.r / AvgLuminance(XYZ));
 
-    if (TonemapType == 2) { Yxy.r = FilmicCurve(Yxy).r; }
+    if (TonemapType == 2) { Yxy.r = TmCurve(Yxy).r; }
 
     // (Lp) Map average luminance to the middlegrey zone by scaling pixel luminance
     float Lp = Yxy.r * float(Exposure) / (luminanceAverage + Epsilon);
@@ -525,6 +526,8 @@ float4 TonemapPass(float4 color, float2 texcoord)
     XYZ.r = Yxy.r * Yxy.g / Yxy.b;                  // X = Y * x / y
     XYZ.g = Yxy.r;                                  // copy luminance Y
     XYZ.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;  // Z = Y * (1-x-y) / y
+
+    if (TonemapType == 3) { XYZ = TmCurve(XYZ); }
 
     // XYZ -> RGB conversion
     static const float3x3 XYZ2RGB = { 3.2404542,-1.5371385,-0.4985314,
@@ -621,12 +624,10 @@ float3 RGBtoHCV(float3 RGB)
     float4 GB = float4(RGB.gb, 0.0,-1.0 / 3.0);
 
     float4 P = (RGB.g < RGB.b) ? BG : GB;
-
     float4 XY = float4(P.xyw, RGB.r);
     float4 YZ = float4(RGB.r, P.yzx);
 
     float4 Q = (RGB.r < P.x) ? XY : YZ;
-
     float C = Q.x - min(Q.w, Q.y);
     float H = abs((Q.w - Q.y) / (6.0 * C + Epsilon) + Q.z);
 
@@ -770,7 +771,6 @@ float4 SampleBicubic(sampler texSample, float2 TexCoord)
 
     nSum = nSum + (Samples * vecCoeff2 * vecCoeff1);
     nDenom = nDenom + (vecCoeff2 * vecCoeff1); }}
-
     nSum = nSum / nDenom;
 
     return nSum;
