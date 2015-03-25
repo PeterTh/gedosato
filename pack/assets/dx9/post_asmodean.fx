@@ -345,16 +345,6 @@ float3 BlendOverlay(float3 bloom, float3 blend)
     (1.0 - bloom) * (1.0 - blend))), overlay);
 }
 
-float4 PyramidFilter(sampler tex, float2 texcoord, float2 width)
-{
-    float4 X = tex2D(tex, texcoord + float2(0.5, 0.5) * width);
-    float4 Y = tex2D(tex, texcoord + float2(-0.5,  0.5) * width);
-    float4 Z = tex2D(tex, texcoord + float2(0.5, -0.5) * width);
-    float4 W = tex2D(tex, texcoord + float2(-0.5, -0.5) * width);
-
-    return (X + Y + Z + W) / 4.0;
-}
-
 float3 BloomCorrection(float3 color)
 {
     float3 bloom = color;
@@ -372,12 +362,36 @@ float3 BloomCorrection(float3 color)
     return color;
 }
 
+float4 DefocusFilter(sampler tex, float2 texcoord, float2 defocus)
+{
+    float2 buffer = screenSize;
+    float2 texel = pixelSize * defocus;
+
+    int tcx = int(texcoord.x * buffer.x);
+    int tcy = int(texcoord.y * buffer.y);
+
+    float2 nuv = float2((tcx + 0.5) / buffer.x, (tcy + 0.5) / buffer.y);
+
+    float4 sampleA = tex2D(tex, nuv + float2(0.5, 0.5) * texel);
+    float4 sampleB = tex2D(tex, nuv + float2(-0.5, 0.5) * texel);
+    float4 sampleC = tex2D(tex, nuv + float2(0.5, -0.5) * texel);
+    float4 sampleD = tex2D(tex, nuv + float2(-0.5, -0.5) * texel);
+
+    float fx = frac(texcoord.x * buffer.x);
+    float fy = frac(texcoord.y * buffer.y);
+
+    float4 interpolateA = lerp(sampleA, sampleB, fx);
+    float4 interpolateB = lerp(sampleC, sampleD, fx);
+
+    return lerp(interpolateA, interpolateB, fy);
+}
+
 float4 BloomPass(float4 color, float2 texcoord)
 {
     float anflare = 4.0;
 
     float2 defocus = float2(BloomDefocus, BloomDefocus);
-    float4 bloom = PyramidFilter(s0, texcoord, pixelSize * defocus);
+    float4 bloom = DefocusFilter(s0, texcoord, defocus);
 
     float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
