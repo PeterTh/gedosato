@@ -44,19 +44,19 @@
 #define BlendStrength 1.000                //[0.000 to 1.000] Strength of the blending. This is a modifier based on bloom. 1.0 equates to 100% strength.
 #define BloomDefocus 2.000                 //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
 #define BloomWidth 3.500                   //[1.000 to 8.000] Width of the bloom. Adjusts the width of the spread and soft glow. Scales with BloomStrength.
-#define BloomReds 0.040                    //[0.000 to 1.000] Red channel correction of the bloom. Raising will increase the bloom of reds.
-#define BloomGreens 0.023                  //[0.000 to 1.000] Green channel correction of the bloom. Raising will increase the bloom of greens.
-#define BloomBlues 0.025                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
+#define BloomReds 0.050                    //[0.000 to 1.000] Red channel correction of the bloom. Raising will increase the bloom of reds.
+#define BloomGreens 0.040                  //[0.000 to 1.000] Green channel correction of the bloom. Raising will increase the bloom of greens.
+#define BloomBlues 0.000                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
 
 //##[SCENE TONEMAPPING]
 #define TonemapType 2                      //[0|1|2|3] The base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 & 3 are Filmic HDR(slight grading).
-#define TonemapMask 1                      //[0 or 1] Enables an ALU tone masking curve. Produces a nice cinematic look, but also lowers contrast range.
-#define MaskStrength 0.32                  //[0.000 to 1.000] Strength of the tone masking. Higher for a stronger effect. This is a dependency of TonemapMask.
-#define ToneAmount 0.320                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
+#define TonemapMask 0                      //[0 or 1] Enables an ALU tone masking curve. Produces a nice cinematic look. Suits some games more than others.
+#define MaskStrength 0.30                  //[0.000 to 1.000] Strength of the tone masking. Higher for a stronger effect. This is a dependency of TonemapMask.
+#define ToneAmount 0.300                   //[0.050 to 1.000] Tonemap strength (tone correction). Higher for stronger tone mapping, lower for lighter.
 #define BlackLevels 0.060                  //[0.000 to 1.000] Black level balance (shadow correction). Increase to deepen blacks, lower to lighten them.
 #define Exposure 1.000                     //[0.100 to 2.000] White correction (brightness). Higher values for more scene exposure, lower for less.
 #define Luminance 1.000                    //[0.100 to 2.000] Luminance average (luminance correction). Higher values will lower scene luminance average.
-#define WhitePoint 1.022                   //[0.100 to 2.000] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
+#define WhitePoint 1.020                   //[0.100 to 2.000] Whitepoint average (wp lum correction). Higher values will lower the maximum scene white point.
 
 //##[COLOR CORRECTION]
 #define CorrectionPalette 3                //[1|2|3|4|5] The colorspace palette type. 1: RGB, 2: YXY, 3: XYZ, 4: HSV, 5: YUV. Each one will produce a different combination of shades & hues.
@@ -70,12 +70,12 @@
 #define RedShift 0.55                      //[0.10 to 1.00] Red color component shift of the filmic processing. Alters the red balance of the shift.
 #define GreenShift 0.50                    //[0.10 to 1.00] Green color component shift of the filmic processing. Alters the green balance of the shift.
 #define BlueShift 0.50                     //[0.10 to 1.00] Blue color component shift of the filmic processing. Alters the blue balance of the shift.
-#define ShiftRatio 0.25                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
+#define ShiftRatio 0.50                    //[0.10 to 2.00] The blending ratio for the base color and the color shift. Higher for a stronger effect. 
 
 //##[TEXTURE SHARPEN]
 #define SharpenStrength 0.75               //[0.10 to 2.00] Strength of the texture sharpening effect. This is the maximum strength that will be used.
 #define SharpenClamp 0.015                 //[0.005 to 0.500] Reduces the clamping/limiting on the maximum amount of sharpening each pixel recieves. Raise this to reduce the clamping.
-#define SharpenBias 1.00                   //[1.00 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
+#define SharpenBias 1.00                   //[0.50 to 4.00] Sharpening edge bias. Lower values for clean subtle sharpen, and higher values for a deeper textured sharpen.
 #define DebugSharpen 0                     //[0 or 1] Visualize the sharpening effect. Useful for fine-tuning. Best to disable other effects, to see edge detection clearly.
 
 //##[PIXEL VIBRANCE]
@@ -326,9 +326,9 @@ float3 BlendGlow(float3 bloom, float3 blend)
 
 float3 BlendAddGlow(float3 bloom, float3 blend)
 {
-    float glow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
+    float addglow = smootherstep(0.0, 1.0, AvgLuminance(bloom));
     return lerp(saturate(bloom + blend),
-    (blend + blend) - (blend * blend), glow);
+    (blend + blend) - (blend * blend), addglow);
 }
 
 float3 BlendLuma(float3 bloom, float3 blend)
@@ -396,8 +396,8 @@ float4 BloomPass(float4 color, float2 texcoord)
     float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
 
-    float2 mdx = mul(defocus.x, dx);
-    float2 mdy = mul(defocus.y, dy);
+    float2 mdx = (dx * defocus.x);
+    float2 mdy = (dy * defocus.y);
 
     float4 blend = bloom * 0.22520613262190495;
 
@@ -480,7 +480,7 @@ float3 TmCurve(float3 color)
     float C = 0.100; float D = tnamn;
     float E = 0.020; float F = 0.300;
 
-    float W = 1.012;
+    float W = 1.020;
 
     T.r = ((T.r*(A*T.r + C*B) + D*E) / (T.r*(A*T.r + B) + D*F)) - E / F;
     T.g = ((T.g*(A*T.g + C*B) + D*E) / (T.g*(A*T.g + B) + D*F)) - E / F;
