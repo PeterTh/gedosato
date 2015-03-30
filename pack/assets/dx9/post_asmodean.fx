@@ -39,7 +39,7 @@
 ------------------------------------------------------------------------------*/
 
 //##[BLENDED BLOOM]
-#define BloomType BlendGlow                //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom. Light<->Dark.
+#define BloomType BlendScreen              //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom. Light<->Dark.
 #define BloomStrength 0.200                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                //[0.000 to 1.000] Strength of the blending. This is a modifier based on bloom. 1.0 equates to 100% strength.
 #define BloomDefocus 2.000                 //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
@@ -357,28 +357,22 @@ float3 BloomCorrection(float3 color)
     bloom.g = saturate(color.g + float(BloomGreens) * bloom.g);
     bloom.b = saturate(color.b + float(BloomBlues) * bloom.b);
 
-    color = saturate(bloom);
+    color = bloom;
 
     return color;
 }
 
 float4 DefocusFilter(sampler tex, float2 texcoord, float2 defocus)
 {
-    float2 buffer = screenSize;
     float2 texel = pixelSize * defocus;
 
-    int tcx = int(texcoord.x * buffer.x);
-    int tcy = int(texcoord.y * buffer.y);
+    float4 sampleA = tex2D(tex, texcoord + float2(0.5, 0.5) * texel);
+    float4 sampleB = tex2D(tex, texcoord + float2(-0.5, 0.5) * texel);
+    float4 sampleC = tex2D(tex, texcoord + float2(0.5, -0.5) * texel);
+    float4 sampleD = tex2D(tex, texcoord + float2(-0.5, -0.5) * texel);
 
-    float2 nuv = float2((tcx + 0.5) / buffer.x, (tcy + 0.5) / buffer.y);
-
-    float4 sampleA = tex2D(tex, nuv + float2(0.5, 0.5) * texel);
-    float4 sampleB = tex2D(tex, nuv + float2(-0.5, 0.5) * texel);
-    float4 sampleC = tex2D(tex, nuv + float2(0.5, -0.5) * texel);
-    float4 sampleD = tex2D(tex, nuv + float2(-0.5, -0.5) * texel);
-
-    float fx = frac(texcoord.x * buffer.x);
-    float fy = frac(texcoord.y * buffer.y);
+    float fx = frac(texcoord.x * screenSize.x);
+    float fy = frac(texcoord.y * screenSize.y);
 
     float4 interpolateA = lerp(sampleA, sampleB, fx);
     float4 interpolateB = lerp(sampleC, sampleD, fx);
@@ -396,8 +390,8 @@ float4 BloomPass(float4 color, float2 texcoord)
     float2 dx = float2(pixelSize.x * float(BloomWidth), 0.0);
     float2 dy = float2(0.0, pixelSize.y * float(BloomWidth));
 
-    float2 mdx = (dx * defocus.x);
-    float2 mdy = (dy * defocus.y);
+    float2 mdx = float2(dx.x * defocus.x, 0.0);
+    float2 mdy = float2(0.0, dy.y * defocus.y);
 
     float4 blend = bloom * 0.22520613262190495;
 
@@ -1212,9 +1206,8 @@ technique t0
     {
         VertexShader = compile vs_3_0 FrameVS();
         PixelShader = compile ps_3_0 postProcessing();
-        ZEnable = false;
-        CullMode = None;
         ShadeMode = Phong;
+        ZEnable = false;
         AlphaBlendEnable = false;
         AlphaTestEnable = false;
         DitherEnable = true;
