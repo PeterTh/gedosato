@@ -428,9 +428,9 @@ float4 BloomPass(float4 color, float2 texcoord)
     bloom.xyz = BloomType(bloom.xyz, blend.xyz);
     bloom.xyz = BloomCorrection(bloom.xyz);
 
-    color.a = AvgLuminance(color.xyz);
-    bloom.a = AvgLuminance(bloom.xyz);
-    bloom.a *= anflare;
+    color.w = AvgLuminance(color.xyz);
+    bloom.w = AvgLuminance(bloom.xyz);
+    bloom.w *= anflare;
 
     color = lerp(color, bloom, float(BloomStrength));
 
@@ -443,6 +443,20 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if SCENE_TONEMAPPING == 1
+float3 TmLDRC(float3 x)
+{
+    const float W = 1.02;
+    const float L = 0.06;
+    const float C = 1.02;
+
+    const float K = ((1 + (ToneAmount * 2)) - L * C) / C;
+
+    float3 tone = L*C + (1 - L*C) * (1 + K*(x - L) /
+    ((W - L) * (W - L))) * (x - L) / (x - L + K);
+
+    return (x > L) ? tone : C * x;
+}
+
 float3 TmMask(float3 color)
 {
     float3 tone = color;
@@ -468,7 +482,10 @@ float3 TmMask(float3 color)
 float3 TmCurve(float3 color)
 {
     float3 T = color;
+
     float tnamn = ToneAmount;
+    float blevel = length(T);
+    float bmask = pow(blevel, 0.05);
 
     float A = 0.100; float B = 0.300;
     float C = 0.100; float D = tnamn;
@@ -481,9 +498,13 @@ float3 TmCurve(float3 color)
     T.b = ((T.b*(A*T.b + C*B) + D*E) / (T.b*(A*T.b + B) + D*F)) - E / F;
 
     float denom = ((W*(A*W + C*B) + D*E) / (W*(A*W + B) + D*F)) - E / F;
+
+    float3 black = float3(bmask, bmask, bmask);
     float3 white = float3(denom, denom, denom);
 
     T = T / white;
+    T = T * black;
+
     color = saturate(T);
 
     return color;
@@ -495,11 +516,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
     
     float blackLevel = length(tonemap);
     float luminanceAverage = AvgLuminance(Luminance);
-    
-    float shadowmask = pow(saturate(blackLevel), float(BlackLevels));
-    tonemap = tonemap * shadowmask;
 
     if (TonemapMask == 1) { tonemap = TmMask(tonemap); }
+    if (TonemapType == 0) { tonemap = TmLDRC(tonemap); }
     if (TonemapType == 1) { tonemap = TmCurve(tonemap); }
 
     // RGB -> XYZ conversion
@@ -543,6 +562,9 @@ float4 TonemapPass(float4 color, float2 texcoord)
                                       0.0556434,-0.2040259, 1.0572252 };
 
     tonemap = mul(XYZ2RGB, XYZ);
+
+    float shadowmask = pow(saturate(blackLevel), float(BlackLevels));
+    tonemap = tonemap * float3(shadowmask, shadowmask, shadowmask);
 
     color.rgb = tonemap;
     color.a = AvgLuminance(color.rgb);
