@@ -136,71 +136,6 @@ sampler s0 = sampler_state
     SRGBTexture = USE_SRGB;
 };
 
-//Conversion matrices
-float3 RGBtoXYZ(float3 rgb)
-{
-    static const float3x3 m = {
-    0.4124564, 0.3575761, 0.1804375,
-    0.2126729, 0.7151522, 0.0721750,
-    0.0193339, 0.1191920, 0.9503041 };
-
-    return mul(m, rgb);
-}
-
-float3 XYZtoRGB(float3 xyz)
-{
-    static const float3x3 m = {
-    3.2404542,-1.5371385,-0.4985314,
-   -0.9692660, 1.8760108, 0.0415560,
-    0.0556434,-0.2040259, 1.0572252 };
-
-    return mul(m, xyz);
-}
-
-float3 RGBtoYUV(float3 RGB)
-{
-    static const float3x3 m = {
-    0.2126, 0.7152, 0.0722,
-   -0.09991,-0.33609, 0.436,
-    0.615, -0.55861, -0.05639 };
-
-    return mul(m, RGB);
-}
-
-float3 YUVtoRGB(float3 YUV)
-{
-    static const float3x3 m = {
-    1.000, 0.000, 1.28033,
-    1.000,-0.21482,-0.38059,
-    1.000, 2.12798, 0.000 };
-
-    return mul(m, YUV);
-}
-
-//Converting XYZ to Yxy
-float3 XYZtoYxy(float3 xyz)
-{
-    float w = (xyz.r + xyz.g + xyz.b);
-    float3 Yxy;
-
-    Yxy.r = xyz.g;
-    Yxy.g = xyz.r / w;
-    Yxy.b = xyz.g / w;
-
-    return Yxy;
-}
-
-//Converting Yxy to XYZ
-float3 YxytoXYZ(float3 Yxy)
-{
-    float3 xyz;
-    xyz.g = Yxy.r;
-    xyz.r = Yxy.r * Yxy.g / Yxy.b;
-    xyz.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;
-
-    return xyz;
-}
-
 //Average relative luminance
 float AvgLuminance(float3 color)
 {
@@ -574,69 +509,75 @@ float4 TonemapPass(float4 color, float2 texcoord)
 #endif
 
 /*------------------------------------------------------------------------------
-                      [CROSS PROCESSING CODE SECTION]
-------------------------------------------------------------------------------*/
-
-#if CROSS_PROCESSING == 1
-float3 CrossShift(float3 color)
-{
-    float3 cross;
-
-    float2 CrossMatrix[3] = {
-    float2 (0.960, 0.040 * color.x),
-    float2 (0.980, 0.020 * color.y),
-    float2 (0.970, 0.030 * color.z), };
-
-    cross.x = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
-    cross.y = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
-    cross.z = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
-
-    float lum = AvgLuminance(color);
-    float3 black = float3(0.0, 0.0, 0.0);
-    float3 white = float3(1.0, 1.0, 1.0);
-
-    cross = lerp(black, cross, saturate(lum * 2.0));
-    cross = lerp(cross, white, saturate(lum - 0.5) * 2.0);
-    color = lerp(color, cross, saturate(lum * float(ShiftRatio)));
-
-    return color;
-}
-
-float4 CrossPass(float4 color, float2 texcoord)
-{
-    #if FilmicProcess == 1
-    color.rgb = CrossShift(color.rgb);
-
-    #elif FilmicProcess == 2
-    float3 XYZ = RGBtoXYZ(color.rgb);
-    float3 Yxy = XYZtoYxy(XYZ);
-
-    Yxy = CrossShift(Yxy);
-    XYZ = YxytoXYZ(Yxy);
-
-    color.rgb = XYZtoRGB(XYZ);
-
-    #elif FilmicProcess == 3
-    float3 XYZ = RGBtoXYZ(color.rgb);
-    float3 Yxy = XYZtoYxy(XYZ);
-
-    XYZ = YxytoXYZ(Yxy);
-    XYZ = CrossShift(XYZ);
-
-    color.rgb = XYZtoRGB(XYZ);
-    #endif
-
-    color.a = AvgLuminance(color.rgb);
-
-    return saturate(color);
-}
-#endif
-
-/*------------------------------------------------------------------------------
                       [COLOR CORRECTION CODE SECTION]
 ------------------------------------------------------------------------------*/
 
-#if COLOR_CORRECTION == 1
+#if COLOR_CORRECTION == 1 || CROSS_PROCESSING == 1
+//Conversion matrices
+float3 RGBtoXYZ(float3 rgb)
+{
+    static const float3x3 m = {
+    0.4124564, 0.3575761, 0.1804375,
+    0.2126729, 0.7151522, 0.0721750,
+    0.0193339, 0.1191920, 0.9503041 };
+
+    return mul(m, rgb);
+}
+
+float3 XYZtoRGB(float3 xyz)
+{
+    static const float3x3 m = {
+    3.2404542,-1.5371385,-0.4985314,
+   -0.9692660, 1.8760108, 0.0415560,
+    0.0556434,-0.2040259, 1.0572252 };
+
+    return mul(m, xyz);
+}
+
+float3 RGBtoYUV(float3 RGB)
+{
+    static const float3x3 m = {
+    0.2126, 0.7152, 0.0722,
+   -0.09991,-0.33609, 0.436,
+    0.615, -0.55861, -0.05639 };
+
+    return mul(m, RGB);
+}
+
+float3 YUVtoRGB(float3 YUV)
+{
+    static const float3x3 m = {
+    1.000, 0.000, 1.28033,
+    1.000,-0.21482,-0.38059,
+    1.000, 2.12798, 0.000 };
+
+    return mul(m, YUV);
+}
+
+//Converting XYZ to Yxy
+float3 XYZtoYxy(float3 xyz)
+{
+    float w = (xyz.r + xyz.g + xyz.b);
+    float3 Yxy;
+
+    Yxy.r = xyz.g;
+    Yxy.g = xyz.r / w;
+    Yxy.b = xyz.g / w;
+
+    return Yxy;
+}
+
+//Converting Yxy to XYZ
+float3 YxytoXYZ(float3 Yxy)
+{
+    float3 xyz;
+    xyz.g = Yxy.r;
+    xyz.r = Yxy.r * Yxy.g / Yxy.b;
+    xyz.b = Yxy.r * (1.0 - Yxy.g - Yxy.b) / Yxy.b;
+
+    return xyz;
+}
+
 // Converting pure hue to RGB
 float3 HUEtoRGB(float H)
 {
@@ -679,7 +620,9 @@ float3 HSVtoRGB(float3 HSV)
     float3 RGB = HUEtoRGB(HSV.x);
     return ((RGB - 1.0) * HSV.y + 1.0) * HSV.z;
 }
+#endif
 
+#if COLOR_CORRECTION == 1
 // Pre correction color mask
 float3 PreCorrection(float3 color)
 {
@@ -749,6 +692,65 @@ float4 CorrectionPass(float4 color, float2 texcoord)
     color.a = AvgLuminance(color.rgb);
 
     return color;
+}
+#endif
+
+/*------------------------------------------------------------------------------
+                      [CROSS PROCESSING CODE SECTION]
+------------------------------------------------------------------------------*/
+
+#if CROSS_PROCESSING == 1
+float3 CrossShift(float3 color)
+{
+    float3 cross;
+
+    float2 CrossMatrix[3] = {
+    float2 (0.960, 0.040 * color.x),
+    float2 (0.980, 0.020 * color.y),
+    float2 (0.970, 0.030 * color.z), };
+
+    cross.x = float(RedShift) * CrossMatrix[0].x + CrossMatrix[0].y;
+    cross.y = float(GreenShift) * CrossMatrix[1].x + CrossMatrix[1].y;
+    cross.z = float(BlueShift) * CrossMatrix[2].x + CrossMatrix[2].y;
+
+    float lum = AvgLuminance(color);
+    float3 black = float3(0.0, 0.0, 0.0);
+    float3 white = float3(1.0, 1.0, 1.0);
+
+    cross = lerp(black, cross, saturate(lum * 2.0));
+    cross = lerp(cross, white, saturate(lum - 0.5) * 2.0);
+    color = lerp(color, cross, saturate(lum * float(ShiftRatio)));
+
+    return color;
+}
+
+float4 CrossPass(float4 color, float2 texcoord)
+{
+    #if FilmicProcess == 1
+    color.rgb = CrossShift(color.rgb);
+
+    #elif FilmicProcess == 2
+    float3 XYZ = RGBtoXYZ(color.rgb);
+    float3 Yxy = XYZtoYxy(XYZ);
+
+    Yxy = CrossShift(Yxy);
+    XYZ = YxytoXYZ(Yxy);
+
+    color.rgb = XYZtoRGB(XYZ);
+
+    #elif FilmicProcess == 3
+    float3 XYZ = RGBtoXYZ(color.rgb);
+    float3 Yxy = XYZtoYxy(XYZ);
+
+    XYZ = YxytoXYZ(Yxy);
+    XYZ = CrossShift(XYZ);
+
+    color.rgb = XYZtoRGB(XYZ);
+    #endif
+
+    color.a = AvgLuminance(color.rgb);
+
+    return saturate(color);
 }
 #endif
 
