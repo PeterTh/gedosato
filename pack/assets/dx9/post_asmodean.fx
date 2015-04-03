@@ -40,7 +40,7 @@
 
 //##[BLENDED BLOOM]
 #define BloomType BlendScreen              //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom. Light<->Dark.
-#define BloomStrength 0.200                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
+#define BloomStrength 0.220                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                //[0.000 to 1.000] Strength of the blending. This is a modifier based on bloom. 1.0 equates to 100% strength.
 #define BloomDefocus 2.000                 //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
 #define BloomWidth 3.500                   //[1.000 to 8.000] Width of the bloom. Adjusts the width of the spread and soft glow. Scales with BloomStrength.
@@ -102,7 +102,7 @@
 #define Gamma 2.20                         //[1.5 to 4.0] Gamma correction. Decrease for lower gamma(darker). Increase for higher gamma(brighter). (Default: 2.2)
 
 //##[CURVE CONTRAST]
-#define Contrast 0.35                      //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
+#define Contrast 0.50                      //[0.00 to 2.00] The amount of contrast you want. Controls the overall contrast strength.
 
 //##[SUBPIXEL DITHERING]
 #define DitherMethod 2                     //[1 or 2] 1: Ordered grid dithering(faster), 2: time-based random dithering(higher quality). Hardware dithering is also enabled by default.
@@ -1110,27 +1110,26 @@ float4 DitherPass(float4 color, float2 texcoord)
 #if CURVE_CONTRAST == 1
 float4 ContrastPass(float4 color, float2 texcoord)
 {
-    float3 luma = (float3)AvgLuminance(color.rgb);
+    float luma = AvgLuminance(color.rgb);
     float3 chroma = color.rgb - luma;
-    float3 x = luma;
 
-    //S-Curve - Cubic Bezier spline
+    // LumaLerp Cubic Bezier spline
     float3 a = float3(0.00, 0.00, 0.00);
     float3 b = float3(0.25, 0.25, 0.25);
     float3 c = float3(0.85, 0.85, 0.85);
     float3 d = float3(1.00, 1.00, 1.00);
 
-    float3 ab = lerp(a, b, x);          //point between a and b (green)
-    float3 bc = lerp(b, c, x);          //point between b and c (green)
-    float3 cd = lerp(c, d, x);          //point between c and d (green)
-    float3 abbc = lerp(ab, bc, x);      //point between ab and bc (blue)
-    float3 bccd = lerp(bc, cd, x);      //point between bc and cd (blue)
-    float3 dest = lerp(abbc, bccd, x);  //point on the bezier-curve (black)
+    float3 ab = lerp(a, b, luma);
+    float3 bc = lerp(b, c, luma);
+    float3 cd = lerp(c, d, luma);
 
-    x = dest;
-    x = lerp(luma, x, float(Contrast));
+    float3 abbc = lerp(ab, bc, luma);
+    float3 bccd = lerp(bc, cd, luma);
+    float3 dest = lerp(abbc, bccd, luma);
 
-    color.rgb = x + chroma;
+    float3 contrast = chroma + dest;
+
+    color.rgb = lerp(color.rgb, contrast, float(Contrast));
     color.a = AvgLuminance(color.rgb);
 
     return saturate(color);
