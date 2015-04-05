@@ -40,13 +40,13 @@
 
 //##[BLENDED BLOOM]
 #define BloomType BlendScreen              //[BlendGlow, BlendAddGlow, BlendAddLight, BlendScreen, BlendLuma, BlendOverlay] The type of blended bloom. Light<->Dark.
-#define BloomStrength 0.220                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
+#define BloomStrength 0.210                //[0.000 to 1.000] Overall strength of the bloom. You may want to readjust for each blend type.
 #define BlendStrength 1.000                //[0.000 to 1.000] Strength of the blending. This is a modifier based on bloom. 1.0 equates to 100% strength.
 #define BloomDefocus 2.000                 //[1.000 to 4.000] The initial bloom defocus value. Increases the softness of light, bright objects, etc.
 #define BloomWidth 3.500                   //[1.000 to 8.000] Width of the bloom. Adjusts the width of the spread and soft glow. Scales with BloomStrength.
-#define BloomReds 0.050                    //[0.000 to 1.000] Red channel correction of the bloom. Raising will increase the bloom of reds.
-#define BloomGreens 0.040                  //[0.000 to 1.000] Green channel correction of the bloom. Raising will increase the bloom of greens.
-#define BloomBlues 0.000                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
+#define BloomReds 0.040                    //[0.000 to 1.000] Red channel correction of the bloom. Raising will increase the bloom of reds.
+#define BloomGreens 0.030                  //[0.000 to 1.000] Green channel correction of the bloom. Raising will increase the bloom of greens.
+#define BloomBlues 0.020                   //[0.000 to 1.000] Blue channel correction of the bloom. Raising will increase the bloom of blues.
 
 //##[SCENE TONEMAPPING]
 #define TonemapType 2                      //[0|1|2|3] The base tone mapping operator. 0 is LDR, 1 is HDR(original), 2 & 3 are Filmic HDR(slight grading).
@@ -378,15 +378,16 @@ float4 BloomPass(float4 color, float2 texcoord)
 ------------------------------------------------------------------------------*/
 
 #if SCENE_TONEMAPPING == 1
-float3 TmLDRC(float3 x)
+float3 ScaleLuminance(float3 x)
 {
     const float W = 1.02;
     const float L = 0.06;
     const float C = 1.02;
 
-    const float K = ((1 + (ToneAmount * 2)) - L * C) / C;
+    const float N = clamp(0.76 + ToneAmount, 1.0, 2.0);
+    const float K = (N - L * C) / C;
 
-    float3 tone = L*C + (1 - L*C) * (1 + K*(x - L) /
+    float3 tone = L * C + (1.0 - L * C) * (1.0 + K * (x - L) /
     ((W - L) * (W - L))) * (x - L) / (x - L + K);
 
     return (x > L) ? tone : C * x;
@@ -420,13 +421,13 @@ float3 TmCurve(float3 color)
 
     float tnamn = ToneAmount;
     float blevel = length(T);
-    float bmask = pow(blevel, 0.05);
+    float bmask = pow(blevel, 0.02);
 
-    float A = 0.100; float B = 0.300;
-    float C = 0.100; float D = tnamn;
-    float E = 0.020; float F = 0.300;
+    const float A = 0.100; const float B = 0.300;
+    const float C = 0.100; const float D = tnamn;
+    const float E = 0.020; const float F = 0.300;
 
-    float W = 1.020;
+    const float W = 1.000;
 
     T.r = ((T.r*(A*T.r + C*B) + D*E) / (T.r*(A*T.r + B) + D*F)) - E / F;
     T.g = ((T.g*(A*T.g + C*B) + D*E) / (T.g*(A*T.g + B) + D*F)) - E / F;
@@ -450,10 +451,11 @@ float4 TonemapPass(float4 color, float2 texcoord)
     float3 tonemap = color.rgb;
     
     float blackLevel = length(tonemap);
+    tonemap = ScaleLuminance(tonemap);
+
     float luminanceAverage = AvgLuminance(Luminance);
 
     if (TonemapMask == 1) { tonemap = TmMask(tonemap); }
-    if (TonemapType == 0) { tonemap = TmLDRC(tonemap); }
     if (TonemapType == 1) { tonemap = TmCurve(tonemap); }
 
     // RGB -> XYZ conversion
@@ -1116,7 +1118,7 @@ float4 ContrastPass(float4 color, float2 texcoord)
     // LumaLerp Cubic Bezier spline
     float3 a = float3(0.00, 0.00, 0.00);
     float3 b = float3(0.25, 0.25, 0.25);
-    float3 c = float3(0.85, 0.85, 0.85);
+    float3 c = float3(0.90, 0.90, 0.90);
     float3 d = float3(1.00, 1.00, 1.00);
 
     float3 ab = lerp(a, b, luma);
