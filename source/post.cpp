@@ -61,6 +61,13 @@ void Post::reloadShader() {
 	// Get handles
 	thisframeTexHandle = effect->GetParameterByName(NULL, "thisframeTex");
 	timerHandle = effect->GetParameterByName(NULL, "timer");
+	noiseTexHandle = effect->GetParameterByName(NULL, "noiseTexture");
+
+	// Load noise
+	if(noiseTexHandle != NULL) {
+		string noiseFile = getAssetFileName("NoiseTex.png");
+		hr = D3DXCreateTextureFromFile(device, noiseFile.c_str(), &noiseTex);
+	}
 
 	// start timer
 	timer.start();
@@ -69,6 +76,7 @@ void Post::reloadShader() {
 
 Post::~Post() {
 	SAFERELEASE(effect);
+	if(noiseTexHandle != NULL) SAFERELEASE(noiseTex);
 }
 
 void Post::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
@@ -77,6 +85,7 @@ void Post::go(IDirect3DTexture9 *frame, IDirect3DSurface9 *dst) {
     device->SetRenderTarget(0, dst);
     effect->SetTexture(thisframeTexHandle, frame);
 	if(timerHandle != NULL) effect->SetFloat(timerHandle, static_cast<float>(timer.elapsed() / 1000000.0));
+	if(noiseTexHandle != NULL) effect->SetTexture(noiseTexHandle, noiseTex);
 
     // Do it!
     UINT passes;
