@@ -1,3 +1,11 @@
+??-??-2015 -- beta 17 - "Forlane | Rei"
+=======================================
+General:
+- Add profiles for many games
+Postprocessing:
+- allow loading of optional noise texture
+- update asmodean effects file
+
 24-12-2014 -- beta 16 - "Third Ensemble"
 ========================================
 General:
