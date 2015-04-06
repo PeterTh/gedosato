@@ -28,6 +28,7 @@ Borderlands2                 || Borderlands 2
 bsnes                        || bsnes SNES emulator
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
+CLOS2                        || Castlevania Lords of Shadow 2
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
 cnc3game.dat                 || Command & Conquer 3: Tiberium Wars
 Cognition Episode*           || Cognition: An Erica Reed Thriller
@@ -44,6 +45,7 @@ Darksiders2                  || Darksiders 2
 DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
+DBXV                         || Dragonball Xenoverse
 Dead Space                   || Dead Space
 demoniconR                   || Demonicon
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
@@ -99,6 +101,7 @@ left4dead2                   || Left 4 Dead 2
 LEGOMARVEL                   || LEGO Marvel Superheroes
 Leviathan                    || Leviathan: Warships
 LostPlanetDX9                || Lost Planet: Extreme Condition (DX9)
+Mafia2                       || Mafia II
 MassEffect                   || Mass Effect
 MassEffect2                  || Mass Effect 2
 MassEffect2Config            || Mass Effect 2 Configurator
