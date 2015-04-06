@@ -26,9 +26,9 @@ BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
 bsnes                        || bsnes SNES emulator
-ShippingPC-StormGame         || Bulletstorm
 CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
+CLOS2                        || Castlevania Lords of Shadow 2
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
 cnc3game.dat                 || Command & Conquer 3: Tiberium Wars
 Cognition Episode*           || Cognition: An Erica Reed Thriller
@@ -48,10 +48,10 @@ DayZ                         || DayZ Standalone
 DBXV                         || Dragonball Xenoverse
 Dead Space                   || Dead Space
 demoniconR                   || Demonicon
-dmc3se                       || Devil May Cry 3 Special Edition
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Diablo III                   || Diablo III
 Dishonored                   || Dishonored
+dmc3se                       || Devil May Cry 3 Special Edition
 DMC-DevilMayCry              || DmC Devil May Cry
 dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
@@ -65,8 +65,8 @@ fear                         || F.E.A.R.
 FEAR2                        || F.E.A.R. 2
 FEARXP                       || F.E.A.R. Extraction Point
 FEARXP2                      || F.E.A.R. Perseus Mandate
-ffxiiiimg                    || Final Fantasy XIII
 ffxiii2img                   || Final Fantasy XIII-2
+ffxiiiimg                    || Final Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
@@ -99,6 +99,7 @@ left4dead2                   || Left 4 Dead 2
 LEGOMARVEL                   || LEGO Marvel Superheroes
 Leviathan                    || Leviathan: Warships
 LostPlanetDX9                || Lost Planet: Extreme Condition (DX9)
+Mafia2                       || Mafia II
 MassEffect                   || Mass Effect
 MassEffect2                  || Mass Effect 2
 MassEffect2Config            || Mass Effect 2 Configurator
@@ -136,6 +137,7 @@ Shadowrun                    || Shadowrun Returns
 Sherlock                     || Sherlock Holmes: Crimes and Punishments
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
+ShippingPC-StormGame         || Bulletstorm
 SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
 SonicGenerations             || Sonic Generations
 SpaceMarine                  || SpaceMarine
