@@ -45,6 +45,7 @@ Darksiders2                  || Darksiders 2
 DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
+DBXV                         || Dragonball Xenoverse
 Dead Space                   || Dead Space
 demoniconR                   || Demonicon
 dmc3se                       || Devil May Cry 3 Special Edition
