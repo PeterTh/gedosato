@@ -55,6 +55,7 @@ dota                         || Dota 2
 DragonAge2                   || Dragon Age 2
 DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 Earth2160*                   || Earth 2160
+Elminage                     || Elminage Gothic
 EoCApp                       || Divinity: Original Sin
 Fallout3                     || Fallout 3
 FalloutLauncher              || Fallout 3 Launcher
@@ -117,6 +118,7 @@ ninja                        || Mini Ninjas
 OfOrcsAndMen_Steam           || Of Orcs And Men
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
+PillarsOfEternity            || Pillars of Eternity
 PKHD-DS-ConfigTool           || Painkiller HD Config
 PKHDGame-Win32-Shipping      || Painkiller HD
 PPSSPPWindows64              || PPSSPP
