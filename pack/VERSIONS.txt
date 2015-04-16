@@ -2,6 +2,7 @@
 =======================================
 General:
 - Add profiles for many games
+- Fix issue with programs which check the return value of "ShowCursor" (e.g. FF13)
 Postprocessing:
 - allow loading of optional noise texture
 - update asmodean effects file

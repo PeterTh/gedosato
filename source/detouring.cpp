@@ -395,7 +395,11 @@ GENERATE_INTERCEPT_HEADER(SetCursor, HCURSOR, WINAPI, _In_opt_ HCURSOR hCursor) 
 
 GENERATE_INTERCEPT_HEADER(ShowCursor, int, WINAPI, _In_ BOOL bShow) {
 	SDLOG(2, "DetouredShowCursor %s\n", bShow ? "true" : "false");
-	return TrueShowCursor(Settings::get().getHideMouseCursor() ? false : bShow);
+	if(Settings::get().getHideMouseCursor()) {
+		TrueShowCursor(false);
+		return bShow ? 0 : -1;
+	}
+	return TrueShowCursor(bShow);
 }
 
 GENERATE_INTERCEPT_HEADER(ClipCursor, BOOL, WINAPI, __in_opt CONST RECT *lpRect) {
