@@ -5,6 +5,7 @@
 SETTING(unsigned, PresentWidth, "presentWidth", 0)
 SETTING(unsigned, PresentHeight, "presentHeight", 0)
 SETTING(unsigned, PresentHz, "presentHz", 60)
+
 SETTING(int, PresentInterval, "presentInterval", -1)
 SETTING(int, AdapterOverride, "adapterOverride", -1)
 
@@ -15,6 +16,9 @@ SETTING(string, ScalingType, "scalingType", "linear")
 SETTING(bool, MaintainAspectRatio, "maintainAspectRatio", true)
 
 SETTING(unsigned, ForceAnisoLevel, "forceAnisoLevel", 0)
+
+SETTING(float, FpsLimit, "fpsLimit", 0.0f)
+SETTING(bool, FpsLimitBusy, "fpsLimitBusy", true)
 
 // Compatibility Options
 SETTING(bool, PluginHandlesDownsampling, "pluginHandlesDownsampling", false)

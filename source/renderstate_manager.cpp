@@ -42,3 +42,53 @@ void RSManager::enableTakeScreenshot(ScreenshotType type) {
 	takeScreenshot |= type;
 	SDLOG(0, "takeScreenshot: %d\n", type);
 }
+
+//// Performance tracing
+
+void RSManager::startPerfTrace() {
+	traceText->show = true;
+	perfTrace = std::make_unique<PerfTrace>();
+}
+void RSManager::endPerfTrace() {
+	traceText->show = false;
+	perfTrace->storeResult();
+	perfTrace.reset(nullptr);
+}
+void RSManager::togglePerfTrace() {
+	if(perfTrace) {
+		endPerfTrace();
+	}
+	else {
+		startPerfTrace();
+	}
+}
+
+//// Generic pre/post present actions
+
+void RSManager::genericPrePresent() {
+	// FPS limiting
+	float fpsLimit = Settings::get().getFpsLimit();
+	if(fpsLimit > 1.0f) {
+		float desiredMinFrametime = 1000000.0f / fpsLimit; // cpuFrameTimer reports microseconds
+		if(Settings::get().getFpsLimitBusy()) {
+			while(cpuFrameTimer.elapsed() < desiredMinFrametime);
+		}
+		else {
+			if(cpuFrameTimer.elapsed() < desiredMinFrametime) {
+				std::this_thread::sleep_for(std::chrono::microseconds(static_cast<unsigned long>(desiredMinFrametime - cpuFrameTimer.elapsed())));
+			}
+		}
+	}
+
+	// Frame time measurements
+	cpuFrameTimes.add(cpuFrameTimer.elapsed() / 1000.0);
+	perfMonitor->end();
+	double cpuTime = cpuFrameTimes.get(), gpuTime = perfMonitor->getCurrent();
+	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf",
+		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0 / max(cpuTime, gpuTime));
+	if(perfTrace) perfTrace->addFrame(cpuTime, gpuTime);
+}
+void RSManager::genericPostPresent() {
+	cpuFrameTimer.start();
+	perfMonitor->start();
+}

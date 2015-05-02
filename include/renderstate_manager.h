@@ -91,21 +91,10 @@ public:
 
 	virtual void reloadShaders() {}
 
-	virtual void startPerfTrace() {
-		traceText->show = true;
-		perfTrace = std::make_unique<PerfTrace>();
-	}
-	virtual void endPerfTrace() {
-		traceText->show = false;
-		perfTrace->storeResult();
-		perfTrace.reset(nullptr);
-	}
-	virtual void togglePerfTrace() {
-		if(perfTrace) {
-			endPerfTrace();
-		}
-		else {
-			startPerfTrace();
-		}
-	}
+	virtual void startPerfTrace();
+	virtual void endPerfTrace();
+	virtual void togglePerfTrace();
+
+	virtual void genericPrePresent();
+	virtual void genericPostPresent();
 };

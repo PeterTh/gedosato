@@ -218,15 +218,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		tookScreenshot(SCREENSHOT_FULL);
 		tookScreenshot(SCREENSHOT_HUDLESS);
 	}
-
-	// Frame time measurements
-	cpuFrameTimes.add(cpuFrameTimer.elapsed() / 1000.0);
-	perfMonitor->end();
-	double cpuTime = cpuFrameTimes.get(), gpuTime = perfMonitor->getCurrent();
-	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf",
-		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0 / max(cpuTime, gpuTime));
-	if(perfTrace) perfTrace->addFrame(cpuTime, gpuTime);
-
+	
 	// Draw console
 	if(console.needsDrawing()) {
 		storeRenderState();
@@ -274,11 +266,11 @@ HRESULT RSManagerDX9::redirectPresent(CONST RECT *pSourceRect, CONST RECT *pDest
 	prePresent(false);
 
 	storeRenderState();
+	genericPrePresent();
 	HRESULT hr = d3ddev->Present(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+	genericPostPresent();
 	restoreRenderState();
 
-	cpuFrameTimer.start();
-	perfMonitor->start();
 	return hr;
 }
 
@@ -287,11 +279,11 @@ HRESULT RSManagerDX9::redirectPresentEx(CONST RECT* pSourceRect, CONST RECT* pDe
 	prePresent((dwFlags & D3DPRESENT_DONOTFLIP) != 0);
 
 	storeRenderState();
+	genericPrePresent();
 	HRESULT hr = ((IDirect3DDevice9Ex*)d3ddev)->PresentEx(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion, dwFlags);
+	genericPostPresent();
 	restoreRenderState();
 
-	cpuFrameTimer.start();
-	perfMonitor->start();
 	return hr;
 }
 

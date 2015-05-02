@@ -7,10 +7,10 @@
 class Timer {
 	LARGE_INTEGER startTime;
 	static double multiplicator;
-	bool running;
+	bool running = false;
 
 public:
-	Timer() : running(false) {
+	Timer() {
 		if(multiplicator<0) {
 			LARGE_INTEGER frequency;
 			if(QueryPerformanceFrequency(&frequency) == 0) SDLOG(-1, "ERROR: Could not get HPC frequency (not supported?)\n");

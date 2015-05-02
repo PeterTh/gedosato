@@ -1,6 +1,7 @@
 ??-??-2015 -- beta 17 - "Forlane | Rei"
 =======================================
 General:
+- Add FPS limiting functionality
 - Add profiles for many games
 - Fix issue with programs which check the return value of "ShowCursor" (e.g. FF13)
 Postprocessing:
