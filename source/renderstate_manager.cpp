@@ -65,21 +65,28 @@ void RSManager::togglePerfTrace() {
 
 //// Generic pre/post present actions
 
-void RSManager::genericPrePresent() {
-	// FPS limiting
-	float fpsLimit = Settings::get().getFpsLimit();
-	if(fpsLimit > 1.0f) {
-		float desiredMinFrametime = 1000000.0f / fpsLimit; // cpuFrameTimer reports microseconds
-		if(Settings::get().getFpsLimitBusy()) {
-			while(cpuFrameTimer.elapsed() < desiredMinFrametime);
-		}
-		else {
-			if(cpuFrameTimer.elapsed() < desiredMinFrametime) {
-				std::this_thread::sleep_for(std::chrono::microseconds(static_cast<unsigned long>(desiredMinFrametime - cpuFrameTimer.elapsed())));
+namespace {
+	void limitFPS(const Timer& cpuFrameTimer, double calctimeavg, bool pre) {
+		float fpsLimit = Settings::get().getFpsLimit();
+		if(fpsLimit > 1.0f) {
+			double targetTime = 1000000.0 / fpsLimit; // cpuFrameTimer reports microseconds
+			if(!pre) {
+				// we want to wait for the time target minus the average frame time, scaled by the prediction setting
+				targetTime = Settings::get().getFpsPredictiveLimitRatio() * (targetTime - calctimeavg);
+			}
+			if(Settings::get().getFpsLimitBusy()) {
+				while(cpuFrameTimer.elapsed() < targetTime);
+			}
+			else {
+				if(cpuFrameTimer.elapsed() < targetTime) {
+					std::this_thread::sleep_for(std::chrono::microseconds(static_cast<unsigned long>(targetTime - cpuFrameTimer.elapsed())));
+				}
 			}
 		}
 	}
+}
 
+void RSManager::genericPrePresent() {
 	// Frame time measurements
 	cpuFrameTimes.add(cpuFrameTimer.elapsed() / 1000.0);
 	perfMonitor->end();
@@ -87,8 +94,17 @@ void RSManager::genericPrePresent() {
 	frameTimeText->text = format("  %s\nFrame times (avg/max):\n CPU: %6.2lf / %6.2lf ms\n GPU: %6.2f / %6.2lf ms\nFPS: %4.3lf",
 		getTimeString(true), cpuTime, cpuFrameTimes.maximum(), gpuTime, perfMonitor->getMax(), 1000.0 / max(cpuTime, gpuTime));
 	if(perfTrace) perfTrace->addFrame(cpuTime, gpuTime);
+
+	// FPS limiting
+	limitFPS(cpuFrameTimer, 0.0, true);
 }
+
 void RSManager::genericPostPresent() {
+	// FPS limiting
+	if(Settings::get().getFpsPredictiveLimitRatio() > 0.0f) {
+		limitFPS(cpuFrameTimer, max(cpuFrameTimes.get(), perfMonitor->getCurrent())*1000.0, false);
+	}
+
 	cpuFrameTimer.start();
 	perfMonitor->start();
 }

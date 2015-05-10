@@ -28,9 +28,9 @@ public:
 		running = false;
 	}
 
-	bool isRunning() { return running; }
+	bool isRunning() const { return running; }
 
-	double elapsed() {
+	double elapsed() const {
 		LARGE_INTEGER time, diff;
 		QueryPerformanceCounter(&time);
 		diff.QuadPart = time.QuadPart - startTime.QuadPart;
@@ -64,20 +64,20 @@ public:
 		vals[current] = value;
 	}
 
-	double get() {
+	double get() const {
 		double sum = 0;
 		for(unsigned i=0; i<interval; ++i) { sum += vals[i]; }
 		sum /= interval;
 		return sum;
 	}
 
-	double maximum() {
+	double maximum() const {
 		double maxval = 0;
 		for(unsigned i = 0; i < interval; ++i) { maxval = max(maxval, vals[i]); }
 		return maxval;
 	}
 
-	bool justFilled() {
+	bool justFilled() const {
 		return filled;
 	}
 };
