@@ -37,8 +37,10 @@ protected:
 	unsigned numBackBuffers = 0;
 
 	// Performance measurement
-	Timer cpuFrameTimer;
+	double currentWaitTime = 0.0;
+	Timer cpuFrameTimer, fpsFrameTimer;
 	SlidingAverage cpuFrameTimes{ 120 };
+	SlidingAverage fpsWaitTimes { 60 };
 	std::unique_ptr<D3DPerfMonitor> perfMonitor;
 	StaticTextPtr frameTimeText{ new StaticText("", 20.0f, 100.0f) };
 	StaticTextPtr traceText{ new StaticText("Tracing", 300.0f, 30.0f) };

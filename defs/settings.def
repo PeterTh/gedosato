@@ -20,6 +20,7 @@ SETTING(unsigned, ForceAnisoLevel, "forceAnisoLevel", 0)
 SETTING(float, FpsLimit, "fpsLimit", 0.0f)
 SETTING(bool, FpsLimitBusy, "fpsLimitBusy", true)
 SETTING(float, FpsPredictiveLimitRatio, "fpsPredictiveLimitRatio", 0.0f)
+SETTING(bool, FlushGPUEveryFrame, "flushGPUEveryFrame", false)
 
 // Compatibility Options
 SETTING(bool, PluginHandlesDownsampling, "pluginHandlesDownsampling", false)

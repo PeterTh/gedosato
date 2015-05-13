@@ -23,6 +23,11 @@ IDirect3D9* RSManagerDX9::getD3D() {
 	return d3d;
 }
 
+IDirect3DDevice9* RSManagerDX9::getD3Ddev() {
+	return d3ddev;
+}
+
+
 void RSManagerDX9::showStatus() {
 	console.add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
 	if(getScaler()) getScaler()->showStatus();

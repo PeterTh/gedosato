@@ -3,6 +3,7 @@
 General:
 - Add FPS limiting functionality
   + Predictive capping mode
+- Added option to flush GPU pipeline every frame (for potential latency improvements)
 - Add profiles for many games
 - Fix issue with programs which check the return value of "ShowCursor" (e.g. FF13)
 Postprocessing:

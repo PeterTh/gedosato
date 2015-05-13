@@ -66,14 +66,17 @@ void RSManager::togglePerfTrace() {
 //// Generic pre/post present actions
 
 namespace {
-	void limitFPS(const Timer& cpuFrameTimer, double calctimeavg, bool pre) {
+	double limitFPS(const Timer& cpuFrameTimer, double waitTimeAvg, bool pre) {
+		Timer waitTime;
 		float fpsLimit = Settings::get().getFpsLimit();
 		if(fpsLimit > 1.0f) {
 			double targetTime = 1000000.0 / fpsLimit; // cpuFrameTimer reports microseconds
 			if(!pre) {
-				// we want to wait for the time target minus the average frame time, scaled by the prediction setting
-				targetTime = Settings::get().getFpsPredictiveLimitRatio() * (targetTime - calctimeavg);
+				// we want to do some of our waiting predictively
+				targetTime = Settings::get().getFpsPredictiveLimitRatio() * waitTimeAvg;
 			}
+			// perform waiting
+			waitTime.start();
 			if(Settings::get().getFpsLimitBusy()) {
 				while(cpuFrameTimer.elapsed() < targetTime);
 			}
@@ -83,6 +86,18 @@ namespace {
 				}
 			}
 		}
+		return waitTime.elapsed();
+	}
+	void flushGPU(LPDIRECT3DDEVICE9 dev) {
+		IDirect3DQuery9* query = NULL;
+		dev->CreateQuery(D3DQUERYTYPE_EVENT, &query);
+
+		if(query != NULL) {
+			query->Issue(D3DISSUE_END);
+			while(S_FALSE == query->GetData(NULL, 0, D3DGETDATA_FLUSH));
+		}
+
+		query->Release();
 	}
 }
 
@@ -96,13 +111,24 @@ void RSManager::genericPrePresent() {
 	if(perfTrace) perfTrace->addFrame(cpuTime, gpuTime);
 
 	// FPS limiting
-	limitFPS(cpuFrameTimer, 0.0, true);
+	currentWaitTime += limitFPS(fpsFrameTimer, 0.0, true);
+	fpsWaitTimes.add(currentWaitTime);
 }
 
 void RSManager::genericPostPresent() {
+	currentWaitTime = 0.0;
+	fpsFrameTimer.start();
+
+	if(Settings::get().getFlushGPUEveryFrame()) flushGPU(getDX9().getD3Ddev());
 	// FPS limiting
 	if(Settings::get().getFpsPredictiveLimitRatio() > 0.0f) {
-		limitFPS(cpuFrameTimer, max(cpuFrameTimes.get(), perfMonitor->getCurrent())*1000.0, false);
+		//traceText->text = "";
+		//traceText->show = true;
+		//traceText->text += format("start wait : %f\n", fpsFrameTimer.elapsed());
+		limitFPS(fpsFrameTimer, fpsWaitTimes.get(), false);
+		currentWaitTime += fpsFrameTimer.elapsed();
+		//traceText->text += format("Pre waiting: %f\n", currentWaitTime);
+		//traceText->text += format("Current AVG: %f\n", fpsWaitTimes.get());
 	}
 
 	cpuFrameTimer.start();
