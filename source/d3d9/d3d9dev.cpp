@@ -407,21 +407,22 @@ HRESULT APIENTRY hkIDirect3DDevice9::GetStreamSourceFreq(UINT StreamNumber,UINT*
 	return m_pD3Ddev->GetStreamSourceFreq(StreamNumber,Divider);
 }
 
-HRESULT APIENTRY hkIDirect3DDevice9::GetSwapChain(UINT iSwapChain,IDirect3DSwapChain9** pSwapChain) {
+HRESULT APIENTRY hkIDirect3DDevice9::GetSwapChain(UINT iSwapChain, IDirect3DSwapChain9** pSwapChain) {
 	RSManager::setLatest(rsMan);
 	SDLOG(4, "GetSwapChain %u\n", iSwapChain);
 	if(iSwapChain == 0) {
+		HRESULT res = D3D_OK;
 		if(hookedSwapChain0 == NULL) {
 			SDLOG(1, "Hooking swapchain 0\n");
 			IDirect3DSwapChain9 *sw;
-			m_pD3Ddev->GetSwapChain(iSwapChain, &sw);
+			res = m_pD3Ddev->GetSwapChain(iSwapChain, &sw);
 			hookedSwapChain0 = new hkIDirect3DSwapChain9(&sw, this);
 		}
-		SDLOG(4, "-> Hooked swapchain\n");
+		SDLOG(4, "-> Hooked swapchain res: %d\n", res);
 		*pSwapChain = hookedSwapChain0;
-		return D3D_OK;
+		return res;
 	}
-	return m_pD3Ddev->GetSwapChain(iSwapChain,pSwapChain);
+	return m_pD3Ddev->GetSwapChain(iSwapChain, pSwapChain);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::GetTexture(DWORD Stage, IDirect3DBaseTexture9 **ppTexture) {
