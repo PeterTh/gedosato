@@ -143,7 +143,7 @@ ShippingPC-SkyGame           || Dark Void
 ShippingPC-StormGame         || Bulletstorm
 SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
 SonicGenerations             || Sonic Generations
-SpaceMarine                  || SpaceMarine
+SpaceMarine                  || Warhammer 40,000: Space Marine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
