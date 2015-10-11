@@ -130,6 +130,7 @@ Rayman Legends               || Rayman Legends
 RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
 Reckoning                    || Kingdom's of Amalur: Reckoning
+RelicCOH                     || Company of Heroes (New Steam Version)
 RememberMe                   || Remember Me
 rfg                          || Red Faction: Guerrilla (DX9)
 Risen                        || Risen
@@ -144,7 +145,7 @@ ShippingPC-SkyGame           || Dark Void
 ShippingPC-StormGame         || Bulletstorm
 SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
 SonicGenerations             || Sonic Generations
-SpaceMarine                  || SpaceMarine
+SpaceMarine                  || Warhammer 40,000: Space Marine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
 TESV                         || The Elder Scrolls V: Skyrim
