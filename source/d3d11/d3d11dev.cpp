@@ -58,7 +58,8 @@ HRESULT APIENTRY hkID3D11Device::CreateTexture2D(const D3D11_TEXTURE2D_DESC *pDe
 		D3D11_SUBRESOURCE_DATA replacementInit = { pixelData, pInitialData->SysMemPitch*4, pInitialData->SysMemSlicePitch*4 };
 		return pWrapped->CreateTexture2D(&replacementDesc, &replacementInit, ppTexture2D);
 	}
-	if(pDesc->BindFlags & D3D11_BIND_RENDER_TARGET || pDesc->BindFlags & D3D11_BIND_DEPTH_STENCIL) {
+	// TODO put this into a DX11 plugin interface when it exists
+	if(pDesc->BindFlags & D3D11_BIND_RENDER_TARGET || pDesc->BindFlags & D3D11_BIND_DEPTH_STENCIL && getExeFileName() == "UmiByeWin") {
 		if(pDesc->Width == 1024 && pDesc->Height == 512) {
 			D3D11_TEXTURE2D_DESC replacementDesc = *pDesc;
 			replacementDesc.Width *= 4;
