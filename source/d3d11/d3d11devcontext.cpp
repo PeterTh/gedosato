@@ -235,8 +235,8 @@ void APIENTRY hkID3D11DeviceContext::RSSetViewports(UINT NumViewports, const D3D
 	// TODO put this into a DX11 plugin interface when it exists
 	if(NumViewports == 1 && pViewports[0].Width == 896.0f && pViewports[0].Height == 512.0f && getExeFileName() == "UmiByeWin") {
 		D3D11_VIEWPORT replacementViewport = *pViewports;
-		replacementViewport.Width *= 4;
-		replacementViewport.Height *= 4;
+		replacementViewport.Height = static_cast<float>(Settings::get().getRenderHeight());
+		replacementViewport.Width = replacementViewport.Height * 960 / 544;
 		return pWrapped->RSSetViewports(NumViewports, &replacementViewport);
 	}
 	return pWrapped->RSSetViewports(NumViewports, pViewports);
@@ -247,8 +247,8 @@ void APIENTRY hkID3D11DeviceContext::RSSetScissorRects(UINT NumRects, const D3D1
 	// TODO put this into a DX11 plugin interface when it exists
 	if(NumRects == 1 && pRects[0].right == 896 && pRects[0].bottom == 512 && getExeFileName() == "UmiByeWin") {
 		D3D11_RECT replacementRect = *pRects;
-		replacementRect.right *= 4;
-		replacementRect.bottom *= 4;
+		replacementRect.bottom = Settings::get().getRenderHeight();
+		replacementRect.right = replacementRect.bottom * 960 / 544;
 		return pWrapped->RSSetScissorRects(NumRects, &replacementRect);
 	}
 	return pWrapped->RSSetScissorRects(NumRects, pRects);

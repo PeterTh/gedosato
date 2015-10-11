@@ -1,4 +1,4 @@
-??-??-2015 -- beta 17 - "Disharmonized Genesis"
+??-??-2015 -- beta 18 - "Disharmonized Genesis"
 ===============================================
 General:
 - Add various DX11-related tools

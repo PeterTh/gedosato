@@ -62,8 +62,9 @@ HRESULT APIENTRY hkID3D11Device::CreateTexture2D(const D3D11_TEXTURE2D_DESC *pDe
 	if(pDesc->BindFlags & D3D11_BIND_RENDER_TARGET || pDesc->BindFlags & D3D11_BIND_DEPTH_STENCIL && getExeFileName() == "UmiByeWin") {
 		if(pDesc->Width == 1024 && pDesc->Height == 512) {
 			D3D11_TEXTURE2D_DESC replacementDesc = *pDesc;
-			replacementDesc.Width *= 4;
-			replacementDesc.Height *= 4;
+			replacementDesc.Height = Settings::get().getRenderHeight();
+			replacementDesc.Width = replacementDesc.Height*2;
+			SDLOG(-1, "Umihara render res: %u x %u\n", replacementDesc.Width, replacementDesc.Height);
 			return pWrapped->CreateTexture2D(&replacementDesc, pInitialData, ppTexture2D);
 		}
 	}
