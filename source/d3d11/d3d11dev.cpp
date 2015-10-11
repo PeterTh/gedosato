@@ -5,6 +5,7 @@
 
 #include "settings.h"
 #include "utils/d3d11_utils.h"
+#include "utils/imgproc_utils.h"
 
 hkID3D11Device::hkID3D11Device(ID3D11Device **ppID3D11Device) {
 	rsMan = new RSManagerDX11(*ppID3D11Device);
@@ -46,6 +47,17 @@ HRESULT APIENTRY hkID3D11Device::CreateTexture1D(const D3D11_TEXTURE1D_DESC *pDe
 HRESULT APIENTRY hkID3D11Device::CreateTexture2D(const D3D11_TEXTURE2D_DESC *pDesc, const D3D11_SUBRESOURCE_DATA *pInitialData, ID3D11Texture2D **ppTexture2D) {
 	RSManager::setLatest(rsMan);
 	SDLOG(10, "hkID3D11Device::CreateTexture2D\n%s-> init: %p\n", D3D11Texture2DDescToString(*pDesc), pInitialData);
+	if(pInitialData != nullptr && pDesc->ArraySize == 1 && pDesc->MipLevels == 1 && pDesc->Format == DXGI_FORMAT_R8G8B8A8_UNORM && Settings::get().getTextureScalingFactor() > 1) {
+		SDLOG(2, "SCALING!\n");
+		uint32_t *pixelData = (uint32_t*)pInitialData->pSysMem;
+		int width = pDesc->Width, height = pDesc->Height;
+		GlobalTexScaler::get().Scale(pixelData, width, height, 4);
+		D3D11_TEXTURE2D_DESC replacementDesc = *pDesc;
+		replacementDesc.Width = width;
+		replacementDesc.Height = height;
+		D3D11_SUBRESOURCE_DATA replacementInit = { pixelData, pInitialData->SysMemPitch*4, pInitialData->SysMemSlicePitch*4 };
+		return pWrapped->CreateTexture2D(&replacementDesc, &replacementInit, ppTexture2D);
+	}
 	if(pDesc->BindFlags & D3D11_BIND_RENDER_TARGET || pDesc->BindFlags & D3D11_BIND_DEPTH_STENCIL) {
 		if(pDesc->Width == 1024 && pDesc->Height == 512) {
 			D3D11_TEXTURE2D_DESC replacementDesc = *pDesc;

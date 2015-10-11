@@ -1,4 +1,12 @@
-??-??-2015 -- beta 17 - "Forlane | Rei"
+??-??-2015 -- beta 17 - "Disharmonized Genesis"
+===============================================
+General:
+- Add various DX11-related tools
+- Add image processing and threadpool code (re-imported from PPSSPP)
+Sayonara Umihara Kawase:
+- Enable resolution unlocking
+
+10-10-2015 -- beta 17 - "Forlane | Rei"
 =======================================
 General:
 - Add FPS limiting functionality

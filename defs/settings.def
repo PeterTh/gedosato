@@ -44,6 +44,10 @@ SETTING(bool, EnableAlternativeTextureDumping, "enableAlternativeTextureDumping"
 SETTING(bool, EnableTextureOverride, "enableTextureOverride", false)
 SETTING(bool, EnableTextureMarking, "enableTextureMarking", false)
 
+SETTING(unsigned, TextureScalingMode, "textureScalingMode", 0)
+SETTING(unsigned, TextureScalingFactor, "textureScalingFactor", 1)
+SETTING(bool, EnableTextureDeposterize, "enableTextureDeposterize", false)
+
 // Mouse options
 SETTING(bool, ModifyGetCursorPos, "modifyGetCursorPos", true)
 SETTING(bool, ModifySetCursorPos, "modifySetCursorPos", true)

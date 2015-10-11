@@ -479,8 +479,8 @@ TextureScaler::~TextureScaler() {
 	xbrz::shutdown();
 }
 
-bool TextureScaler::IsEmptyOrFlat(u32* data, int pixels, int fmt) {
-	int pixelsPerWord = 4 / BytesPerPixel(fmt);
+bool TextureScaler::IsEmptyOrFlat(u32* data, int pixels) {
+	int pixelsPerWord = 1;
 	u32 ref = data[0];
 	for(int i = 0; i < pixels / pixelsPerWord; ++i) {
 		if(data[i] != ref) return false;
@@ -488,10 +488,10 @@ bool TextureScaler::IsEmptyOrFlat(u32* data, int pixels, int fmt) {
 	return true;
 }
 
-void TextureScaler::Scale(u32* &data, u32 &dstFmt, int &width, int &height, int factor) {
+void TextureScaler::Scale(u32* &data, int &width, int &height, int factor) {
 	// prevent processing empty or flat textures (this happens a lot in some games)
 	// doesn't hurt the standard case, will be very quick for textures with actual texture
-	if(IsEmptyOrFlat(data, width*height, dstFmt)) {
+	if(IsEmptyOrFlat(data, width*height)) {
 		SDLOG(20, "TextureScaler: early exit -- empty/flat texture");
 		return;
 	}
@@ -505,8 +505,7 @@ void TextureScaler::Scale(u32* &data, u32 &dstFmt, int &width, int &height, int 
 	u32 *inputBuf = bufInput.data();
 	u32 *outputBuf = bufOutput.data();
 
-	// convert texture to correct format for scaling
-	ConvertTo8888(dstFmt, data, inputBuf, width, height);
+	memcpy(inputBuf, data, 4*width*height);
 
 	// deposterize
 	if(Settings::get().getEnableTextureDeposterize()) {
@@ -534,7 +533,6 @@ void TextureScaler::Scale(u32* &data, u32 &dstFmt, int &width, int &height, int 
 	}
 
 	// update values accordingly
-	dstFmt = Get8888Format();
 	data = outputBuf;
 	width *= factor;
 	height *= factor;

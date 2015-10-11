@@ -54,15 +54,11 @@ public:
 	TextureScaler();
 	~TextureScaler();
 
-	void Scale(u32* &data, u32 &dstfmt, int &width, int &height, int factor);
+	void Scale(u32* &data, int &width, int &height, int factor);
 
 	enum { XBRZ = 0, HYBRID = 1, BICUBIC = 2, HYBRID_BICUBIC = 3 };
 
 private:
-	virtual void ConvertTo8888(u32 format, u32* source, u32* &dest, int width, int height) = 0;
-	virtual int BytesPerPixel(u32 format) = 0;
-	virtual u32 Get8888Format() = 0;
-
 	void ScaleXBRZ(int factor, u32* source, u32* dest, int width, int height);
 	void ScaleBilinear(int factor, u32* source, u32* dest, int width, int height);
 	void ScaleBicubicBSpline(int factor, u32* source, u32* dest, int width, int height);
@@ -71,10 +67,17 @@ private:
 
 	void DePosterize(u32* source, u32* dest, int width, int height);
 
-	bool IsEmptyOrFlat(u32* data, int pixels, int fmt);
+	bool IsEmptyOrFlat(u32* data, int pixels);
 
 	// depending on the factor and texture sizes, these can get pretty large 
 	// maximum is (100 MB total for a 512 by 512 texture with scaling factor 5 and hybrid scaling)
 	// of course, scaling factor 5 is totally silly anyway
 	SimpleBuf<u32> bufInput, bufDeposter, bufOutput, bufTmp1, bufTmp2, bufTmp3;
+};
+
+struct GlobalTexScaler {
+	static TextureScaler& get() {
+		static TextureScaler instance;
+		return instance;
+	}
 };

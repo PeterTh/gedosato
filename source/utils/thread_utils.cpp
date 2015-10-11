@@ -81,10 +81,10 @@ void LoopWorkerThread::WorkFunc() {
 ThreadPool::ThreadPool(int numThreads) : workersStarted(false) {
 	if(numThreads <= 0) {
 		numThreads_ = 1;
-		SDLOG(-1, "ThreadPool: Bad number of threads %i", numThreads);
+		SDLOG(-1, "ThreadPool: Bad number of threads %i\n", numThreads);
 	}
 	else if(numThreads > 8) {
-		SDLOG(-1, "ThreadPool: Capping number of threads to 8 (was %i)", numThreads);
+		SDLOG(-1, "ThreadPool: Capping number of threads to 8 (was %i)\n", numThreads);
 		numThreads_ = 8;
 	}
 	else {
@@ -102,28 +102,31 @@ void ThreadPool::StartWorkers() {
 }
 
 void ThreadPool::ParallelLoop(const std::function<void(int, int)> &loop, int lower, int upper) {
-	int range = upper - lower;
-	if(range >= numThreads_ * 2) { // don't parallelize tiny loops (this could be better, maybe add optional parameter that estimates work per iteration)
-		std::lock_guard<std::recursive_mutex> guard(mutex);
-		StartWorkers();
+	// FIXME: disabled, deadlocking, look into it
+	// or better: replace with standard loop parallelism
 
-		// could do slightly better load balancing for the generic case, 
-		// but doesn't matter since all our loops are power of 2
-		int chunk = range / numThreads_;
-		int s = lower;
-		for(int i = 0; i < numThreads_ - 1; ++i) {
-			workers[i]->Process(loop, s, s + chunk);
-			s += chunk;
-		}
-		// This is the final chunk.
-		loop(s, upper);
-		for(int i = 0; i < numThreads_ - 1; ++i) {
-			workers[i]->WaitForCompletion();
-		}
-	}
-	else {
+	//int range = upper - lower;
+	//if(range >= numThreads_ * 2) { // don't parallelize tiny loops (this could be better, maybe add optional parameter that estimates work per iteration)
+	//	std::lock_guard<std::recursive_mutex> guard(mutex);
+	//	StartWorkers();
+
+	//	// could do slightly better load balancing for the generic case, 
+	//	// but doesn't matter since all our loops are power of 2
+	//	int chunk = range / numThreads_;
+	//	int s = lower;
+	//	for(int i = 0; i < numThreads_ - 1; ++i) {
+	//		workers[i]->Process(loop, s, s + chunk);
+	//		s += chunk;
+	//	}
+	//	// This is the final chunk.
+	//	loop(s, upper);
+	//	for(int i = 0; i < numThreads_ - 1; ++i) {
+	//		workers[i]->WaitForCompletion();
+	//	}
+	//}
+	//else {
 		loop(lower, upper);
-	}
+	//}
 }
 
 ///////////////////////////// GlobalThreadPool

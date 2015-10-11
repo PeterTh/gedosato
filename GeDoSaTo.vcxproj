@@ -75,7 +75,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">include;defs;D:\dev\nvapi-337;C:\dev\boost_1_59_0;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext;include;defs;D:\dev\nvapi-337;C:\dev\boost_1_59_0;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">d3d9</TargetName>
@@ -265,6 +265,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ext\xbrz\xbrz.cpp" />
     <ClCompile Include="source\d3d9\d3d9ps.cpp" />
     <ClCompile Include="source\blacklist.cpp" />
     <ClCompile Include="source\bloom.cpp" />
@@ -353,15 +354,19 @@
     <ClCompile Include="source\settings.cpp" />
     <ClCompile Include="source\smaa.cpp" />
     <ClCompile Include="source\ssao.cpp" />
+    <ClCompile Include="source\utils\imgproc_utils.cpp" />
     <ClCompile Include="source\utils\string_utils.cpp" />
     <ClCompile Include="source\timer.cpp" />
     <ClCompile Include="source\time_manager.cpp" />
+    <ClCompile Include="source\utils\thread_utils.cpp" />
     <ClCompile Include="source\version.cpp" />
     <ClCompile Include="source\window_manager.cpp" />
     <ClCompile Include="source\utils\win_utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\dev\wrapperGen\dxgiadapter1.h" />
+    <ClInclude Include="ext\xbrz\config.h" />
+    <ClInclude Include="ext\xbrz\xbrz.h" />
     <ClInclude Include="include\area_tex.h" />
     <ClInclude Include="include\blacklist.h" />
     <ClInclude Include="include\bloom.h" />
@@ -415,6 +420,7 @@
     <ClInclude Include="include\search_tex.h" />
     <ClInclude Include="include\shader_manager.h" />
     <ClInclude Include="include\smaa.h" />
+    <ClInclude Include="include\utils\imgproc_utils.h" />
     <ClInclude Include="include\utils\string_utils.h" />
     <ClInclude Include="defs\textures.def" />
     <ClInclude Include="include\renderstate_manager.h" />
@@ -426,6 +432,7 @@
     <ClInclude Include="include\timer.h" />
     <ClInclude Include="include\time_manager.h" />
     <ClInclude Include="include\utils.h" />
+    <ClInclude Include="include\utils\thread_utils.h" />
     <ClInclude Include="include\version.h" />
     <ClInclude Include="include\window_manager.h" />
     <ClInclude Include="include\utils\win_utils.h" />
