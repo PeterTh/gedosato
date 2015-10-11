@@ -43,6 +43,12 @@ HOOK(GetWindowLongW, "User32.dll")
 
 HOOK(SetWindowPos, "User32.dll")
 
+HOOK(SetMenu, "User32.dll")
+HOOK(CreateWindowExA, "User32.dll")
+HOOK(CreateWindowExW, "User32.dll")
+HOOK(RegisterClassExA, "User32.dll")
+HOOK(RegisterClassExW, "User32.dll")
+
 HOOK(DirectInput8Create, "dinput8.dll")
 HOOK(DirectInputCreateEx, "dinput.dll");
 HOOK(DirectInputCreateA, "dinput.dll");

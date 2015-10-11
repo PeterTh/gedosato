@@ -3,6 +3,8 @@
 General:
 - Add various DX11-related tools
 - Add image processing and threadpool code (re-imported from PPSSPP)
+- Add option for texture upscaling (only in DX11 and very limited scenarios for now)
+- Add option to prevent games from creating menus (so that borderless fullscreen works better)
 Sayonara Umihara Kawase:
 - Enable resolution unlocking
 

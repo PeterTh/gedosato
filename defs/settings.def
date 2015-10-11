@@ -66,6 +66,7 @@ SETTING(bool, ForceBorderlessFullscreen, "forceBorderlessFullscreen", false)
 SETTING(bool, HideMouseCursor, "hideMouseCursor", false)
 SETTING(bool, ForceWindowedMode, "forceWindowedMode", false)
 SETTING(bool, ForceFullscreenMode, "forceFullscreenMode", false)
+SETTING(bool, PreventMenu, "preventMenu", false)
 
 // Injection options
 SETTING(string, InjectPSHash, "injectPSHash", "")

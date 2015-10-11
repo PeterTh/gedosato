@@ -542,16 +542,41 @@ GENERATE_INTERCEPT_HEADER(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ H
 	return TrueSetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
+GENERATE_INTERCEPT_HEADER(SetMenu, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HMENU hMenu) {
+	if(Settings::get().getPreventMenu()) return TrueSetMenu(hWnd, NULL);
+	return TrueSetMenu(hWnd, hMenu);
+}
+
 GENERATE_INTERCEPT_HEADER(CreateWindowExA, HWND, WINAPI,
 		_In_ DWORD dwExStyle, _In_opt_ LPCTSTR lpClassName, _In_opt_ LPCTSTR lpWindowName, _In_ DWORD dwStyle,
 		_In_ int x, _In_ int y, _In_ int nWidth, _In_ int nHeight, _In_opt_ HWND hWndParent, _In_opt_ HMENU hMenu, _In_opt_ HINSTANCE hInstance, _In_opt_ LPVOID lpParam) {
+	if(Settings::get().getPreventMenu()) hMenu = NULL;
 	return TrueCreateWindowExA(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 }
 GENERATE_INTERCEPT_HEADER(CreateWindowExW, HWND, WINAPI,
-	_In_ DWORD dwExStyle, _In_opt_ LPCWSTR lpClassName, _In_opt_ LPCWSTR lpWindowName, _In_ DWORD dwStyle,
-	_In_ int x, _In_ int y, _In_ int nWidth, _In_ int nHeight, _In_opt_ HWND hWndParent, _In_opt_ HMENU hMenu, _In_opt_ HINSTANCE hInstance, _In_opt_ LPVOID lpParam) {
+		_In_ DWORD dwExStyle, _In_opt_ LPCWSTR lpClassName, _In_opt_ LPCWSTR lpWindowName, _In_ DWORD dwStyle,
+		_In_ int x, _In_ int y, _In_ int nWidth, _In_ int nHeight, _In_opt_ HWND hWndParent, _In_opt_ HMENU hMenu, _In_opt_ HINSTANCE hInstance, _In_opt_ LPVOID lpParam) {
+	if(Settings::get().getPreventMenu()) hMenu = NULL;
 	return TrueCreateWindowExW(dwExStyle, lpClassName, lpWindowName, dwStyle, x, y, nWidth, nHeight, hWndParent, hMenu, hInstance, lpParam);
 }
+
+GENERATE_INTERCEPT_HEADER(RegisterClassExA, ATOM, WINAPI, _In_ CONST WNDCLASSEXA *lpwcx) {
+	if(Settings::get().getPreventMenu()) {
+		auto copy = *lpwcx;
+		copy.lpszMenuName = NULL;
+		return TrueRegisterClassExA(&copy);
+	}
+	return TrueRegisterClassExA(lpwcx);
+}
+GENERATE_INTERCEPT_HEADER(RegisterClassExW, ATOM, WINAPI, _In_ CONST WNDCLASSEXW *lpwcx) {
+	if(Settings::get().getPreventMenu()) {
+		auto copy = *lpwcx;
+		copy.lpszMenuName = NULL;
+		return TrueRegisterClassExW(&copy);
+	}
+	return TrueRegisterClassExW(lpwcx);
+}
+
 
 // DXGI /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
