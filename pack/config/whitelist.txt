@@ -59,6 +59,7 @@ DragonAge2*                  || Dragon Age 2 Launcher or Configurator
 Earth2160*                   || Earth 2160
 Elminage                     || Elminage Gothic
 EoCApp                       || Divinity: Original Sin
+FairyFencer                  || Fairy Fencer F
 Fallout3                     || Fallout 3
 FalloutLauncher              || Fallout 3 Launcher
 FarCry2                      || FarCry 2

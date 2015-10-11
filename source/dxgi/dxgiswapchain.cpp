@@ -53,7 +53,8 @@ HRESULT APIENTRY hkIDXGISwapChain::GetDevice(REFIID riid, void **ppDevice) {
 
 HRESULT APIENTRY hkIDXGISwapChain::Present(UINT SyncInterval, UINT Flags) {
 	SDLOG(20, "hkIDXGISwapChain::Present\n");
-	return rsMan->redirectPresent(SyncInterval, Flags);
+	//return rsMan->redirectPresent(SyncInterval, Flags);
+	return pWrapped->Present(SyncInterval, Flags);
 }
 
 HRESULT APIENTRY hkIDXGISwapChain::GetBuffer(UINT Buffer, REFIID riid, void **ppSurface) {

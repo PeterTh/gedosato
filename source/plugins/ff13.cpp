@@ -132,7 +132,7 @@ HRESULT FF13Plugin::redirectStretchRect(IDirect3DSurface9* pSourceSurface, CONST
 	// StretchRect src->dest, sR->dR : 05A4DAE0 -> 05A4D360, RECT[0 / 0 / 1280 / 720]->RECT[0 / 0 / 5120 / 2880]
 	if(pSourceRect != NULL && pSourceRect->right == 1280 && pSourceRect->bottom == 720) {
 		SDLOG(4, " -> [FF13] adjusting source rectangle\n");
-		RECT source = { 0, 0, Settings::get().getRenderWidth(), Settings::get().getRenderHeight() };
+		RECT source = { 0, 0, static_cast<long>(Settings::get().getRenderWidth()), static_cast<long>(Settings::get().getRenderHeight()) };
 		return GenericPlugin::redirectStretchRect(pSourceSurface, &source, pDestSurface, NULL, Filter);
 	}
 	return GenericPlugin::redirectStretchRect(pSourceSurface, pSourceRect, pDestSurface, pDestRect, Filter);

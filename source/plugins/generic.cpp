@@ -98,7 +98,7 @@ void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
 	// move rendered content to BB if HUD hidden and it was rendered to different RT
 	if(postDone && !hudEnabled && processedBB != NULL && backBuffer != processedBB) {
 		if(Settings::get().getConstrainInjectedRT()) {
-			RECT sourceRect{ 0, 0, drw, drh };
+			RECT sourceRect{ 0, 0, static_cast<long>(drw), static_cast<long>(drh) };
 			d3ddev->StretchRect(processedBB, &sourceRect, backBuffer, &sourceRect, D3DTEXF_NONE);
 		}
 		else {

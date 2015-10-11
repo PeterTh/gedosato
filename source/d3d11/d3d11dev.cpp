@@ -4,6 +4,7 @@
 #include "d3d11/d3d11dev.h"
 
 #include "settings.h"
+#include "utils/d3d11_utils.h"
 
 hkID3D11Device::hkID3D11Device(ID3D11Device **ppID3D11Device) {
 	rsMan = new RSManagerDX11(*ppID3D11Device);
@@ -44,7 +45,15 @@ HRESULT APIENTRY hkID3D11Device::CreateTexture1D(const D3D11_TEXTURE1D_DESC *pDe
 
 HRESULT APIENTRY hkID3D11Device::CreateTexture2D(const D3D11_TEXTURE2D_DESC *pDesc, const D3D11_SUBRESOURCE_DATA *pInitialData, ID3D11Texture2D **ppTexture2D) {
 	RSManager::setLatest(rsMan);
-	SDLOG(20, "hkID3D11Device::CreateTexture2D\n");
+	SDLOG(10, "hkID3D11Device::CreateTexture2D\n%s-> init: %p\n", D3D11Texture2DDescToString(*pDesc), pInitialData);
+	if(pDesc->BindFlags & D3D11_BIND_RENDER_TARGET || pDesc->BindFlags & D3D11_BIND_DEPTH_STENCIL) {
+		if(pDesc->Width == 1024 && pDesc->Height == 512) {
+			D3D11_TEXTURE2D_DESC replacementDesc = *pDesc;
+			replacementDesc.Width *= 4;
+			replacementDesc.Height *= 4;
+			return pWrapped->CreateTexture2D(&replacementDesc, pInitialData, ppTexture2D);
+		}
+	}
 	return pWrapped->CreateTexture2D(pDesc, pInitialData, ppTexture2D);
 }
 
