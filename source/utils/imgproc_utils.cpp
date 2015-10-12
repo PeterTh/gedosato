@@ -41,7 +41,7 @@ namespace {
 	#define DISTANCE(_p1,_p2) ( abs(static_cast<int>(static_cast<int>(R(_p1))-R(_p2))) + abs(static_cast<int>(static_cast<int>(G(_p1))-G(_p2))) \
 							  + abs(static_cast<int>(static_cast<int>(B(_p1))-B(_p2))) + abs(static_cast<int>(static_cast<int>(A(_p1))-A(_p2))) )
 
-// this is sadly much faster than an inline function with a loop, at least in VC10
+	// this is sadly much faster than an inline function with a loop, at least in VC10
 	#define MIX_PIXELS(_p0, _p1, _factors) \
 		( (R(_p0)*(_factors)[0] + R(_p1)*(_factors)[1])/255 <<  0 ) | \
 		( (G(_p0)*(_factors)[0] + G(_p1)*(_factors)[1])/255 <<  8 ) | \
