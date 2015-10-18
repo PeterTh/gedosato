@@ -6,9 +6,9 @@ const char* VER_NAME = "Disharmonized Genesis";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 18;
-const unsigned VER_BUILD = 1891;
+const unsigned VER_BUILD = 1907;
 
-const char* VER_STRING = "version 0.18.1891 built on 2015/10/12 17:47:17";
+const char* VER_STRING = "version 0.18.1907 built on 2015/10/18 12:08:37";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";
