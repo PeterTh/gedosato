@@ -57,7 +57,7 @@ void sdlogtime(int level) {
 	SDLOG(level, "===== %s =====\n", getTimeString().c_str());
 }
 
-// run in a thread, to unload in case we cannot return false from DLLMain (e.g. Steam big picture)
+// run in a thread, to unload when signaled
 DWORD WINAPI hookUnloader(LPVOID) {
 	HANDLE unloadEvent = CreateEvent(NULL, TRUE, FALSE, "Global\\GeDoSaToUnloadEvent");
 	WaitForSingleObject(unloadEvent, INFINITE);
@@ -84,16 +84,9 @@ BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {
 		// don't attach to processes on the blacklist / not on the whitelist
 		if(getUseBlacklist() ? onList(getExeFileName(), "blacklist") : !onList(getExeFileName(), "whitelist")) {
 			OutputDebugString(format("GeDoSaTo: blacklisted / not whitelisted on %s", getExeFileName()).c_str());
-			// Prevent steam big picture mode crash
-			if(boost::iequals(getExeFileName(), "Steam")) {
-				OutputDebugString("GeDoSaTo: Steam mode");
-				DWORD threadid = 0;
-				CreateThread(NULL, 0, &hookUnloader, NULL, 0, &threadid);
-				return true;
-			}
-			else {
-				return false;
-			}
+			DWORD threadid = 0;
+			CreateThread(NULL, 0, &hookUnloader, NULL, 0, &threadid);
+			return true;
 		}
 		g_active = true;
 		OutputDebugString(format("GeDoSaTo: Active on %s", getExeFileName()).c_str());
