@@ -148,6 +148,7 @@ SonicGenerations             || Sonic Generations
 SpaceMarine                  || Warhammer 40,000: Space Marine
 SpecOpsTheLine               || Spec Ops: The Line
 StateOfDecay                 || State Of Decay
+Tales of Zestiria            || Tales of Zestiria
 TESV                         || The Elder Scrolls V: Skyrim
 TFOC                         || Transformers: Fall of Cybertron
 TheFall                      || The Fall
@@ -159,6 +160,7 @@ trine2_32bit                 || Trine 2
 trine2_launcher              || Trine 2 Launcher
 tru                          || Tomb Raider: Underworld
 TWFC                         || Transformers: War for Cybertron
+UmiByeWin                    || Sayonara UmiharaKawase
 Valiant Hearts               || Valiant Hearts
 Valkyria                     || Valkyria Chronicles
 witcher2                     || The Witcher 2
