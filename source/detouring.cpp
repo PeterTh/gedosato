@@ -676,6 +676,40 @@ GENERATE_INTERCEPT_HEADER(QueryPerformanceCounter, BOOL, WINAPI, _Out_ LARGE_INT
 	return ret;
 }
 
+GENERATE_INTERCEPT_HEADER(timeGetTime, DWORD, WINAPI) {
+	SDLOG(35, "DetouredtimeGetTime\n");
+	return TruetimeGetTime()*2;
+}
+
+GENERATE_INTERCEPT_HEADER(Sleep, VOID, WINAPI, _In_ DWORD dwMilliseconds) {
+	SDLOG(35, "DetouredSleep\n");
+	TrueSleep(dwMilliseconds);
+	return;
+}
+
+GENERATE_INTERCEPT_HEADER(CreateTimerQueueTimer, BOOL, WINAPI, _Out_ PHANDLE phNewTimer, _In_opt_ HANDLE TimerQueue, _In_ WAITORTIMERCALLBACK Callback, 
+		_In_opt_ PVOID Parameter, _In_ DWORD DueTime, _In_ DWORD Period, _In_ ULONG Flags) {	
+	SDLOG(35, "DetouredCreateTimerQueueTimer(%p, %p, %p, %p, [duetime] %lu, [period] %lu, %p)\n", phNewTimer, TimerQueue, Callback, Parameter, DueTime, Period, Flags);
+	return TrueCreateTimerQueueTimer(phNewTimer, TimerQueue, Callback, Parameter, DueTime, Period, Flags);
+}
+
+GENERATE_INTERCEPT_HEADER(GetSystemTimeAsFileTime, VOID, WINAPI, _Out_ LPFILETIME lpSystemTimeAsFileTime) {
+	SDLOG(35, "DetouredGetSystemTimeAsFileTime\n");
+	TrueGetSystemTimeAsFileTime(lpSystemTimeAsFileTime);
+	//ULARGE_INTEGER ti;
+	//ti.LowPart = lpSystemTimeAsFileTime->dwLowDateTime;
+	//ti.HighPart = lpSystemTimeAsFileTime->dwHighDateTime;
+	//ti.QuadPart *= 2;
+	//lpSystemTimeAsFileTime->dwLowDateTime = ti.LowPart;
+	//lpSystemTimeAsFileTime->dwHighDateTime = ti.HighPart;
+}
+
+GENERATE_INTERCEPT_HEADER(FileTimeToSystemTime, BOOL, WINAPI, _In_ CONST FILETIME* lpFileTime, _Out_ LPSYSTEMTIME lpSystemTime) {
+	SDLOG(35, "DetouredFileTimeToSystemTime\n");
+	return TrueFileTimeToSystemTime(lpFileTime, lpSystemTime);	
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
