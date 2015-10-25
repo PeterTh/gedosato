@@ -40,6 +40,11 @@ namespace {
 }
 
 const std::string& getListedName() {
+	// initialize name from whitelist on first request
+	static bool inited = false;
+	if(!inited) {
+		onList(getExeFileName(), "whitelist");
+	}
 	return listedName;
 }
 

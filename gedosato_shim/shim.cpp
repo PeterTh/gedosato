@@ -18,7 +18,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if 0
+#if 1
 #define DBG(__str) OutputDebugString(__str)
 #define DBGA(__str) OutputDebugStringA(__str)
 #else
@@ -29,6 +29,7 @@
 #define PATH_SIZE 256
 #define SHIM_DLL_NAME L"gedoshim.dll"
 #define MAIN_GEDO_DLL_NAME L"GeDoSaTo.dll"
+#define GEDO_INIT_FUN_NAME "GeDoSaToInit"
 #define BAIL_ON(__condition, __msg) if(__condition) { DBG(__msg); return false; }
 
 typedef void(__cdecl *gedosatoInitFuncType)();
@@ -184,7 +185,7 @@ bool hookIfRequired(HMODULE hModule) {
 		// perform actual hooking
 		HMODULE mainDllModule = LoadLibrary(mainDllPath);
 		BAIL_ON(mainDllModule <= 0, L"gedosato_shim: could not load main GeDoSaTo dll\r\n");
-		gedosatoInitFuncType initFunc = (gedosatoInitFuncType)GetProcAddress(mainDllModule, "GeDoSaToInit");
+		gedosatoInitFuncType initFunc = (gedosatoInitFuncType)GetProcAddress(mainDllModule, GEDO_INIT_FUN_NAME);
 		BAIL_ON(mainDllModule <= 0, L"gedosato_shim: could not resolve initialization procedure address\r\n");
 		initFunc();
 		DBG(L"gedosato_shim: done.\r\n");

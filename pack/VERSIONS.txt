@@ -1,4 +1,18 @@
-??-??-2015 -- beta 18 - "Disharmonized Genesis"
+??-??-2015 -- beta 19 - "Chaos Flare"
+=====================================
+General:
+- Completely changed injection mechanism to use new shim dll
+- Removed blacklist feature (too dangerous to use anyway)
+- Removed "delayDetouring" option as result of injection change
+- Finally update the readme file for the first time in a while
+GeDoSaToTool:
+- Updated to use new injection mechanism
+- Remove hook-callback-based injection
+- Adjusted global hotkey to work on Windows 10
+- Made user whitelists sortable
+- Aesthetic improvements, particularly padding in Win10
+
+10-25-2015 -- beta 18 - "Disharmonized Genesis"
 ===============================================
 General:
 - Add various DX11-related tools
@@ -6,6 +20,7 @@ General:
 - Add option for texture upscaling (only in DX11 and very limited scenarios for now)
 - Add option to prevent games from creating menus (so that borderless fullscreen works better)
 - Change basic injection behaviour to hopefully resolve issue introduced by VS15 migration (?)
+- Add hooks for various time-related APIs
 Sayonara Umihara Kawase:
 - Enable resolution unlocking
 

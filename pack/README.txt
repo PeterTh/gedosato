@@ -14,9 +14,9 @@ How do I use it? (INSTALLATION & USAGE INSTRUCTIONS)
 ====================================================
 1) Extract the contents of the zip to some permanent directory
 2) Run GeDoSaToTool.exe *as Administrator* (you can use this to perform the following steps)
-3) Adjust the settings in config/GeDoSaTo.ini and config/GeDoSaToKeys.ini as desired
+3) Adjust the settings and keybindings as desired
    - you can also store game-specific setting overrides, see "config/Blackguards" as an example
-4) [optional] Add your game executable names to "whitelist.txt" in the "assets" folder 
+4) [optional] Add your game executable names to the whitelist (or user whitelist) 
    (Dark Souls 2 and a few others are already included!)
 5) Select the downsampling resolution in-game if you want to use downsampling
 
@@ -40,10 +40,12 @@ What additional features are there?
 - Take screenshots of either the pre-downsampled full buffer or the actual image displayed on screen
   (automatically sorted in per-game folders!)
 - Generic texture overriding for all textures loaded using D3DX
+- Texture upsampling support using "smart" image processing algorithms
 - Framerate limiting using double/triple/quadruple V-sync
-- Forcing borderless fullscreen mode and mouse cursor hiding
+- Forcing borderless fullscreen mode, hiding menus and mouse cursor hiding
 - Frame timing information (both GPU and CPU)
 - FXAA, SMAA and postprocessing injection
+- Generic support for HuD-toggling and HuD-less postprocessing/screenshots by means of shader hash ids
 - [Dark Souls 2] VSSAO2, Bokeh DoF, HDR Bloom and HuD-less screenshots
 
 What is the Dark Souls 2 plugin?
