@@ -18,7 +18,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#if 1
+#if 0
 #define DBG(__str) OutputDebugString(__str)
 #define DBGA(__str) OutputDebugStringA(__str)
 #else
