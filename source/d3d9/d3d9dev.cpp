@@ -648,7 +648,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetSoftwareVertexProcessing(BOOL bSoftware)
 HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9* pStreamData, UINT OffsetInBytes, UINT Stride) {
 	RSManager::setLatest(rsMan);
 	SDLOG(8, "SetStreamSource %d: %p (%u, %u)\n", StreamNumber, pStreamData, OffsetInBytes, Stride);
-	LOG_CHECK(18, {
+	LOG_CHECK(18, if(pStreamData) {
 		float *buffer;
 		pStreamData->Lock(0, 0, (void**)&buffer, D3DLOCK_READONLY);
 		D3DVERTEXBUFFER_DESC desc;
