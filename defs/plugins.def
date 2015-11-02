@@ -5,7 +5,7 @@ PLUGIN("Dark Souls 2", "DarkSoulsII", DS2Plugin)
 PLUGIN("Mitsurugi Kamui Hikae", "mitsurugi", MitsurugiPlugin)
 //PLUGIN("Final Fantasy XIII", "ffxiiiimg", FF13Plugin)
 //PLUGIN("Dynasty Warriors 8", "Launch", DW8Plugin)
-
+PLUGIN("Tales of Zestiria", "Tales of Zestiria", ZestiriaPlugin)
 
 // this should always be last
 PLUGIN("Generic", "*", GenericPlugin)
