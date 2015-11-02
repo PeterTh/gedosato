@@ -1,4 +1,4 @@
-﻿/**
+/**
  \file SAO_AO.pix
  \author Morgan McGuire and Michael Mara, NVIDIA Research
 
