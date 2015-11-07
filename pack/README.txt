@@ -10,6 +10,12 @@ Its goal is to obviate the need for (often limited and hardware dependent) drive
 to use downsampling in games.
 GeDoSaTo also supports game-specific plugins, for example a Dark Souls 2 plugin.
 
+PREREQUISITES
+=============
+If you are using Windows 8 or higher, you *must* ensure that "secure boot" is disabled.
+Otherwise, GeDoSaTo injection won't work and it won't do anything. Google "disable secure boot"
+to find out how.
+
 How do I use it? (INSTALLATION & USAGE INSTRUCTIONS)
 ====================================================
 1) Extract the contents of the zip to some permanent directory

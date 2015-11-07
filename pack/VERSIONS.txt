@@ -5,6 +5,8 @@ General:
 - Removed blacklist feature (too dangerous to use anyway)
 - Removed "delayDetouring" option as result of injection change
 - Finally update the readme file for the first time in a while
+- Added Steam friend management interception (for games which bug out on long friends lists)
+- Added "timeGetTimeFactor" and "timePerfCounterFactor" settings (mitigate framepacing issues)
 GeDoSaToTool:
 - Updated to use new injection mechanism
 - Remove hook-callback-based injection
