@@ -26,13 +26,13 @@
 FILE* g_oFile = NULL;
 bool g_active = false, g_tool = false;
 
-const char* GeDoSaToVersion() {
+extern "C" __declspec(dllexport) const char* GeDoSaToVersion() {
 	static string verString;
 	if(verString.empty()) verString = format("%s \"%s\" (%s/%s)", VER_STRING, VER_NAME, EDITION, MODE_STRING);
 	return verString.c_str();
 }
 
-const char* GeDoSaToSettings() {
+extern "C" __declspec(dllexport) const char* GeDoSaToSettings() {
 	return "renderResolution,clearRenderResolutions,"
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		_inistring ","
@@ -41,7 +41,7 @@ const char* GeDoSaToSettings() {
 	;
 }
 
-void GeDoSaToInit() {
+extern "C" __declspec(dllexport) void GeDoSaToInit() {
 	// read install location from registry
 	getInstallDirectory();
 	OutputDebugString("GeDoSaTo: Got install dir");

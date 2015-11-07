@@ -1,24 +1,26 @@
 #pragma once
 
 #include <boost/noncopyable.hpp>
+#include <memory>
 
 #include "utils/win_utils.h"
 #include "console.h"
 #include "detouring.h"
 
 class TimeManager : boost::noncopyable {
-	static TimeManager instance;
+	static std::unique_ptr<TimeManager> instance;
 
 	bool frozen = false;
 	LARGE_INTEGER perfCounterAtFreeze = {0, 0};
 	LARGE_INTEGER startPerfCounter;
-	DWORD startTimeGetTime = TruetimeGetTime();
+	DWORD startTimeGetTime;
 
 public:
 	TimeManager();
 
 	static TimeManager& get() {
-		return instance;
+		if(!instance) instance = std::make_unique<TimeManager>();
+		return *instance;
 	}
 
 	void toggleFreeze();

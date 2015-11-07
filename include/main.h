@@ -63,9 +63,6 @@ string getAssetFileName(string filename);
 string getConfigFileName(string filename);
 string getTimeString(bool forDisplay = false);
 
-LRESULT CALLBACK GeDoSaToHook(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam);
-const char* GeDoSaToVersion();
-
 extern FILE* g_oFile;
 inline void sdlog(const char *fmt) {
 	if(!fmt) { return; }
@@ -78,3 +75,4 @@ inline void sdlog(const char *fmt, const Args&... args) {
 	sdlog(format(fmt, args...).c_str());
 }
 
+extern "C" __declspec(dllexport) const char* GeDoSaToVersion();

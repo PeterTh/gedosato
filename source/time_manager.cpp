@@ -1,8 +1,9 @@
 #include "time_manager.h"
 
-TimeManager TimeManager::instance;
+std::unique_ptr<TimeManager> TimeManager::instance;
 
 TimeManager::TimeManager() {
+	startTimeGetTime = TruetimeGetTime();
 	TrueQueryPerformanceCounter(&startPerfCounter);
 }
 
