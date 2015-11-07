@@ -69,4 +69,6 @@ HOOK(FileTimeToSystemTime, "Kernel32.dll")
 
 HOOK(timeGetTime, "Winmm.dll")
 
+HOOK(SteamFriends, "steam_api.dll")
+
 #undef HOOK

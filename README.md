@@ -17,12 +17,13 @@ which have their own licensing terms included.
 Requirements & Dependencies
 ===========================
 
-- Visual C++ (2013 or later)
+- Visual C++ (2015 or later)
 - The DirectX SDK
 - Boost (http://www.boost.org/)
 - MinHook (this fork: https://github.com/RaMMicHaeL/minhook)
 - Ruby (just for the script which updates the build numbers/dates -- you can do without that if you want to)
 - NVAPI
+- The Steamworks API
 
 Contributing
 ============

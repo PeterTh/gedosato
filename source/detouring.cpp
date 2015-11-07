@@ -23,6 +23,8 @@
 #include "dxgi/dxgifactory1.h"
 //#include "dxgi/dxgifactory2.h"
 
+#include "steam/steamfriends.h"
+
 #define GENERATE_INTERCEPT_HEADER(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
 __name##_FNType True##__name, __name##Pointer; \
@@ -709,6 +711,21 @@ GENERATE_INTERCEPT_HEADER(FileTimeToSystemTime, BOOL, WINAPI, _In_ CONST FILETIM
 	return TrueFileTimeToSystemTime(lpFileTime, lpSystemTime);	
 }
 
+// Steam ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
+	SDLOG(15, "SteamFriends\n");
+	static std::unique_ptr<hkISteamFriends> friends = nullptr;
+	if(Settings::get().getSteamFriendsLimit() >= 0) {
+		if(!friends) {
+			friends = std::make_unique<hkISteamFriends>();
+			auto f = TrueSteamFriends();
+			friends->real = f;
+		}
+		return friends.get();
+	}
+	return TrueSteamFriends();
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

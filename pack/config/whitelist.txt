@@ -47,6 +47,7 @@ DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 DBXV                         || Dragonball Xenoverse
 Dead Space                   || Dead Space
+default                      || Mushihimesama
 demoniconR                   || Demonicon
 DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
 Diablo III                   || Diablo III

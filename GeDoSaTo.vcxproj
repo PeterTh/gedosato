@@ -75,7 +75,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext;include;defs;D:\dev\nvapi-337;C:\dev\boost_1_59_0;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext;include;defs;C:\dev\steamworks_sdk_135\sdk\public;C:\dev\boost_1_59_0;D:\dev\nvapi-337;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Include;$(IncludePath)</IncludePath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">d3d9</TargetName>
@@ -283,6 +283,7 @@
     <ClCompile Include="source\plugins\dw8.cpp" />
     <ClCompile Include="source\plugins\ff13.cpp" />
     <ClCompile Include="source\plugins\zestiria.cpp" />
+    <ClCompile Include="source\steam\steamfriends.cpp" />
     <ClCompile Include="source\utils\d3d11_utils.cpp" />
     <ClCompile Include="source\utils\d3d_utils.cpp" />
     <ClCompile Include="source\depth_texture.cpp" />
@@ -388,6 +389,7 @@
     <ClInclude Include="include\plugins\dw8.h" />
     <ClInclude Include="include\plugins\ff13.h" />
     <ClInclude Include="include\plugins\zestiria.h" />
+    <ClInclude Include="include\steam\steamfriends.h" />
     <ClInclude Include="include\utils\d3d11_utils.h" />
     <ClInclude Include="include\utils\d3d9_utils.h" />
     <ClInclude Include="include\depth_texture.h" />
