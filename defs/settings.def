@@ -17,6 +17,7 @@ SETTING(bool, MaintainAspectRatio, "maintainAspectRatio", true)
 
 SETTING(unsigned, ForceAnisoLevel, "forceAnisoLevel", 0)
 
+// FPS options
 SETTING(float, FpsLimit, "fpsLimit", 0.0f)
 SETTING(bool, FpsLimitBusy, "fpsLimitBusy", true)
 SETTING(float, FpsPredictiveLimitRatio, "fpsPredictiveLimitRatio", 0.0f)
@@ -54,6 +55,10 @@ SETTING(bool, InterceptWindowProc, "interceptWindowProc", true)
 SETTING(bool, AdjustMessagePt, "adjustMessagePt", false)
 SETTING(bool, ModifyGetClientRect, "modifyGetClientRect", true)
 SETTING(bool, ModifyGetWindowRect, "modifyGetWindowRect", true)
+
+// Time options
+SETTING(float, TimeGetTimeFactor, "timeGetTimeFactor", 1.0f)
+SETTING(float, TimePerfCounterFactor, "timePerfCounterFactor", 1.0f)
 
 // Internal options
 SETTING(int, LogLevel, "logLevel", 0)

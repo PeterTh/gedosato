@@ -678,7 +678,7 @@ GENERATE_INTERCEPT_HEADER(QueryPerformanceCounter, BOOL, WINAPI, _Out_ LARGE_INT
 
 GENERATE_INTERCEPT_HEADER(timeGetTime, DWORD, WINAPI) {
 	SDLOG(35, "DetouredtimeGetTime\n");
-	return TruetimeGetTime()*2;
+	return TimeManager::get().redirectTimeGetTime();
 }
 
 GENERATE_INTERCEPT_HEADER(Sleep, VOID, WINAPI, _In_ DWORD dwMilliseconds) {

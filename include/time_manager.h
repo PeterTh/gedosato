@@ -10,37 +10,20 @@ class TimeManager : boost::noncopyable {
 	static TimeManager instance;
 
 	bool frozen = false;
-	LARGE_INTEGER perfCounterAtFreeze;
+	LARGE_INTEGER perfCounterAtFreeze = {0, 0};
+	LARGE_INTEGER startPerfCounter;
+	DWORD startTimeGetTime = TruetimeGetTime();
 
 public:
-	TimeManager() {
-		perfCounterAtFreeze.LowPart = 0;
-		perfCounterAtFreeze.HighPart = 0;
-	}
+	TimeManager();
 
 	static TimeManager& get() {
 		return instance;
 	}
 
-	void toggleFreeze() {
-		if(frozen) {
-			frozen = false;
-			Console::get().add("TimeManager: time unfrozen");
-		}
-		else {
-			TrueQueryPerformanceCounter(&perfCounterAtFreeze);
-			frozen = true;
-			Console::get().add("ZA WARUDO");
-		}
-	}
+	void toggleFreeze();
 
-	BOOL redirectQueryPerformanceCounter(LARGE_INTEGER *lpPerformanceCount) {
-		if(frozen) {
-			*lpPerformanceCount = perfCounterAtFreeze;
-		}
-		else {
-			TrueQueryPerformanceCounter(lpPerformanceCount);
-		}
-		return TRUE;
-	}
+	BOOL redirectQueryPerformanceCounter(LARGE_INTEGER *lpPerformanceCount);
+
+	DWORD redirectTimeGetTime();
 };
