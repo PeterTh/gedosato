@@ -6,9 +6,9 @@ const char* VER_NAME = "Chaos Flare";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 19;
-const unsigned VER_BUILD = 1986;
+const unsigned VER_BUILD = 1987;
 
-const char* VER_STRING = "version 0.19.1986 built on 2015/11/07 18:02:22";
+const char* VER_STRING = "version 0.19.1987 built on 2015/11/08 10:19:12";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";
