@@ -18,11 +18,10 @@ BFBC2Game                    || Battlefield: Bad Company 2
 BH6                          || Resident Evil 6
 Bio4                         || Resident Evil 4 PC
 bionic_commando              || Bionic Commando
-Bioshock                     || Bioshock
-Bioshock2                    || Bioshock 2
+Bioshock                     || BioShock
+Bioshock2                    || BioShock 2
 Blackguards                  || Blackguards (The Dark Eye)
 bladesoftime                 || Blades of Time
-BLR                          || Blacklight: Retribution
 Borderlands                  || Borderlands
 Borderlands2                 || Borderlands 2
 bsnes                        || bsnes SNES emulator
@@ -73,6 +72,7 @@ ffxiiiimg                    || Final Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
+FoxGame-Win32-Shipping       || Blacklight: Retribution
 fr-041_debris                || "Debris" by Farbrausch
 grimrock                     || Legend of Grimrock
 grimrock2                    || Legend of Grimrock 2
@@ -144,6 +144,7 @@ Sherlock                     || Sherlock Holmes: Crimes and Punishments
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
 ShippingPC-SkyGame           || Dark Void
 ShippingPC-StormGame         || Bulletstorm
+ShooterGame-Win32-Shipping   || Dirty Bomb
 SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
 SonicGenerations             || Sonic Generations
 SpaceMarine                  || Warhammer 40,000: Space Marine
