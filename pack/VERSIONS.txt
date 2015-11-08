@@ -13,6 +13,11 @@ GeDoSaToTool:
 - Adjusted global hotkey to work on Windows 10
 - Made user whitelists sortable
 - Aesthetic improvements, particularly padding in Win10
+- Fix injection for install paths with spaces
+- Show error if secure boot is enabled
+GeDoSaToUpdater:
+- Fix crash in some circusmtances on cancelling installation
+- Backup previous .dlls
 
 10-25-2015 -- beta 18 - "Disharmonized Genesis"
 ===============================================
