@@ -18,6 +18,8 @@ GeDoSaToTool:
 GeDoSaToUpdater:
 - Fix crash in some circusmtances on cancelling installation
 - Backup previous .dlls
+Gedoshim:
+- Make wildcards case insensitive
 
 10-25-2015 -- beta 18 - "Disharmonized Genesis"
 ===============================================

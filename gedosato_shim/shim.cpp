@@ -37,13 +37,20 @@ typedef void(__cdecl *gedosatoInitFuncType)();
 // Yay C string processing without any libraries! Not annoying at all.
 #pragma region String processing
 
+void toLower(char *string) {
+	// this is terrible, but we can do it since we know we have ANSI codepage strings
+	for(char *s = string; *s != '\0'; ++s) {
+		if(*s >= 'A' && *s <= 'Z') *s += 'a'-'A';
+	}
+}
+
 bool matchWildcard(char *subject, char *pattern) {
 	for(; *pattern; pattern++) {
 		switch(*pattern) {
 		case '*':
 			if(*(pattern + 1) == '\0') {
-				// This wildcard appears at the end of the pattern.
-				// If we made it this far already, the match succeeds regardless of what the rest of the subject looks like.
+				// this wildcard appears at the end of the pattern.
+				// if we made it this far already, the match succeeds regardless of what the rest of the subject looks like.
 				return true;
 			}
 			for(char *s = subject; *s; s++) {
@@ -59,16 +66,18 @@ bool matchWildcard(char *subject, char *pattern) {
 			}
 		}
 	}
-	// End of pattern reached.  If this also the end of the subject, then match succeeds.
+	// end of pattern reached.  If this also the end of the subject, then match succeeds.
 	return *subject == '\0';
 }
 
 bool checkWhitelistEntries(char* whitelistBuffer, LPCTSTR exeFileName) {
+	toLower(whitelistBuffer);
 	// convert exe file name
 	char exeFn[PATH_SIZE];
 	char defChr = '?';
 	auto convRet = WideCharToMultiByte(CP_ACP, 0, exeFileName, -1, exeFn, PATH_SIZE, &defChr, NULL);
 	BAIL_ON(convRet == 0, L"gedosato_shim: could not convert exe name to ANSI\r\n");
+	toLower(exeFn);
 	DBG(L"gedosato_shim: converted exe file name:\r\n"); DBGA(exeFn);
 
 	DBG(L"gedosato_shim: checking whitelist:\r\n"); DBGA(whitelistBuffer);
