@@ -178,8 +178,7 @@ bool hookIfRequired(HMODULE hModule) {
 	BAIL_ON(exeIndex <= 0, L"gedosato_shim: exe path directory end not found\r\n");
 	TCHAR* exeFileName = exePath + exeIndex + 1;
 	exeIndex = FindStringOrdinal(FIND_FROMEND, exeFileName, -1, L".exe", 1, TRUE);
-	BAIL_ON(exeIndex <= 0, L"gedosato_shim: exe file ending not found\r\n");
-	exeFileName[exeIndex] = '\0';
+	if(exeIndex > 0) exeFileName[exeIndex] = '\0';
 	DBG(L"gedosato_shim: exe file name:\r\n"); DBG(exeFileName);
 
 	// check whitelists
