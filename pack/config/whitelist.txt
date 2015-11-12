@@ -29,7 +29,7 @@ CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
 ChildofLight                 || Child of Light
 CLOS2                        || Castlevania Lords of Shadow 2
 CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
-cnc3game.dat                 || Command & Conquer 3: Tiberium Wars
+cnc3game                     || Command & Conquer 3: Tiberium Wars
 Cognition Episode*           || Cognition: An Erica Reed Thriller
 Condemned                    || Condemned: Criminal Origins
 config                       || Configurator (multiple)
