@@ -69,6 +69,7 @@ FEARXP                       || F.E.A.R. Extraction Point
 FEARXP2                      || F.E.A.R. Perseus Mandate
 ffxiii2img                   || Final Fantasy XIII-2
 ffxiiiimg                    || Final Fantasy XIII
+LRFF13                       || Lightning Returns Final Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
