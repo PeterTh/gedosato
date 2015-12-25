@@ -733,9 +733,17 @@ GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 string getSystemDllName(const string& name) {
+	BOOL bWow64 = FALSE;
+	IsWow64Process(GetCurrentProcess(), &bWow64);
+
 	char sysdir[MAX_PATH];
-	GetSystemDirectory(sysdir, MAX_PATH);
+	if(bWow64) {
+		GetSystemWow64Directory(sysdir, MAX_PATH);
+	} else {
+		GetSystemDirectory(sysdir, MAX_PATH);
+	}
 	string fullPath = string(sysdir) + "\\" + name;
+
 	SDLOG(28, "Full dll path: %s\n", fullPath.c_str());
 	return fullPath;
 }
