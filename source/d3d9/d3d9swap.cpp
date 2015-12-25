@@ -6,6 +6,7 @@
 
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
+#include "utils/win_utils.h"
 
 hkIDirect3DSwapChain9::hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9) {
 	m_pWrapped = *ppIDirect3DSwapChain9;
@@ -35,6 +36,7 @@ ULONG APIENTRY hkIDirect3DSwapChain9::Release() {
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
 	SDLOG(3, "hkIDirect3DSwapChain9::Present\n");
+	SDLOG(8, " - source: %s ; dest: %s ; hwnd: %p ; rgn: %p\n", RectToString(pSourceRect), RectToString(pDestRect), hDestWindowOverride, pDirtyRegion);
 	return RSManager::getDX9().redirectPresent(pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion); // TODO: dwflags?
 }
 

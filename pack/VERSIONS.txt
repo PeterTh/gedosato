@@ -2,6 +2,7 @@ xx-xx-2016 -- beta 20 - "Hopeful Jasper"
 ========================================
 General:
 - DX9: Improve handling of swapchains. Fixes some crashes, e.g. LRFF13
+- DX9: Handle additional states in default state block, should fix console rendering in some games
 
 12-25-2015 -- beta 19 - "Chaos Flare"
 =====================================

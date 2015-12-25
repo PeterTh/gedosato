@@ -75,6 +75,10 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	d3ddev->SetRenderState(D3DRS_LIGHTING, FALSE);
 	d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, FALSE);
 	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE);
+	d3ddev->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	d3ddev->SetRenderState(D3DRS_CLIPPING, FALSE);
+	d3ddev->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	d3ddev->SetRenderState(D3DRS_FOGENABLE, FALSE);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &initStateBlock);
 
 
@@ -242,9 +246,9 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		d3ddev->BeginScene();
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
-		d3ddev->SetRenderTarget(0, realBackBuffer);
+		if(realBackBuffer) d3ddev->SetRenderTarget(0, realBackBuffer);
 		console.draw();
-		realBackBuffer->Release();
+		if(realBackBuffer) realBackBuffer->Release();
 		d3ddev->EndScene();
 		restoreRenderState();
 	}
@@ -258,6 +262,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		captureRTScreen();
 		SAFERELEASE(realBackBuffer);
 		restoreRenderState();
+		if(realBackBuffer) realBackBuffer->Release();
 		tookScreenshot(SCREENSHOT_STANDARD);
 	}
 
