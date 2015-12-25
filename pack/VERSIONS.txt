@@ -1,8 +1,14 @@
 xx-xx-2016 -- beta 20 - "Hopeful Jasper"
 ========================================
 General:
+- Improve system path detection for WOW64
 - DX9: Improve handling of swapchains. Fixes some crashes, e.g. LRFF13
 - DX9: Handle additional states in default state block, should fix console rendering in some games
+GeDoSaToTool:
+- Disable "RequireSignedAppInit_DLLs" registry value if present
+- Fix Exception if short dll path can not be determined
+GeDoSaToUpdater:
+- Fix crash if there is no "C" drive
 
 12-25-2015 -- beta 19 - "Chaos Flare"
 =====================================
@@ -22,7 +28,7 @@ GeDoSaToTool:
 - Fix injection for install paths with spaces
 - Show error if secure boot is enabled
 GeDoSaToUpdater:
-- Fix crash in some circusmtances on cancelling installation
+- Fix crash in some circumstances on cancelling installation
 - Backup previous .dlls
 Gedoshim:
 - Make wildcards case insensitive
