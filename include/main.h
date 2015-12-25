@@ -43,8 +43,8 @@ using std::string;
 	auto __retval = (_p)->Release(); \
 	SDLOG(10, "Saferelease: %p (%u), loc: %s : %d\n", (_p), __retval, __FILE__, __LINE__); \
 	(_p) = NULL; } }
-#define SAFEDELETE(_p) { if(_p) { delete (_p); SDLOG(10, "Safedelete: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = NULL; } }
-#define SAFEDELETEARR(_p) { if(_p) { delete [] (_p); SDLOG(10, "Safedeletearr: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = NULL; } }
+#define SAFEDELETE(_p) { if(_p) { delete (_p); SDLOG(10, "Safedelete: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
+#define SAFEDELETEARR(_p) { if(_p) { delete [] (_p); SDLOG(10, "Safedeletearr: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
 
 #define EPSILON (std::numeric_limits<float>::epsilon()*10)
 #define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON * (std::max)(1.0f, (std::max)(std::abs(__a), std::abs(__b))))

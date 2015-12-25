@@ -492,6 +492,7 @@ GENERATE_INTERCEPT_HEADER(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 	LONG ret = TrueSetWindowLongA(hWnd, nIndex, dwNewLong);
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
 		prevWndProcs[hWnd] = (WNDPROC)dwNewLong;
+		if(prevWndProcs.size() > 10) SDLOG(-1, "More than 10 prevWndProcs!\n");
 		TrueSetWindowLongA(hWnd, GWL_WNDPROC, (LONG)&InterceptWindowProc);
 	}
 	return ret;
@@ -501,6 +502,7 @@ GENERATE_INTERCEPT_HEADER(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 	LONG ret = TrueSetWindowLongW(hWnd, nIndex, dwNewLong);
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
 		prevWndProcs[hWnd] = (WNDPROC)dwNewLong;
+		if(prevWndProcs.size() > 10) SDLOG(-1, "More than 10 prevWndProcs!\n");
 		TrueSetWindowLongW(hWnd, GWL_WNDPROC, (LONG)&InterceptWindowProc);
 	}
 	return ret;

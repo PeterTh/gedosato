@@ -7,6 +7,7 @@
 class RSManagerDX9 : public RSManager {
 	bool inited = false, multisampling = false;
 	IDirect3DDevice9 *d3ddev = NULL;
+	hkIDirect3DDevice9 *hkdev = NULL;
 	GamePlugin *plugin = NULL;
 
 	ShaderManager shaderMan;
@@ -16,6 +17,8 @@ class RSManagerDX9 : public RSManager {
 	vector<RenderTargetPtr> backBuffers;
 	RenderTargetPtr extraBuffer;
 	IDirect3DSurface9* depthStencilSurf = NULL;
+
+	hkIDirect3DSwapChain9 *hookedSwapChain0 = nullptr;
 
 	unsigned renderTargetSwitches = 0;
 
@@ -40,7 +43,7 @@ class RSManagerDX9 : public RSManager {
 	void prePresent(bool doNotFlip);
 	
 public:
-	RSManagerDX9(IDirect3DDevice9* d3ddev) : RSManager(), d3ddev(d3ddev) {
+	RSManagerDX9(IDirect3DDevice9* d3ddev, hkIDirect3DDevice9* hkdev) : RSManager(), d3ddev(d3ddev), hkdev(hkdev) {
 		#define TEXTURE(_name, _hash) ++numKnownTextures;
 		#include "Textures.def"
 		#undef TEXTURE
@@ -60,6 +63,7 @@ public:
 
 	void initResources(bool downsampling, unsigned rw, unsigned rh, unsigned numBBs, D3DFORMAT bbFormat, D3DMULTISAMPLE_TYPE multiSampleType, unsigned multiSampleQuality, D3DSWAPEFFECT swapEff, bool autoDepthStencil, D3DFORMAT depthStencilFormat);
 	void releaseResources();
+	void releaseSwapChain();
 	
 	void captureRTScreen(const std::string &stype = "normal", IDirect3DSurface9 *rtArg = NULL);
 
@@ -84,7 +88,8 @@ public:
 	ShaderManager& getShaderManager() { return shaderMan; }
 	IDirect3D9* getD3D();
 	IDirect3DDevice9* getD3Ddev();
-
+	hkIDirect3DDevice9* getHkD3Ddev();
+	
 	static HRESULT redirectCreateDevice(IDirect3D9* d3d9, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DDevice9 **ppReturnedDeviceInterface);
 	static HRESULT redirectCreateDeviceEx(IDirect3D9Ex * m_pD3Dint, UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS* pPresentationParameters, D3DDISPLAYMODEEX* pFullscreenDisplayMode, IDirect3DDevice9Ex** ppReturnedDeviceInterface);
 	HRESULT redirectReset(D3DPRESENT_PARAMETERS * pPresentationParameters);
@@ -128,5 +133,6 @@ public:
 	HRESULT redirectScissorRect(CONST RECT* pRect);
 
 	HRESULT redirectBeginScene();
+	HRESULT redirectGetSwapChain(UINT iSwapChain, IDirect3DSwapChain9** pSwapChain);
 };
 

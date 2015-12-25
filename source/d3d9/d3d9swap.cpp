@@ -7,13 +7,7 @@
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
 
-hkIDirect3DSwapChain9::hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9, hkIDirect3DDevice9* hdev) 
-		: hookedDev(hdev) {
-	m_pWrapped = *ppIDirect3DSwapChain9;
-	*ppIDirect3DSwapChain9 = this;
-}
-hkIDirect3DSwapChain9::hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9, hkIDirect3DDevice9Ex* hdev)
-		: hookedDev((hkIDirect3DDevice9*)hdev) {
+hkIDirect3DSwapChain9::hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9) {
 	m_pWrapped = *ppIDirect3DSwapChain9;
 	*ppIDirect3DSwapChain9 = this;
 }
@@ -30,7 +24,13 @@ ULONG APIENTRY hkIDirect3DSwapChain9::AddRef() {
 
 ULONG APIENTRY hkIDirect3DSwapChain9::Release() {
 	SDLOG(20, "hkIDirect3DSwapChain9::Release\n");
-	return m_pWrapped->Release();
+	auto ret = m_pWrapped->Release();
+	SDLOG(0, " -> %u\n", ret);
+	if(ret == 0) {
+		RSManager::getDX9().releaseSwapChain();
+		delete this;
+	}
+	return ret;
 }
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::Present(CONST RECT* pSourceRect, CONST RECT* pDestRect, HWND hDestWindowOverride, CONST RGNDATA* pDirtyRegion, DWORD dwFlags) {
@@ -60,7 +60,7 @@ HRESULT APIENTRY hkIDirect3DSwapChain9::GetDisplayMode(D3DDISPLAYMODE* pMode) {
 
 HRESULT APIENTRY hkIDirect3DSwapChain9::GetDevice(IDirect3DDevice9** ppDevice) {
 	SDLOG(5, "hkIDirect3DSwapChain9::GetDevice\n");
-	*ppDevice = hookedDev;
+	*ppDevice = RSManager::getDX9().getHkD3Ddev();
 	return D3D_OK;
 }
 

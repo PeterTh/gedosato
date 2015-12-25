@@ -10,11 +10,9 @@ struct hkIDirect3DDevice9Ex;
 
 interface hkIDirect3DSwapChain9 : public IDirect3DSwapChain9 {
 	IDirect3DSwapChain9 *m_pWrapped;
-	hkIDirect3DDevice9 *hookedDev;
 	
 public:
-	hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9, hkIDirect3DDevice9* hdev);
-	hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9, hkIDirect3DDevice9Ex* hdev);
+	hkIDirect3DSwapChain9(IDirect3DSwapChain9 **ppIDirect3DSwapChain9);
 	
 	// original interface
 	STDMETHOD(QueryInterface)(REFIID riid, void** ppvObj);

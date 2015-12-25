@@ -3,6 +3,7 @@
 #include <boost/filesystem.hpp>
 
 #include "d3d9/d3d9dev_ex.h"
+#include "d3d9/d3d9swap.h"
 #include "utils/d3d9_utils.h"
 #include "key_actions.h"
 #include "detouring.h"
@@ -25,6 +26,9 @@ IDirect3D9* RSManagerDX9::getD3D() {
 
 IDirect3DDevice9* RSManagerDX9::getD3Ddev() {
 	return d3ddev;
+}
+hkIDirect3DDevice9* RSManagerDX9::getHkD3Ddev() {
+	return hkdev;
 }
 
 
@@ -130,6 +134,7 @@ void RSManagerDX9::releaseResources() {
 	d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &bb);
 	d3ddev->SetRenderTarget(0, bb);
 	SAFERELEASE(bb);
+	SAFERELEASE(hookedSwapChain0);
 
 	SDLOG(0, "RenderstateManager releasing resources\n");
 	SAFEDELETE(plugin);
@@ -148,6 +153,11 @@ void RSManagerDX9::releaseResources() {
 
 	SDLOG(0, "RenderstateManager resource release completed\n");
 }
+
+void RSManagerDX9::releaseSwapChain() {
+	hookedSwapChain0 = nullptr;
+}
+
 
 void RSManagerDX9::prePresent(bool doNotFlip) {
 	// downsample offscreen backbuffer to screen
@@ -879,4 +889,21 @@ HRESULT RSManagerDX9::redirectBeginScene() {
 
 HRESULT RSManagerDX9::redirectScissorRect(CONST RECT* pRect) {
 	return plugin->redirectScissorRect(pRect);
+}
+
+HRESULT RSManagerDX9::redirectGetSwapChain(UINT iSwapChain, IDirect3DSwapChain9** pSwapChain) {
+	SDLOG(4, "redirectGetSwapChain %u\n", iSwapChain);
+	SDLOG(4, "hookedSwapChain0: %p\n", hookedSwapChain0);
+	HRESULT res = d3ddev->GetSwapChain(iSwapChain, pSwapChain);
+	if(iSwapChain == 0) {
+		SDLOG(4, "-> Hooked swapchain res: %d\n", res);
+		if(res == D3D_OK) {
+			if(hookedSwapChain0 == nullptr) {
+				SDLOG(1, "Hooking swapchain 0\n");
+				hookedSwapChain0 = new hkIDirect3DSwapChain9(pSwapChain);
+			}
+			*pSwapChain = hookedSwapChain0;
+		}
+	}
+	return res;
 }

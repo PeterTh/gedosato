@@ -59,8 +59,8 @@ void WindowManager::toggleBorderlessFullscreen() {
 		SDLOG(1, "WindowManager::toggleBorderlessFullscreen C\n", hwnd);
 	} else {
 		// restore previous window
-		::SetWindowLong(hwnd, GWL_STYLE, prevStyle);
-		::SetWindowLong(hwnd, GWL_EXSTYLE, prevExStyle);
+		TrueSetWindowLongA(hwnd, GWL_STYLE, prevStyle);
+		TrueSetWindowLongA(hwnd, GWL_EXSTYLE, prevExStyle);
 		RECT desiredRect = prevWindowRect;
 		::AdjustWindowRect(&desiredRect, prevStyle, false);
 		int wWidth = desiredRect.right - desiredRect.left, wHeight = desiredRect.bottom - desiredRect.top;

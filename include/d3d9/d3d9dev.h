@@ -9,14 +9,11 @@ struct hkIDirect3DSwapChain9;
 interface hkIDirect3DDevice9 : public IDirect3DDevice9
 {
 	// callback interface
-	IDirect3DDevice9 *m_pD3Ddev;
-	IDirect3D9 *m_pD3Dint;
+	IDirect3DDevice9 *m_pD3Ddev = nullptr;
+	IDirect3D9 *m_pD3Dint = nullptr;
 	
-	RSManagerDX9 *rsMan;
-
-	// swap chain
-	hkIDirect3DSwapChain9 *hookedSwapChain0;
-
+	RSManagerDX9 *rsMan = nullptr;
+	
 public:
 	hkIDirect3DDevice9(IDirect3DDevice9 **ppReturnedDeviceInterface, D3DPRESENT_PARAMETERS *pPresentParam, IDirect3D9 *pIDirect3D9);
 	
