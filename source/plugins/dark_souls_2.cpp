@@ -107,7 +107,7 @@ HRESULT DS2Plugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT 
 		manager.storeRenderState();
 		// Perform post-processing
 		SDLOG(2, "Starting DS2 post-processing.")
-			IDirect3DSurface9 *rt = NULL, *framesurf = NULL;
+		IDirect3DSurface9 *rt = NULL, *framesurf = NULL;
 		IDirect3DBaseTexture9 *frame = NULL;
 		IDirect3DTexture9 *depth = NULL, *frametex = NULL;
 		d3ddev->GetTexture(0, &frame); // texture 0 is the frame texture

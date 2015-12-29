@@ -8,6 +8,7 @@
 #include "plugins/ff13.h"
 #include "plugins/dw8.h"
 #include "plugins/zestiria.h"
+#include "plugins/lrff13.h"
 
 #include "utils/string_utils.h"
 

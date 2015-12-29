@@ -61,7 +61,7 @@ void GenericDepthPlugin::process(IDirect3DSurface9* backBuffer) {
 			manager.setNeutralRenderState();
 			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
 			bool didAO = false;
-			if(doAO && ssao) {
+			if(!skipAO && doAO && ssao) {
 				if(texw == 0) {
 					if(depthTexture->isSupported()) {
 						didAO = true;

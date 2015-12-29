@@ -282,6 +282,7 @@
     <ClCompile Include="source\perf_monitor.cpp" />
     <ClCompile Include="source\plugins\dw8.cpp" />
     <ClCompile Include="source\plugins\ff13.cpp" />
+    <ClCompile Include="source\plugins\lrff13.cpp" />
     <ClCompile Include="source\plugins\zestiria.cpp" />
     <ClCompile Include="source\steam\steamfriends.cpp" />
     <ClCompile Include="source\utils\d3d11_utils.cpp" />
@@ -388,6 +389,7 @@
     <ClInclude Include="include\perf_monitor.h" />
     <ClInclude Include="include\plugins\dw8.h" />
     <ClInclude Include="include\plugins\ff13.h" />
+    <ClInclude Include="include\plugins\lrff13.h" />
     <ClInclude Include="include\plugins\zestiria.h" />
     <ClInclude Include="include\steam\steamfriends.h" />
     <ClInclude Include="include\utils\d3d11_utils.h" />

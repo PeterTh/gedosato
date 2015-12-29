@@ -9,6 +9,8 @@ GeDoSaToTool:
 - Fix Exception if short dll path can not be determined
 GeDoSaToUpdater:
 - Fix crash if there is no "C" drive
+Lightning Returns:
+- Create plugin, fixes DoF resolution
 
 12-25-2015 -- beta 19 - "Chaos Flare"
 =====================================

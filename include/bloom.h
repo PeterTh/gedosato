@@ -20,6 +20,8 @@ public:
 	void dumpFrame();
 	void reloadShader();
 
+	void blurPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int sh, bool horizontal);
+
 private:
 	int width, height;
 	float cutoff, strength, dirtStrength;
@@ -38,7 +40,6 @@ private:
 	D3DXHANDLE initialCutoffAndDownsampleHandle, gaussianHandle, integrateUpwardsHandle, eyeAdaptionHandle, finalComposeHandle;
 	
 	void initialPass(IDirect3DTexture9* src, IDirect3DSurface9* dst);
-	void blurPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int sh, bool horizontal);
 	void upPass(IDirect3DTexture9* src, IDirect3DSurface9* dst, int sw, int sh);
 	void eyePass(IDirect3DTexture9* src, IDirect3DSurface9* dst);
 	void finalPass(IDirect3DTexture9* src, IDirect3DTexture9* eye, IDirect3DTexture9* frame, IDirect3DSurface9* dst);
