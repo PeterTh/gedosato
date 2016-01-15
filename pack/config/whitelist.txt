@@ -45,6 +45,7 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 DBXV                         || Dragonball Xenoverse
+DDDA                         || Dragon's Dogma: Dark Arisen
 Dead Space                   || Dead Space
 default                      || Mushihimesama
 demoniconR                   || Demonicon
@@ -69,7 +70,6 @@ FEARXP                       || F.E.A.R. Extraction Point
 FEARXP2                      || F.E.A.R. Perseus Mandate
 ffxiii2img                   || Final Fantasy XIII-2
 ffxiiiimg                    || Final Fantasy XIII
-LRFF13                       || Lightning Returns Final Fantasy XIII
 ffxiv                        || Final Fantasy XIV
 ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
@@ -104,6 +104,7 @@ left4dead2                   || Left 4 Dead 2
 LEGOMARVEL                   || LEGO Marvel Superheroes
 Leviathan                    || Leviathan: Warships
 LostPlanetDX9                || Lost Planet: Extreme Condition (DX9)
+LRFF13                       || Lightning Returns Final Fantasy XIII
 Mafia2                       || Mafia II
 MassEffect                   || Mass Effect
 MassEffect2                  || Mass Effect 2

@@ -26,7 +26,7 @@
 
 // Bloom settings
     #define BloomThreshold 20.25 // [0.00 to 50.00] Threshold for what is a bright light (that causes bloom) and what isn't.
-    #define BloomPower 1.600     // [0.00 to  8.00] Strength of the bloom
+    #define BloomPower 1.200     // [0.00 to  8.00] Strength of the bloom
     #define BloomWidth 0.035     // [0.00 to  1.00] Width of the bloom
 
 // HDR settings
