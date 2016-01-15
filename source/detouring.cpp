@@ -12,6 +12,7 @@
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
 #include "time_manager.h"
+#include "window_manager.h"
 
 #include "d3d9/d3d9.h"
 #include "d3d9/d3d9int_ex.h"
@@ -489,6 +490,7 @@ GENERATE_INTERCEPT_HEADER(GetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 
 GENERATE_INTERCEPT_HEADER(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong) {
 	SDLOG(2, "DetouredSetWindowLongA hwnd: %p -- index: %s -- value: %d\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
+	WindowManager::get().adjustSetWindowLong(nIndex, dwNewLong);
 	LONG ret = TrueSetWindowLongA(hWnd, nIndex, dwNewLong);
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
 		prevWndProcs[hWnd] = (WNDPROC)dwNewLong;
@@ -499,6 +501,7 @@ GENERATE_INTERCEPT_HEADER(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 }
 GENERATE_INTERCEPT_HEADER(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong) {
 	SDLOG(2, "DetouredSetWindowLongW hwnd: %p -- index: %s -- value: %d\n", hWnd, WindowLongOffsetToString(nIndex), dwNewLong);
+	WindowManager::get().adjustSetWindowLong(nIndex, dwNewLong);
 	LONG ret = TrueSetWindowLongW(hWnd, nIndex, dwNewLong);
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
 		prevWndProcs[hWnd] = (WNDPROC)dwNewLong;

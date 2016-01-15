@@ -30,6 +30,17 @@ void WindowManager::toggleCursorVisibility() {
 	::ShowCursor(cursorVisible);
 }
 
+void WindowManager::adjustSetWindowLong(int nIndex, LONG& dwNewLong) {
+	if(borderlessFullscreen) {
+		if(nIndex == GWL_STYLE) {
+			dwNewLong &= ~(WS_BORDER | WS_CAPTION | WS_THICKFRAME | WS_OVERLAPPEDWINDOW | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU | WS_GROUP);
+		}
+		else if(nIndex == GWL_EXSTYLE) {
+			dwNewLong &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE | WS_EX_WINDOWEDGE | WS_EX_OVERLAPPEDWINDOW | WS_EX_PALETTEWINDOW | WS_EX_MDICHILD);
+		}
+	}
+}
+
 void WindowManager::toggleBorderlessFullscreen() {
 	borderlessFullscreen = !borderlessFullscreen;
 	HWND hwnd = ::GetActiveWindow();
@@ -40,11 +51,11 @@ void WindowManager::toggleBorderlessFullscreen() {
 		// set styles
 		LONG lStyle = TrueGetWindowLongA(hwnd, GWL_STYLE);
 		prevStyle = lStyle;
-		lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
+		lStyle &= ~(WS_BORDER | WS_CAPTION | WS_THICKFRAME | WS_OVERLAPPEDWINDOW | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU | WS_GROUP);
 		TrueSetWindowLongA(hwnd, GWL_STYLE, lStyle);
 		LONG lExStyle = TrueGetWindowLongA(hwnd, GWL_EXSTYLE);
 		prevExStyle = lExStyle;
-		lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+		lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE | WS_EX_WINDOWEDGE | WS_EX_OVERLAPPEDWINDOW | WS_EX_PALETTEWINDOW | WS_EX_MDICHILD);
 		TrueSetWindowLongA(hwnd, GWL_EXSTYLE, lExStyle);
 		SDLOG(1, "WindowManager::toggleBorderlessFullscreen B\n", hwnd);
 		// adjust size & position
@@ -86,6 +97,7 @@ void WindowManager::maintainBorderlessFullscreen() {
 }
 
 void WindowManager::forceBorderlessFullscreen() {
+	borderlessFullscreen = false;
 	toggleBorderlessFullscreen();
 }
 

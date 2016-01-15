@@ -23,6 +23,7 @@ public:
 	void applyCursorCapture();
 	void toggleCursorCapture();
 	void toggleCursorVisibility();
+	void adjustSetWindowLong(int nIndex, LONG& dwNewLong);
 	void toggleBorderlessFullscreen();
 	void forceBorderlessFullscreen();
 	void maintainBorderlessFullscreen();
