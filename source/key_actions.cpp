@@ -29,6 +29,7 @@ bool KeyActions::loadBinding(const char* keyName, int keyVal, const string& bstr
 	if(pos != bstring.npos && (postChar == '\r' || postChar == '\n' || postChar == ' ' || postChar == '\0')) {
 		stringstream ss(bstring);
 		ActionBinding actionBinding;
+		actionBinding.downLastFrame = false;
 		actionBinding.ctrl  = bstring.find("~") != bstring.npos; // Ctrl  = ~
 		actionBinding.alt   = bstring.find("+") != bstring.npos; // Alt   = +
 		actionBinding.shift = bstring.find("-") != bstring.npos; // Shift = - 
@@ -129,8 +130,11 @@ void KeyActions::processIO() {
 	if(activeProcId != procId) return;
 
 	// keyboard
-	for(IntBindingMap::const_iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
-		if(GetAsyncKeyState(i->first)&1) {
+	for(IntBindingMap::iterator i = keyBindingMap.begin(); i != keyBindingMap.end(); ++i) {
+		auto curKeyState = GetAsyncKeyState(i->first);
+		auto downThisFrame = (curKeyState & 0x8000) != 0;
+		auto& binding = i->second;
+		if(binding.downLastFrame && !downThisFrame) {
 			const auto& binding = i->second;
 			if(binding.ctrl  && ((GetAsyncKeyState(VK_CONTROL) & 0x8000) == 0)) continue;
 			if(binding.alt   && ((GetAsyncKeyState(VK_MENU)    & 0x8000) == 0)) continue;
@@ -138,6 +142,7 @@ void KeyActions::processIO() {
 			SDLOG(0, "Action triggered: %s\n", i->second.action.c_str());
 			performAction(i->second.action.c_str());
 		}
+		binding.downLastFrame = downThisFrame;
 	}
 
 	// xinput

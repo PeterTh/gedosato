@@ -9,6 +9,7 @@ class KeyActions {
 	static KeyActions instance;
 
 	struct ActionBinding {
+		bool downLastFrame;
 		bool ctrl, alt, shift;
 		std::string action;
 	};
