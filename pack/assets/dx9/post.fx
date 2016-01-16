@@ -1950,6 +1950,10 @@ float4 postProcessing(VSOUT IN) : COLOR0
 {
     float2 tex = IN.UVCoord;
     float4 c0 = tex2D(s0, tex);
+
+#if (USE_DEBAND == 1)
+    c0 = DebandPass(c0, tex);
+#endif
     
 #if (USE_ADVANCED_CRT == 1)
     c0 = AdvancedCRTPass(c0, tex);
@@ -2026,10 +2030,6 @@ float4 postProcessing(VSOUT IN) : COLOR0
 
 #if (USE_MONOCHROME == 1)
     c0 = MonochromePass(c0);
-#endif
-
-#if (USE_DEBAND == 1)
-    c0 = DebandPass(c0, tex);
 #endif
 
     c0.w = 1.0;
