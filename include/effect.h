@@ -6,8 +6,10 @@
 #include "main.h"
 #include "settings.h"
 
+#include <boost/noncopyable.hpp>
+
 // Base class for effects
-class Effect {
+class Effect : boost::noncopyable {
 protected:
 	IDirect3DDevice9* device;
     IDirect3DVertexDeclaration9 *vertexDeclaration;

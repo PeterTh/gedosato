@@ -5,6 +5,8 @@ General:
 - DX9: Improve handling of swapchains. Fixes some crashes, e.g. LRFF13
 - DX9: Handle additional states in default state block, should fix console rendering in some games
 - IO: fix incorrect API use which might lead to keayboard input not being recognized in some games
+- Windowing: fixed borderless fullscreen mode persistence in some cases
+- Add multi-pass postprocessing system and debanding effect
 GeDoSaToTool:
 - Disable "RequireSignedAppInit_DLLs" registry value if present
 - Fix Exception if short dll path can not be determined

@@ -33,7 +33,7 @@ extern "C" __declspec(dllexport) const char* GeDoSaToVersion() {
 }
 
 extern "C" __declspec(dllexport) const char* GeDoSaToSettings() {
-	return "renderResolution,clearRenderResolutions,"
+	return "renderResolution,clearRenderResolutions,addProcessingPass,"
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		_inistring ","
 		#include "Settings.def"

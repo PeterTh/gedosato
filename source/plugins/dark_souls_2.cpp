@@ -37,7 +37,7 @@ void DS2Plugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORM
 
 void DS2Plugin::reloadShaders() {
 	if(ssao) ssao->reloadShader();
-	if(post) post->reloadShader();
+	if(post) post->reloadShaders();
 	if(bloom) bloom->reloadShader();
 }
 

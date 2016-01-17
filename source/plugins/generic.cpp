@@ -22,9 +22,9 @@ void GenericPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3D
 		if(Settings::get().getAAType() == "smaa") smaa = new SMAA(d3ddev, drw, drh, (SMAA::Preset)(Settings::get().getAAQuality() - 1), false);
 		else fxaa = new FXAA(d3ddev, drw, drh, (FXAA::Quality)(Settings::get().getAAQuality() - 1), false);
 	}
-	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh, false);
 
 	tmp = RSManager::getRTMan().createTexture(drw, drh, (bbformat == D3DFMT_UNKNOWN) ? D3DFMT_A8R8G8B8 : bbformat);
+	if(Settings::get().getEnablePostprocessing()) post = new Post(d3ddev, drw, drh, false, tmp.get());
 
 	if(!Settings::get().getInjectRenderstate().empty()) {
 		auto str = Settings::get().getInjectRenderstate();
@@ -58,6 +58,7 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 		SDLOG(8, "Generic plugin processing start\n");
 		if(doAA || doPost) {
 			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+			SDLOG(8, "Generic plugin processing: AA\n");
 			bool didAA = false;
 			if(doAA && (fxaa || smaa)) {
 				didAA = true;
@@ -70,6 +71,7 @@ void GenericPlugin::process(IDirect3DSurface9* backBuffer) {
 			}
 			if(doPost && post) {
 				if(didAA) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+				SDLOG(8, "Generic plugin processing: post\n");
 				post->go(tmp->getTex(), backBuffer);
 			}
 		}
@@ -191,5 +193,5 @@ void GenericPlugin::toggleHUD() {
 }
 
 void GenericPlugin::reloadShaders() {
-	if(post) post->reloadShader();
+	if(post) post->reloadShaders();
 }

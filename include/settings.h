@@ -34,6 +34,7 @@ class Settings {
 	ResolutionSettings resSettings;
 	bool inited;
 	unsigned baseLogLevel;
+	std::vector<string> processingPasses;
 
 	void read(const char* source, bool& value);
 	void read(const char* source, int& value);
@@ -81,5 +82,6 @@ public:
 
 	unsigned getRenderWidth() { return resSettings.getActiveWidth(); }
 	unsigned getRenderHeight() { return resSettings.getActiveHeight(); }
+	const std::vector<string>& getProcessingPasses() { return processingPasses; }
 };
 

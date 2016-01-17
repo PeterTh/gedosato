@@ -65,6 +65,9 @@ void Settings::load(const string &fn) {
 		if(bstring.find("clearRenderResolutions") == 0) {
 			resSettings.clearResolutions();
 		}
+		if(bstring.find("addProcessingPass") == 0) {
+			processingPasses.push_back(bstring.substr(strlen("addProcessingPass") + 1));
+		}
 
 		#define SETTING(_type, _var, _inistring, _defaultval) \
 		if(bstring.find(_inistring) == 0) { \
@@ -96,6 +99,8 @@ void Settings::load(const string &fn) {
 }
 
 void Settings::load() {
+	resSettings.clearResolutions();
+	processingPasses.clear();
 	SDLOG(1, "Loading general settings.\n");
 	load(getConfigFileName(SETTINGS_FILE_NAME));
 	SDLOG(1, "Loading user settings.\n");

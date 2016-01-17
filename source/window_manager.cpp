@@ -45,7 +45,6 @@ void WindowManager::toggleBorderlessFullscreen() {
 	borderlessFullscreen = !borderlessFullscreen;
 	HWND hwnd = ::GetActiveWindow();
 	if(borderlessFullscreen) {
-		SDLOG(1, "WindowManager::toggleBorderlessFullscreen A hwnd: %p\n", hwnd);
 		// store previous rect
 		TrueGetClientRect(hwnd, &prevWindowRect);
 		// set styles
@@ -57,7 +56,6 @@ void WindowManager::toggleBorderlessFullscreen() {
 		prevExStyle = lExStyle;
 		lExStyle &= ~(WS_EX_DLGMODALFRAME | WS_EX_CLIENTEDGE | WS_EX_STATICEDGE | WS_EX_WINDOWEDGE | WS_EX_OVERLAPPEDWINDOW | WS_EX_PALETTEWINDOW | WS_EX_MDICHILD);
 		TrueSetWindowLongA(hwnd, GWL_EXSTYLE, lExStyle);
-		SDLOG(1, "WindowManager::toggleBorderlessFullscreen B\n", hwnd);
 		// adjust size & position
 		HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
 		MONITORINFO info;
@@ -67,7 +65,6 @@ void WindowManager::toggleBorderlessFullscreen() {
 		int monitorHeight = info.rcMonitor.bottom - info.rcMonitor.top;
 		::SetWindowPos(hwnd, NULL, info.rcMonitor.left, info.rcMonitor.top, monitorWidth, monitorHeight, SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOOWNERZORDER);
 		BringWindowToTop(hwnd);
-		SDLOG(1, "WindowManager::toggleBorderlessFullscreen C\n", hwnd);
 	} else {
 		// restore previous window
 		TrueSetWindowLongA(hwnd, GWL_STYLE, prevStyle);
