@@ -168,6 +168,7 @@ void Settings::read(const char* source, float& value) {
 
 void Settings::read(const char* source, std::string& value) {
 	value.assign(source);
+	boost::algorithm::trim(value);
 }
 
 
