@@ -107,7 +107,7 @@ void GenericPlugin::preDownsample(IDirect3DSurface9* backBuffer) {
 			d3ddev->StretchRect(processedBB, NULL, backBuffer, NULL, D3DTEXF_NONE);
 		}
 	}
-	if(!Settings::get().getpostProcessAfterScaling()) {
+	if(!Settings::get().getpostProcessAfterScaling() && !Settings::get().getOnlyProcessOnInject()) {
 		process(backBuffer);
 	}
 	processedBB = NULL;

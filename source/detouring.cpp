@@ -719,7 +719,7 @@ GENERATE_INTERCEPT_HEADER(FileTimeToSystemTime, BOOL, WINAPI, _In_ CONST FILETIM
 // Steam ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
-	SDLOG(15, "SteamFriends\n");
+	SDLOG(18, "SteamFriends\n");
 	static std::unique_ptr<hkISteamFriends> friends = nullptr;
 	if(Settings::get().getSteamFriendsLimit() >= 0) {
 		if(!friends) {

@@ -80,6 +80,7 @@ SETTING(string, InjectPSHash, "injectPSHash", "")
 SETTING(string, InjectVSHash, "injectVSHash", "")
 SETTING(string, InjectRenderstate, "injectRenderstate", "")
 SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
+SETTING(bool, OnlyProcessOnInject, "onlyProcessOnInject", false)
 
 SETTING(bool, ConstrainInjectedRT, "constrainInjectedRT", false)
 

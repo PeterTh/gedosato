@@ -7,6 +7,9 @@ General:
 - IO: fix incorrect API use which might lead to keayboard input not being recognized in some games
 - Windowing: fixed borderless fullscreen mode persistence in some cases
 - Add multi-pass postprocessing system and debanding effect
+- Config: fix trimming of string options
+- DX9: Improve state capture/restore
+- Add option to only apply postprocessing when PSHash is encountered
 GeDoSaToTool:
 - Disable "RequireSignedAppInit_DLLs" registry value if present
 - Fix Exception if short dll path can not be determined

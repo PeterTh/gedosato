@@ -65,7 +65,7 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	console.add(traceText);
 
 	// create state block for state save/restore
-	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
+	//d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
 	// create and capture default state block
 	d3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -428,7 +428,9 @@ void RSManagerDX9::registerD3DXCompileShader(LPCSTR pSrcData, UINT srcDataLen, c
 
 void RSManagerDX9::storeRenderState() {
 	SDLOG(8, "storing render state\n");
-	prevStateBlock->Capture();
+	//prevStateBlock->Capture
+	SAFERELEASE(prevStateBlock);
+	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
 	prevVDecl = NULL;
 	prevDepthStencilSurf = NULL;
 	prevRenderTarget = NULL;
@@ -448,6 +450,7 @@ void RSManagerDX9::restoreRenderState() {
 	d3ddev->SetRenderTarget(0, prevRenderTarget);
 	SAFERELEASE(prevRenderTarget);
 	prevStateBlock->Apply();
+	SAFERELEASE(prevStateBlock);
 	SDLOG(8, " - completed\n");
 }
 
@@ -827,6 +830,14 @@ void RSManagerDX9::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
 }
 
 HRESULT RSManagerDX9::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
+	if(dumpingFrame) {
+		IDirect3DSurface9* rt;
+		d3ddev->GetRenderTarget(0, &rt);
+		if(rt) {
+			dumpSurface(format("framedump_shaderchange%03u_target0_shader_%s", renderTargetSwitches++, getShaderManager().getName(pShader)).c_str(), rt);
+		}
+		SAFERELEASE(rt);
+	}
 	return plugin->redirectSetPixelShader(pShader);
 }
 
