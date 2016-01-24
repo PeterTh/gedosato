@@ -41,7 +41,7 @@ static float farZ = 100.0;
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
 /** This need not match the real far plane */
 /** This goes together with nearZ/farZ values. If you can't see any (or partial) AO output at all make sure this value isn't too low :] */
-#define FAR_PLANE_Z (300.0)
+#define FAR_PLANE_Z (100.0)
 
 /** intensity : darkending factor, e.g., 1.0 */
 /** aoClamp : brightness fine-tuning (the higher the darker) */
@@ -86,7 +86,7 @@ static const float projScale = 1.2f;
 
 /** Comment this line to not take pixel brightness into account (the higher the more AO will blend into bright surfaces) */
 #define LUMINANCE_CONSIDERATION
-extern float luminosity_threshold = 0.7;
+extern float luminosity_threshold = 0.6;
 
 /** Falloff function type */
 	// 1: From the HPG12 paper

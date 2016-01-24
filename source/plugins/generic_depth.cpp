@@ -51,8 +51,7 @@ void GenericDepthPlugin::reportStatus() {
 	else Console::get().add("DoF disabled");
 }
 
-// find a better way to do this than repeating code
-void GenericDepthPlugin::process(IDirect3DSurface9* backBuffer) {
+void GenericDepthPlugin::processInternal(IDirect3DSurface9* backBuffer, bool aoOnly) {
 	if(!postDone) {
 		postDone = true;
 		processedBB = backBuffer;
@@ -61,53 +60,62 @@ void GenericDepthPlugin::process(IDirect3DSurface9* backBuffer) {
 			manager.setNeutralRenderState();
 			d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
 			bool didAO = false;
-			if(!skipAO && doAO && ssao) {
+			if(!skipAO && !aoDone && doAO && ssao) {
 				if(texw == 0) {
 					if(depthTexture->isSupported()) {
 						didAO = true;
+						aoDone = true;
 						if(manager.usingMultisampling()) depthTexture->resolveDepth(d3ddev);
 						ssao->goHDR(tmp->getTex(), depthTexture->getTexture(), backBuffer);
 					}
 				}
 				else if(depthTextureAlt->isSupported()) {
 					didAO = true;
+					aoDone = true;
 					if(manager.usingMultisampling()) depthTextureAlt->resolveDepth(d3ddev);
 					ssao->goHDR(tmp->getTex(), depthTextureAlt->getTexture(), backBuffer);
 				}
 			}
-			bool didAA = false;
-			if(doAA && (fxaa || smaa)) {
-				didAA = true;
-				if(didAO) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
-				if(fxaa) {
-					fxaa->go(tmp->getTex(), backBuffer);
-				}
-				else if(smaa) {
-					smaa->go(tmp->getTex(), tmp->getTex(), backBuffer, SMAA::INPUT_COLOR);
-				}
-			}
-			bool didPost = false;
-			if(doPost && post) {
-				didPost = true;
-				if(didAO || didAA) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
-				post->go(tmp->getTex(), backBuffer);
-			}
-			if(doDof && dof) {
-				if(didAO || didAA || didPost) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
-				if(texw == 0) {
-					if(depthTexture->isSupported()) {
-						if(manager.usingMultisampling()) depthTexture->resolveDepth(d3ddev);
-						dof->go(tmp->getTex(), depthTexture->getTexture(), backBuffer);
+			if(!aoOnly) {
+				bool didAA = false;
+				if(doAA && (fxaa || smaa)) {
+					didAA = true;
+					if(didAO) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+					if(fxaa) {
+						fxaa->go(tmp->getTex(), backBuffer);
+					}
+					else if(smaa) {
+						smaa->go(tmp->getTex(), tmp->getTex(), backBuffer, SMAA::INPUT_COLOR);
 					}
 				}
-				else if(depthTextureAlt->isSupported()) {
-					if(manager.usingMultisampling()) depthTextureAlt->resolveDepth(d3ddev);
-					dof->go(tmp->getTex(), depthTextureAlt->getTexture(), backBuffer);
+				bool didPost = false;
+				if(doPost && post) {
+					didPost = true;
+					if(didAO || didAA) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+					post->go(tmp->getTex(), backBuffer);
+				}
+				if(doDof && dof) {
+					if(didAO || didAA || didPost) d3ddev->StretchRect(backBuffer, NULL, tmp->getSurf(), NULL, D3DTEXF_NONE);
+					if(texw == 0) {
+						if(depthTexture->isSupported()) {
+							if(manager.usingMultisampling()) depthTexture->resolveDepth(d3ddev);
+							dof->go(tmp->getTex(), depthTexture->getTexture(), backBuffer);
+						}
+					}
+					else if(depthTextureAlt->isSupported()) {
+						if(manager.usingMultisampling()) depthTextureAlt->resolveDepth(d3ddev);
+						dof->go(tmp->getTex(), depthTextureAlt->getTexture(), backBuffer);
+					}
 				}
 			}
 		}
 		SDLOG(6, "[GenericDepthPlugin] processing end\n");
 	}
+}
+
+// find a better way to do this than repeating code
+void GenericDepthPlugin::process(IDirect3DSurface9* backBuffer) {
+	processInternal(backBuffer, false);
 }
 
 HRESULT GenericDepthPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) {
@@ -120,6 +128,7 @@ HRESULT GenericDepthPlugin::redirectCreateDepthStencilSurface(UINT Width, UINT H
 
 HRESULT GenericDepthPlugin::redirectBeginScene() {
 	countClear = 0;
+	aoDone = false;
 	return GenericPlugin::redirectBeginScene();
 }
 
@@ -208,6 +217,21 @@ HRESULT GenericDepthPlugin::redirectSetDepthStencilSurface(IDirect3DSurface9* pN
 	else hr = GenericPlugin::redirectSetDepthStencilSurface(pNewZStencil); // pNewZStencil == NULL
 
 	return hr;
+}
+
+HRESULT GenericDepthPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
+	if(RSManager::getDX9().getShaderManager().isAOInjectionShader(pShader)) {
+		SDLOG(8, "Generic depth plugin processing AO only\n");
+		IDirect3DSurface9* bb = nullptr;
+		d3ddev->GetRenderTarget(0, &bb);
+		if(bb) {
+			manager.storeRenderState();
+			processInternal(bb, true);
+			manager.restoreRenderState();
+		}
+		SAFERELEASE(bb);
+	}
+	return GenericPlugin::redirectSetPixelShader(pShader);
 }
 
 void GenericDepthPlugin::reloadShaders() {

@@ -284,6 +284,7 @@
     <ClCompile Include="source\plugins\ff13.cpp" />
     <ClCompile Include="source\plugins\lrff13.cpp" />
     <ClCompile Include="source\plugins\zestiria.cpp" />
+    <ClCompile Include="source\shader_manager.cpp" />
     <ClCompile Include="source\steam\steamfriends.cpp" />
     <ClCompile Include="source\utils\d3d11_utils.cpp" />
     <ClCompile Include="source\utils\d3d_utils.cpp" />

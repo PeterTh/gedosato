@@ -49,6 +49,13 @@ void ResolutionSettings::clearResolutions() {
 
 Settings Settings::instance;
 
+void Settings::clearAll() {
+	#define SETTING(_type, _var, _inistring, _defaultval) \
+		_var = _defaultval;
+	#include "Settings.def"
+	#undef SETTING
+}
+
 void Settings::load(const string &fn) {
 	if(!boost::filesystem::exists(fn)) return;
 	std::ifstream sfile;
@@ -99,6 +106,7 @@ void Settings::load(const string &fn) {
 }
 
 void Settings::load() {
+	clearAll();
 	resSettings.clearResolutions();
 	processingPasses.clear();
 	SDLOG(1, "Loading general settings.\n");
@@ -171,6 +179,11 @@ void Settings::read(const char* source, std::string& value) {
 	boost::algorithm::trim(value);
 }
 
+void Settings::read(const char* source, std::vector<std::string>& value) {
+	string src {source};	
+	boost::algorithm::trim(src);
+	value.push_back(src);
+}
 
 // logging --------------------------------------------------------------------
 
@@ -192,4 +205,8 @@ void Settings::log(const char* name, float value) {
 
 void Settings::log(const char* name, const std::string& value) {
 	SDLOG(0, " - %s : %s\n", name, value.c_str());
+}
+
+void Settings::log(const char* name, const std::vector<std::string>& value) {
+	SDLOG(0, " - %s : %s\n", name, boost::algorithm::join(value, ", "));
 }

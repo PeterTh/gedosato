@@ -82,13 +82,15 @@ SETTING(string, InjectRenderstate, "injectRenderstate", "")
 SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 SETTING(bool, OnlyProcessOnInject, "onlyProcessOnInject", false)
 
+SETTING(std::vector<string>, InjectAOHash, "injectAOHash", {})
+
 SETTING(bool, ConstrainInjectedRT, "constrainInjectedRT", false)
 
 // Graphics effects options
 SETTING(string, AAType, "aaType", "fxaa")
 SETTING(unsigned, AAQuality, "aaQuality", 0)
 
-SETTING(std::string, SsaoType, "ssaoType", "VSSAO")
+SETTING(string, SsaoType, "ssaoType", "VSSAO")
 SETTING(unsigned, SsaoStrength, "ssaoStrength", 0)
 SETTING(unsigned, SsaoScale, "ssaoScale", 0)
 SETTING(string, SsaoBlurType, "ssaoBlurType", "gaussian")

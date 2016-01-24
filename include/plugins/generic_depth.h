@@ -11,12 +11,14 @@ class GenericDepthPlugin : public GenericPlugin {
 	DOF* dof = NULL;
 	bool doAO = true;
 	bool doDof = true;
+	bool aoDone = false;
 
 	unsigned countClear;
 	unsigned drw, drh, dssw, dssh, texw, texh, aspectHeight;
 	double drwP, aspectHeightP;
 	std::unique_ptr<DepthTexture> depthTexture, depthTextureAlt;
 
+	void processInternal(IDirect3DSurface9* backBuffer, bool aoOnly);
 	virtual void process(IDirect3DSurface9* backBuffer) override;
 
 protected:
@@ -35,6 +37,8 @@ public:
 	virtual HRESULT redirectClear(DWORD Count, CONST D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) override;
 	virtual HRESULT redirectCreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9** ppSurface, HANDLE* pSharedHandle) override;
 	virtual HRESULT redirectSetDepthStencilSurface(IDirect3DSurface9* pNewZStencil) override;
+
+	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
 
 	virtual void toggleAO() override { if(ssao) { doAO = !doAO; Console::get().add(doAO ? "SSAO enabled" : "SSAO disabled"); } else { Console::get().add("SSAO disabled in configuration!"); } }
 	virtual void toggleDOF() override { if(dof) { doDof = !doDof; Console::get().add(doDof ? "DOF enabled" : "DOF disabled"); } else { Console::get().add("DOF disabled in configuration!"); } }

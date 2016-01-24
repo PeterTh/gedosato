@@ -41,12 +41,14 @@ class Settings {
 	void read(const char* source, unsigned& value);
 	void read(const char* source, float& value);
 	void read(const char* source, std::string& value);
+	void read(const char* source, std::vector<std::string>& value);
 	
 	void log(const char* name, bool value);
 	void log(const char* name, int value);
 	void log(const char* name, unsigned value);
 	void log(const char* name, float value);
 	void log(const char* name, const std::string& value);
+	void log(const char* name, const std::vector<std::string>& value);
 
 	#define SETTING(_type, _var, _inistring, _defaultval) \
 	private: _type _var; \
@@ -54,6 +56,7 @@ class Settings {
 	#include "settings.def"
 	#undef SETTING
 
+	void clearAll();
 	void load(const string& fn);
 
 public:
@@ -71,10 +74,7 @@ public:
 	void shutdown();
 	
 	Settings() : inited(false) {
-		#define SETTING(_type, _var, _inistring, _defaultval) \
-		_var = _defaultval;
-		#include "Settings.def"
-		#undef SETTING
+		clearAll();
 	}
 
 	void elevateLogLevel(unsigned level);
