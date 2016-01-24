@@ -64,8 +64,10 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	perfMonitor.reset(new D3DPerfMonitor(d3ddev, 60));
 	console.add(traceText);
 
-	// create state block for state save/restore
-	//d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
+	// store current state temporarily
+	IDirect3DStateBlock9 *startState;
+	d3ddev->CreateStateBlock(D3DSBT_ALL, &startState);
+
 	// create and capture default state block
 	d3ddev->SetRenderState(D3DRS_ALPHATESTENABLE, FALSE);
 	d3ddev->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
@@ -113,10 +115,8 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	plugin->initialize(rw, rh, bbFormat, depthStencilFormat);
 
 	// restore initial state
-	d3ddev->SetRenderState(D3DRS_ZENABLE, autoDepthStencil ? D3DZB_TRUE : D3DZB_FALSE);
-	d3ddev->SetRenderState(D3DRS_ZWRITEENABLE, TRUE);
-	d3ddev->SetRenderState(D3DRS_LIGHTING, TRUE);
-	d3ddev->SetRenderState(D3DRS_COLORWRITEENABLE, 0x0000000F);
+	startState->Apply();
+	startState->Release();
 
 	SDLOG(0, "RenderstateManager resource initialization completed\n");
 	inited = true;
@@ -428,15 +428,14 @@ void RSManagerDX9::registerD3DXCompileShader(LPCSTR pSrcData, UINT srcDataLen, c
 
 void RSManagerDX9::storeRenderState() {
 	SDLOG(8, "storing render state\n");
-	//prevStateBlock->Capture
-	SAFERELEASE(prevStateBlock);
 	d3ddev->CreateStateBlock(D3DSBT_ALL, &prevStateBlock);
+	prevStateBlock->Capture();
 	prevVDecl = NULL;
-	prevDepthStencilSurf = NULL;
-	prevRenderTarget = NULL;
 	d3ddev->GetVertexDeclaration(&prevVDecl);
+	prevDepthStencilSurf = NULL;
 	d3ddev->GetDepthStencilSurface(&prevDepthStencilSurf);
 	d3ddev->SetDepthStencilSurface(depthStencilSurf);
+	prevRenderTarget = NULL;
 	d3ddev->GetRenderTarget(0, &prevRenderTarget);
 	SDLOG(8, " - completed\n");
 }
