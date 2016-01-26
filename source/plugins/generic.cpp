@@ -136,13 +136,13 @@ void GenericPlugin::performInjection() {
 }
 
 HRESULT GenericPlugin::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
-	if(!postDone && manager.getShaderManager().getName(pShader) == Settings::get().getInjectPSHash()) {
+	if(!postDone && manager.getShaderManager().isInjectionShader(pShader)) {
 		performInjection();
 	}
 	return GamePlugin::redirectSetPixelShader(pShader);
 }
 HRESULT GenericPlugin::redirectSetVertexShader(IDirect3DVertexShader9* pShader) {
-	if(!postDone && manager.getShaderManager().getName(pShader) == Settings::get().getInjectVSHash()) {
+	if(!postDone && manager.getShaderManager().isInjectionShader(pShader)) {
 		performInjection();
 	}
 	return GamePlugin::redirectSetVertexShader(pShader);

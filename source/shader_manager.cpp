@@ -1,8 +1,23 @@
-
 #include "shader_manager.h"
+
+#include "console.h"
 
 bool ShaderManager::isAOInjectionShaderInternal(const string& name) const {
 	for(const string& hashStr : Settings::get().getInjectAOHash()) {
+		if(name == hashStr) return true;
+	}
+	return false;
+}
+
+bool ShaderManager::isInjectionPSInternal(const string& name) const {
+	for(const string& hashStr : Settings::get().getInjectPSHash()) {
+		if(name == hashStr) return true;
+	}
+	return false;
+}
+
+bool ShaderManager::isInjectionVSInternal(const string& name) const {
+	for(const string& hashStr : Settings::get().getInjectVSHash()) {
 		if(name == hashStr) return true;
 	}
 	return false;
@@ -32,10 +47,8 @@ void ShaderManager::registerShaderInternal(CONST DWORD* pFunction, void* pShader
 	// name fallback
 	string name = format("%08x", id);
 	if(shaderPtrNameMap.find(pShader) == shaderPtrNameMap.end()) {
-		if(Settings::get().getTrackShaders()
-			|| name == Settings::get().getInjectPSHash()
-			|| name == Settings::get().getInjectVSHash()
-			|| isAOInjectionShaderInternal(name)) {
+		if(Settings::get().getTrackShaders() || isInjectionPSInternal(name) || isInjectionVSInternal(name) || isAOInjectionShaderInternal(name)) {
+			SDLOG(2, "Found relevant shader hash: %s", name);
 			shaderPtrNameMap.emplace(pShader, name);
 		}
 	}
@@ -55,6 +68,12 @@ bool ShaderManager::isAOInjectionShader(void* pShader) const {
 	auto i = shaderPtrNameMap.find(pShader);
 	if(i == shaderPtrNameMap.end()) return false;
 	return isAOInjectionShaderInternal(i->second);
+}
+
+bool ShaderManager::isInjectionShader(void* pShader) const {
+	auto i = shaderPtrNameMap.find(pShader);
+	if(i == shaderPtrNameMap.end()) return false;
+	return isInjectionPSInternal(i->second) || isInjectionVSInternal(i->second);
 }
 
 const char* ShaderManager::getName(void* pShader) {

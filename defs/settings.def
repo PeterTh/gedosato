@@ -76,8 +76,8 @@ SETTING(bool, ForceFullscreenMode, "forceFullscreenMode", false)
 SETTING(bool, PreventMenu, "preventMenu", false)
 
 // Injection options
-SETTING(string, InjectPSHash, "injectPSHash", "")
-SETTING(string, InjectVSHash, "injectVSHash", "")
+SETTING(std::vector<string>, InjectPSHash, "injectPSHash", {})
+SETTING(std::vector<string>, InjectVSHash, "injectVSHash", {})
 SETTING(string, InjectRenderstate, "injectRenderstate", "")
 SETTING(bool, InjectDelayAfterDraw, "injectDelayAfterDraw", false)
 SETTING(bool, OnlyProcessOnInject, "onlyProcessOnInject", false)

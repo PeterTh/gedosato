@@ -18,12 +18,15 @@ class ShaderManager {
 	void registerShaderInternal(CONST DWORD* pFunction, void* pShader);
 
 	bool isAOInjectionShaderInternal(const string& name) const;
+	bool isInjectionPSInternal(const string& name) const;
+	bool isInjectionVSInternal(const string& name) const;
 
 public:
 	void registerShader(CONST DWORD* pFunction, IDirect3DPixelShader9* pShader);
 	void registerShader(CONST DWORD* pFunction, IDirect3DVertexShader9* pShader);
 
 	bool isAOInjectionShader(void* pShader) const;
+	bool isInjectionShader(void* pShader) const;
 	
 	const char* getName(void* pShader);
 

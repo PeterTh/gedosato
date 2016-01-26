@@ -53,7 +53,7 @@ void GenericDepthPlugin::reportStatus() {
 
 void GenericDepthPlugin::processInternal(IDirect3DSurface9* backBuffer, bool aoOnly) {
 	if(!postDone) {
-		postDone = true;
+		if(!aoOnly) postDone = true;
 		processedBB = backBuffer;
 		SDLOG(6, "[GenericDepthPlugin] processing start\n");
 		if((doAA && (fxaa || smaa)) || (doAO && ssao) || (doPost && post) || (doDof && dof)) {
