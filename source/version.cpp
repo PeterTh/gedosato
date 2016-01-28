@@ -2,13 +2,13 @@
 
 #include "version.h"
 
-const char* VER_NAME = "Hopeful Jasper";
+const char* VER_NAME = "How Could Hell Be Any Worse";
 
 const unsigned VER_MAJOR = 0;
-const unsigned VER_MINOR = 20;
-const unsigned VER_BUILD = 2107;
+const unsigned VER_MINOR = 21;
+const unsigned VER_BUILD = 2108;
 
-const char* VER_STRING = "version 0.20.2107 built on 2016/01/26 20:43:56";
+const char* VER_STRING = "version 0.21.2108 built on 2016/01/28 17:57:18";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";
