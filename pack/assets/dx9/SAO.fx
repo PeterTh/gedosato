@@ -41,7 +41,11 @@ static float farZ = 100.0;
 /** Used for preventing AO computation on the sky (at infinite depth) and defining the CS Z to bilateral depth key scaling. */
 /** This need not match the real far plane */
 /** This goes together with nearZ/farZ values. If you can't see any (or partial) AO output at all make sure this value isn't too low :] */
-#define FAR_PLANE_Z (100.0)
+#define FAR_PLANE_Z (90.0)
+
+// if enabled, fades out AO between FADE_Z and FAR_PLANE_Z
+#define FADE_OUT
+#define FADE_Z (80.0)
 
 /** intensity : darkending factor, e.g., 1.0 */
 /** aoClamp : brightness fine-tuning (the higher the darker) */
@@ -466,6 +470,10 @@ float4 SSAOCalculate(VSOUT IN) : COLOR0
 	// (x^0.2 + 1.2 * x^4)/2.2
 	A = (pow(A, 0.2) + 1.2 * A*A*A*A) / 2.2;
 	visibility = lerp(1.0, A, aoClamp);
+	
+	#ifdef FADE_OUT
+	visibility = lerp(visibility,1.0,saturate((C.z-FADE_Z)/(FAR_PLANE_Z-FADE_Z)));
+	#endif
 
 	#ifdef SHOW_UNBLURRED
 		return float4(visibility, visibility, visibility, 1.0);
