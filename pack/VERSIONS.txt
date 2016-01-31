@@ -3,6 +3,7 @@ xx-xx-2016 -- beta 21 - "How Could Hell Be Any Worse"
 General:
 - Config: allow generalized list configs
 - Shader manager: check against a set of hashes rather than just one
+- Initial shim and main dll 64 bit support
 Generic depth plugin:
 - Add hash identification for when to apply AO
 - SAO: add depth-dependent fadeout

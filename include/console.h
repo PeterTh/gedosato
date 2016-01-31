@@ -42,13 +42,14 @@ class Console {
 
 	vector<ConsoleLine> lines;
 	vector<StaticTextPtr> statics;
-	int start, width, height;
+	size_t start = 0;
+	int width, height;
 	float lineHeight;
 
-	IDirect3DDevice9* device;
-    IDirect3DVertexDeclaration9* vertexDeclaration;
-	IDirect3DTexture9* fontTex;
-	LPD3DXEFFECT effect;
+	IDirect3DDevice9* device = nullptr;
+    IDirect3DVertexDeclaration9* vertexDeclaration = nullptr;
+	IDirect3DTexture9* fontTex = nullptr;
+	LPD3DXEFFECT effect = nullptr;
 	D3DXHANDLE rectColorHandle, textTex2DHandle;
     static const D3DVERTEXELEMENT9 vertexElements[3];
 	
@@ -60,8 +61,7 @@ class Console {
 	void drawBGQuad(float x0, float y0, float x1, float y1);
 
 public:
-	Console() : start(0), device(NULL), vertexDeclaration(NULL), fontTex(NULL), effect(NULL) {
-	}
+	Console() {	}
 	~Console() {
 		SDLOG(0, "Deleting Console on device %p\n", device);
 		cleanup();

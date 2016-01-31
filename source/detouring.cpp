@@ -471,6 +471,7 @@ namespace {
 	}
 }
 
+#ifndef _WIN64
 GENERATE_INTERCEPT_HEADER(GetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex) {
 	SDLOG(2, "DetouredGetWindowLongA hwnd: %p -- index: %s\n", hWnd, WindowLongOffsetToString(nIndex));
 	if(nIndex == GWL_WNDPROC && Settings::get().getInterceptWindowProc()) {
@@ -510,6 +511,7 @@ GENERATE_INTERCEPT_HEADER(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int
 	}
 	return ret;
 }
+#endif // _WIN64
 
 #pragma endregion
 

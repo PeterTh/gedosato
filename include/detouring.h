@@ -26,10 +26,19 @@ extern __name##_FNType True##__name;
 GENERATE_INTERCEPT_DECLARATION(GetClientRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect);
 GENERATE_INTERCEPT_DECLARATION(GetWindowRect, BOOL, WINAPI, _In_ HWND hWnd, _Out_ LPRECT lpRect);
 
+#ifndef _WIN64
 GENERATE_INTERCEPT_DECLARATION(GetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex);
 GENERATE_INTERCEPT_DECLARATION(GetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex);
 GENERATE_INTERCEPT_DECLARATION(SetWindowLongA, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong);
 GENERATE_INTERCEPT_DECLARATION(SetWindowLongW, LONG, WINAPI, _In_ HWND hWnd, _In_ int nIndex, _In_ LONG dwNewLong);
+#else
+__forceinline long TrueGetWindowLongA(struct HWND__ * hwnd, int nIndex) {
+	return GetWindowLongA(hwnd, nIndex);
+}
+__forceinline long TrueSetWindowLongA(struct HWND__ * hwnd, int nIndex, long dwNewLong) {
+	return SetWindowLongA(hwnd, nIndex, dwNewLong);
+}
+#endif
 
 GENERATE_INTERCEPT_DECLARATION(QueryPerformanceCounter, BOOL, WINAPI, _Out_ LARGE_INTEGER *lpPerformanceCount);
 GENERATE_INTERCEPT_DECLARATION(timeGetTime, DWORD, WINAPI);

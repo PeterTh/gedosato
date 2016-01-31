@@ -8,6 +8,19 @@
 #include <atlconv.h>
 #include <mmsystem.h>
 #include <Psapi.h>
+// deprecated in x64 (this isn't a fix, it's just a terrible patch to get it to compile)
+#ifndef GWL_WNDPROC 
+#define GWL_WNDPROC (-4)
+#endif 
+#ifndef GWL_HINSTANCE
+#define GWL_HINSTANCE (-6)
+#endif
+#ifndef GWL_HWNDPARENT
+#define GWL_HWNDPARENT (-8)
+#endif
+#ifndef GWL_USERDATA
+#define GWL_USERDATA (-21)
+#endif
 #pragma warning(pop)
 
 #define HEAP_LFH 2

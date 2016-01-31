@@ -57,7 +57,7 @@ HRESULT APIENTRY hkIDXGIOutput::GetDisplayModeList(DXGI_FORMAT EnumFormat, UINT 
 	SDLOG(20, "   - Flags: %u\n", Flags);
 	HRESULT hr = pWrapped->GetDisplayModeList(EnumFormat, Flags, pNumModes, pDesc);
 	if(SUCCEEDED(hr) && *pNumModes > 0) {
-		UINT totalModes = *pNumModes + Settings::getResSettings().getNumResolutions();
+		UINT totalModes = *pNumModes + static_cast<UINT>(Settings::getResSettings().getNumResolutions());
 		if(pDesc != NULL) {
 			for(unsigned i = *pNumModes, j = 0; i < totalModes; ++i, ++j) {
 				auto res = Settings::get().getResSettings().getResolution(j);

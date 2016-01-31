@@ -36,10 +36,12 @@ HOOK(PeekMessageA, "User32.dll")
 HOOK(GetMessageA, "User32.dll")
 HOOK(GetMessagePos, "User32.dll")
 
+#ifndef _WIN64
 HOOK(SetWindowLongA, "User32.dll")
 HOOK(SetWindowLongW, "User32.dll")
 HOOK(GetWindowLongA, "User32.dll")
 HOOK(GetWindowLongW, "User32.dll")
+#endif
 
 HOOK(SetWindowPos, "User32.dll")
 

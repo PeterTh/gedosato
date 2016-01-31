@@ -110,7 +110,7 @@ HRESULT APIENTRY hkIDirect3D9::GetAdapterIdentifier(UINT Adapter, DWORD Flags, D
 UINT APIENTRY hkIDirect3D9::GetAdapterModeCount(UINT Adapter, D3DFORMAT Format) {
 	SDLOG(2, "GetAdapterModeCount Adapter %u | %s ------\n", Adapter, D3DFormatToString(Format));
 	UINT ret = m_pD3Dint->GetAdapterModeCount(Adapter, Format);
-	UINT reported = ret == 0 ? 0 : ret + Settings::getResSettings().getNumResolutions();
+	UINT reported = ret == 0 ? 0 : ret + static_cast<UINT>(Settings::getResSettings().getNumResolutions());
 	SDLOG(2, " -> %u (reporting %u)\n", ret, reported);
 	return reported;
 }

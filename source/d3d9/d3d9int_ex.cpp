@@ -9,7 +9,7 @@
 UINT APIENTRY hkIDirect3D9Ex::GetAdapterModeCountEx(UINT Adapter, CONST D3DDISPLAYMODEFILTER* pFilter) {
 	SDLOG(2, "GetAdapterModeCountEx Adapter %u | %s ------\n", Adapter, D3DFormatToString(pFilter->Format));
 	UINT ret = m_pD3Dint->GetAdapterModeCountEx(Adapter, pFilter);
-	UINT reported = ret == 0 ? 0 : ret + Settings::getResSettings().getNumResolutions();
+	UINT reported = ret == 0 ? 0 : ret + static_cast<UINT>(Settings::getResSettings().getNumResolutions());
 	SDLOG(2, " -> %u (reporting %u)\n", ret, reported);
 	return reported;
 }

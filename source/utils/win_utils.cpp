@@ -231,9 +231,3 @@ void forceLFHs() {
 	}
 	SDLOG(2, "Completed heap adjustment (LFH)\n");
 }
-
-// fix dxerr.lib linking error on VC14
-
-int __vsnprintf(char *buffer, size_t count, const char *format, va_list argptr) {
-	return _vsnprintf(buffer, count, format, argptr);
-}
