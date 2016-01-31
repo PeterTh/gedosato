@@ -22,7 +22,11 @@ using std::string;
 
 #include "utils/string_utils.h"
 
+#ifdef _WIN64
+#define EDITION "GENERIC 64 BIT"
+#else
 #define EDITION "GENERIC"
+#endif
 
 #define INTERCEPTOR_NAME "GeDoSaTo"
 

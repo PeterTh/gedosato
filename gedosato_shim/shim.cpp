@@ -22,13 +22,20 @@
 #define DBG(__str) OutputDebugString(__str)
 #define DBGA(__str) OutputDebugStringA(__str)
 #else
-#define DBG(__str) 
-#define DBGA(__str) 
+#define DBG(__str)
+#define DBGA(__str)
 #endif
 
 #define PATH_SIZE 256
+#ifndef _WIN64
+#define SHIM_PREFIX L"gedosato_shim: "
 #define SHIM_DLL_NAME L"gedoshim.dll"
 #define MAIN_GEDO_DLL_NAME L"GeDoSaTo.dll"
+#else
+#define SHIM_PREFIX L"gedosato_shim64: "
+#define SHIM_DLL_NAME L"shim64.dll"
+#define MAIN_GEDO_DLL_NAME L"GeDoSaTo64.dll"
+#endif
 #define GEDO_INIT_FUN_NAME "GeDoSaToInit"
 #define BAIL_ON(__condition, __msg) if(__condition) { DBG(__msg); return false; }
 
@@ -76,26 +83,26 @@ bool checkWhitelistEntries(char* whitelistBuffer, LPCTSTR exeFileName) {
 	char exeFn[PATH_SIZE];
 	char defChr = '?';
 	auto convRet = WideCharToMultiByte(CP_ACP, 0, exeFileName, -1, exeFn, PATH_SIZE, &defChr, NULL);
-	BAIL_ON(convRet == 0, L"gedosato_shim: could not convert exe name to ANSI\r\n");
+	BAIL_ON(convRet == 0, SHIM_PREFIX L"could not convert exe name to ANSI\r\n");
 	toLower(exeFn);
-	DBG(L"gedosato_shim: converted exe file name:\r\n"); DBGA(exeFn);
+	DBG(SHIM_PREFIX L"converted exe file name:\r\n"); DBGA(exeFn);
 
-	DBG(L"gedosato_shim: checking whitelist:\r\n"); DBGA(whitelistBuffer);
+	DBG(SHIM_PREFIX L"checking whitelist:\r\n"); DBGA(whitelistBuffer);
 
 	char *wListCur = whitelistBuffer, *curStart = nullptr, *lastNonWs = nullptr;
 	while(*wListCur != '\0') {
 		switch(*wListCur) {
 		case '#': // comment until EOL
-			DBG(L"gedosato_shim: -- skipping comment.\r\n");
+			DBG(SHIM_PREFIX L"-- skipping comment.\r\n");
 			while(*wListCur != '\0' && *wListCur != '\n') wListCur++;
 			break;
 		case '\r': // skip empty lines
 		case '\n':
-			DBG(L"gedosato_shim: -- skipping empty line.\r\n");
+			DBG(SHIM_PREFIX L"-- skipping empty line.\r\n");
 			wListCur++;
 			break;
 		default: // extract executable pattern (start until last non-whitespace before | or newline)
-			DBG(L"gedosato_shim: -- handling new entry.\r\n");
+			DBG(SHIM_PREFIX L"-- handling new entry.\r\n");
 			curStart = wListCur;
 			lastNonWs = nullptr;
 			while(*wListCur != '\0' && *wListCur != '|' && *wListCur != '\n' && *wListCur != '\r') {
@@ -112,7 +119,7 @@ bool checkWhitelistEntries(char* whitelistBuffer, LPCTSTR exeFileName) {
 				while(*wListCur != '\0' && *wListCur != '\n') wListCur++;
 			}
 			else {
-				DBG(L"gedosato_shim: -- no lastNonWS.\r\n");
+				DBG(SHIM_PREFIX L"-- no lastNonWS.\r\n");
 			}
 		}
 	}
@@ -126,30 +133,30 @@ bool checkWhitelist(LPCTSTR directory, LPCTSTR fileName, LPCTSTR exeFileName) {
 	TCHAR listPath[PATH_SIZE*2];
 	lstrcpy(listPath, directory);
 	lstrcat(listPath, fileName);
-	DBG(L"gedosato_shim: loading whitelist:\r\n"); DBG(listPath);
+	DBG(SHIM_PREFIX L"loading whitelist:\r\n"); DBG(listPath);
 
 	// open whitelist file for reading and determine size
 	HANDLE file = CreateFile(listPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	BAIL_ON(file == INVALID_HANDLE_VALUE, L"gedosato_shim: could not open whitelist file for reading\r\n");
+	BAIL_ON(file == INVALID_HANDLE_VALUE, SHIM_PREFIX L"could not open whitelist file for reading\r\n");
 	LARGE_INTEGER whitelistSize;
 	BOOL gotFileSize = GetFileSizeEx(file, &whitelistSize);
-	BAIL_ON(gotFileSize == FALSE, L"gedosato_shim: could not determine whitelist size\r\n");
-	DBG(L"gedosato_shim: opened whitelist.\r\n");
+	BAIL_ON(gotFileSize == FALSE, SHIM_PREFIX L"could not determine whitelist size\r\n");
+	DBG(SHIM_PREFIX L"opened whitelist.\r\n");
 
 	// read file and close
-	LPVOID buffer = HeapAlloc(GetProcessHeap(), 0, (SIZE_T)whitelistSize.QuadPart+1);
-	BAIL_ON(buffer == NULL, L"gedosato_shim: could not allocate buffer to load whitelist\r\n");
+	LPVOID buffer = HeapAlloc(GetProcessHeap(), 0, (DWORD)whitelistSize.QuadPart+1);
+	BAIL_ON(buffer == NULL, SHIM_PREFIX L"could not allocate buffer to load whitelist\r\n");
 	DWORD bytesRead;
-	BOOL readFile = ReadFile(file, buffer, (SIZE_T)whitelistSize.QuadPart, &bytesRead, NULL);
-	BAIL_ON(readFile == FALSE, L"gedosato_shim: failed to read whitelist file\r\n");
+	BOOL readFile = ReadFile(file, buffer, (DWORD)whitelistSize.QuadPart, &bytesRead, NULL);
+	BAIL_ON(readFile == FALSE, SHIM_PREFIX L"failed to read whitelist file\r\n");
 	CloseHandle(file);
-	DBG(L"gedosato_shim: read whitelist.\r\n");
+	DBG(SHIM_PREFIX L"read whitelist.\r\n");
 
 	// process buffer
 	char* whitelistBuffer = (char*)buffer;
 	whitelistBuffer[whitelistSize.QuadPart] = '\0';
 	bool ret = checkWhitelistEntries(whitelistBuffer, exeFileName);
-	DBG(L"gedosato_shim: processed whitelist.\r\n");
+	DBG(SHIM_PREFIX L"processed whitelist.\r\n");
 
 	// free buffer and return
 	HeapFree(GetProcessHeap(), 0, buffer);
@@ -160,47 +167,47 @@ bool hookIfRequired(HMODULE hModule) {
 	// retrieve the fully qualified dll path
 	TCHAR dllPath[PATH_SIZE];
 	auto dllPathSize = GetModuleFileName(hModule, dllPath, PATH_SIZE);
-	BAIL_ON(dllPathSize == 0 || dllPathSize == PATH_SIZE, L"gedosato_shim: could not retreive dll path\r\n");
-	DBG(L"gedosato_shim: dll path:\r\n"); DBG(dllPath);
+	BAIL_ON(dllPathSize == 0 || dllPathSize == PATH_SIZE, SHIM_PREFIX L"could not retreive dll path\r\n");
+	DBG(SHIM_PREFIX L"dll path:\r\n"); DBG(dllPath);
 
 	// get dll directory from path
 	auto dllPathIndex = FindStringOrdinal(FIND_FROMSTART, dllPath, -1, SHIM_DLL_NAME, -1, TRUE);
-	BAIL_ON(dllPathIndex <= 0, L"gedosato_shim: dll path unexpected end\r\n");
+	BAIL_ON(dllPathIndex <= 0, SHIM_PREFIX L"dll path unexpected end\r\n");
 	dllPath[dllPathIndex] = '\0';
-	DBG(L"gedosato_shim: dll directory:\r\n"); DBG(dllPath);
+	DBG(SHIM_PREFIX L"dll directory:\r\n"); DBG(dllPath);
 
 	// retrieve the executable name of the process
 	TCHAR exePath[PATH_SIZE];
 	auto exePathSize = GetModuleFileName(NULL, exePath, PATH_SIZE);
-	BAIL_ON(exePathSize == 0 || exePathSize == PATH_SIZE, L"gedosato_shim: could not retreive exe path\r\n");
-	DBG(L"gedosato_shim: exe path:\r\n"); DBG(exePath);
+	BAIL_ON(exePathSize == 0 || exePathSize == PATH_SIZE, SHIM_PREFIX L"could not retreive exe path\r\n");
+	DBG(SHIM_PREFIX L"exe path:\r\n"); DBG(exePath);
 	auto exeIndex = FindStringOrdinal(FIND_FROMEND, exePath, -1, L"\\", 1, TRUE);
-	BAIL_ON(exeIndex <= 0, L"gedosato_shim: exe path directory end not found\r\n");
+	BAIL_ON(exeIndex <= 0, SHIM_PREFIX L"exe path directory end not found\r\n");
 	TCHAR* exeFileName = exePath + exeIndex + 1;
 	exeIndex = FindStringOrdinal(FIND_FROMEND, exeFileName, -1, L".exe", 1, TRUE);
 	if(exeIndex > 0) exeFileName[exeIndex] = '\0';
-	DBG(L"gedosato_shim: exe file name:\r\n"); DBG(exeFileName);
+	DBG(SHIM_PREFIX L"exe file name:\r\n"); DBG(exeFileName);
 
 	// check whitelists
 	bool whitelisted = checkWhitelist(dllPath, L"config\\whitelist.txt", exeFileName) || checkWhitelist(dllPath, L"config\\whitelist_user.txt", exeFileName);
 	if(whitelisted) {
-		DBG(L"gedosato_shim: whitelisted!\r\n");
+		DBG(SHIM_PREFIX L"whitelisted!\r\n");
 		// build dll path
 		TCHAR mainDllPath[PATH_SIZE * 2];
 		lstrcpy(mainDllPath, dllPath);
 		lstrcat(mainDllPath, MAIN_GEDO_DLL_NAME);
-		DBG(L"gedosato_shim: loading main dll:\r\n"); DBG(mainDllPath);
+		DBG(SHIM_PREFIX L"loading main dll:\r\n"); DBG(mainDllPath);
 		// perform actual hooking
 		HMODULE mainDllModule = LoadLibrary(mainDllPath);
-		BAIL_ON(mainDllModule <= 0, L"gedosato_shim: could not load main GeDoSaTo dll\r\n");
+		BAIL_ON(mainDllModule <= 0, SHIM_PREFIX L"could not load main GeDoSaTo dll\r\n");
 		gedosatoInitFuncType initFunc = (gedosatoInitFuncType)GetProcAddress(mainDllModule, GEDO_INIT_FUN_NAME);
-		BAIL_ON(mainDllModule <= 0, L"gedosato_shim: could not resolve initialization procedure address\r\n");
+		BAIL_ON(mainDllModule <= 0, SHIM_PREFIX L"could not resolve initialization procedure address\r\n");
 		initFunc();
-		DBG(L"gedosato_shim: done.\r\n");
+		DBG(SHIM_PREFIX L"done.\r\n");
 		return true;
 	}
 	else {
-		DBG(L"gedosato_shim: not whitelisted!\r\n");
+		DBG(SHIM_PREFIX L"not whitelisted!\r\n");
 	}
 	return false;
 }
@@ -214,7 +221,7 @@ DWORD hookThread(LPVOID hModule) {
 BOOL WINAPI DllMain(HMODULE hModule, DWORD fdwReason, LPVOID lpReserved) {
 	if(fdwReason == DLL_PROCESS_ATTACH) {
 		DisableThreadLibraryCalls(hModule);
-		DBG(L"gedosato_shim: DllMain create thread\r\n");
+		DBG(SHIM_PREFIX L"DllMain create thread\r\n");
 		HANDLE hookThreadHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)&hookThread, (LPVOID)hModule, 0, NULL);
 		SetThreadPriority(hookThreadHandle, THREAD_PRIORITY_TIME_CRITICAL);
 	}
