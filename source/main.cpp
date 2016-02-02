@@ -137,6 +137,11 @@ const string& getExeFileName() {
 			if(pos == string::npos) pos = exeFn.rfind(".EXE");
 			if(pos != string::npos) {
 				exeFn = exeFn.substr(0, pos);
+			} else {
+				// Tales of Symphonia fix
+				if(exeFn.find("sec") == 0) {
+					exeFn = "Symphonia";
+				}
 			}
 		}
 	}

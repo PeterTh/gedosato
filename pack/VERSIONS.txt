@@ -9,6 +9,8 @@ Generic depth plugin:
 - SAO: add depth-dependent fadeout
 GeDoSaToTool:
 - 64 bit injection support
+Tales of Symphonia:
+- Added Plugin, fix resolution lock
 
 28-01-2016 -- beta 20 - "Hopeful Jasper"
 ========================================

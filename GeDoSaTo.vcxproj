@@ -287,6 +287,7 @@
     <ClCompile Include="source\plugins\dw8.cpp" />
     <ClCompile Include="source\plugins\ff13.cpp" />
     <ClCompile Include="source\plugins\lrff13.cpp" />
+    <ClCompile Include="source\plugins\symphonia.cpp" />
     <ClCompile Include="source\plugins\zestiria.cpp" />
     <ClCompile Include="source\shader_manager.cpp" />
     <ClCompile Include="source\steam\steamfriends.cpp" />
@@ -395,6 +396,7 @@
     <ClInclude Include="include\plugins\dw8.h" />
     <ClInclude Include="include\plugins\ff13.h" />
     <ClInclude Include="include\plugins\lrff13.h" />
+    <ClInclude Include="include\plugins\symphonia.h" />
     <ClInclude Include="include\plugins\zestiria.h" />
     <ClInclude Include="include\steam\steamfriends.h" />
     <ClInclude Include="include\utils\d3d11_utils.h" />
