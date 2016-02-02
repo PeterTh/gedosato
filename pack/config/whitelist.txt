@@ -172,3 +172,4 @@ witcher2                     || The Witcher 2
 WL2                          || Wasteland 2
 Wolverine                    || X-Men Origins: Wolverine
 yso_win                      || Ys Origin
+sec*                         || Tales of Symphonia
