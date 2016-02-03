@@ -11,6 +11,7 @@ GeDoSaToTool:
 - 64 bit injection support
 Tales of Symphonia:
 - Added Plugin, fix resolution lock
+- Also fix postprocessing
 
 28-01-2016 -- beta 20 - "Hopeful Jasper"
 ========================================
