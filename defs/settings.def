@@ -111,3 +111,6 @@ SETTING(bool, EnableCoverageSampling, "enableCoverageSampling", false)
 
 // Screenshot options
 SETTING(int, MaxScreenshotParallelism, "maxScreenshotParallelism", 8)
+
+// Game-specific settings
+SETTING(bool, SymphoniaBlackOutlines, "symphoniaBlackOutlines", false)

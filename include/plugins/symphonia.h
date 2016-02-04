@@ -23,4 +23,7 @@ public:
 	virtual HRESULT redirectSetVertexShaderConstantF(UINT StartRegister, CONST float* pConstantData, UINT Vector4fCount) override;
 
 	virtual HRESULT redirectScissorRect(CONST RECT* pRect) override;
+
+	virtual HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) override;
+
 };

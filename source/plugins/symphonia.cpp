@@ -8,6 +8,7 @@
 
 void SymphoniaPlugin::reportStatus() {
 	Console::get().add("!! Symphonia Plugin: oh come on");
+	Console::get().add(string("!! black outlines: ") + (Settings::get().getSymphoniaBlackOutlines()?"enabled":"disabled"));
 }
 
 void SymphoniaPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT bbformat, D3DFORMAT dssformat) {
@@ -67,4 +68,18 @@ HRESULT SymphoniaPlugin::redirectScissorRect(CONST RECT* pRect) {
 	newR.right = static_cast<long>(newR.right*sFactor);
 	newR.bottom = static_cast<long>(newR.bottom*sFactor);
 	return GenericPlugin::redirectScissorRect(&newR);
+}
+
+HRESULT SymphoniaPlugin::redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value) {
+	if(Settings::get().getSymphoniaBlackOutlines()) {
+		if(State == D3DRS_SRCBLEND || State == D3DRS_DESTBLEND) {
+			D3DCULL cullmode;
+			d3ddev->GetRenderState(D3DRS_CULLMODE, (DWORD*)(&cullmode));
+			if(cullmode == D3DCULL_CW) {
+				if(State == D3DRS_SRCBLEND) return GenericPlugin::redirectSetRenderState(State, D3DBLEND_ONE);
+				if(State == D3DRS_DESTBLEND) return GenericPlugin::redirectSetRenderState(State, D3DBLEND_ZERO);
+			}
+		}
+	}
+	return GenericPlugin::redirectSetRenderState(State, Value);
 }

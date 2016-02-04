@@ -12,6 +12,7 @@ GeDoSaToTool:
 Tales of Symphonia:
 - Added Plugin, fix resolution lock
 - Also fix postprocessing
+- Add toggle for black character outlines
 
 28-01-2016 -- beta 20 - "Hopeful Jasper"
 ========================================
