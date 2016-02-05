@@ -130,6 +130,7 @@ PillarsOfEternity            || Pillars of Eternity
 PKHD-DS-ConfigTool           || Painkiller HD Config
 PKHDGame-Win32-Shipping      || Painkiller HD
 PPSSPPWindows64              || PPSSPP
+Psychonauts                  || Psychonauts	
 Rayman Legends               || Rayman Legends
 RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
