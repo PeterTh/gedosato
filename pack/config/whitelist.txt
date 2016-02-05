@@ -142,6 +142,7 @@ Risen2                       || Risen 2
 Risen3                       || Risen 3
 RoA                          || Rock of Ages
 runner2                      || BIT:TRIP Runner 2
+sec*                         || Tales of Symphonia
 Shadowrun                    || Shadowrun Returns
 Sherlock                     || Sherlock Holmes: Crimes and Punishments
 ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
@@ -172,4 +173,3 @@ witcher2                     || The Witcher 2
 WL2                          || Wasteland 2
 Wolverine                    || X-Men Origins: Wolverine
 yso_win                      || Ys Origin
-sec*                         || Tales of Symphonia
