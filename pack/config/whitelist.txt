@@ -102,6 +102,7 @@ KentuckyRouteZero            || Kentucky Route Zero
 kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
 kl2                          || Kane & Lynch 2: Dog Days
+KungFuStrike                 || Kung Fu Strike - The Warrior's Rise
 LaMulanaWin                  || La-Mulana
 Launch                       || Dynasty Warriors 8 XL
 Launcher                     || Launcher (multiple)
