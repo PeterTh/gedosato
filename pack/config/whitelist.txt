@@ -166,6 +166,7 @@ TESV                         || The Elder Scrolls V: Skyrim
 TFOC                         || Transformers: Fall of Cybertron
 TheFall                      || The Fall
 TheWalkingDead2              || The Walking Dead Season 2
+Torchlight2                  || Torchlight 2
 TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
