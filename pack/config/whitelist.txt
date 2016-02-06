@@ -171,6 +171,7 @@ trine2_launcher              || Trine 2 Launcher
 tru                          || Tomb Raider: Underworld
 TWFC                         || Transformers: War for Cybertron
 UmiByeWin                    || Sayonara UmiharaKawase
+SWTFU                        || Star Wars: The Force Unleashed
 Valiant Hearts               || Valiant Hearts
 Valkyria                     || Valkyria Chronicles
 witcher2                     || The Witcher 2
