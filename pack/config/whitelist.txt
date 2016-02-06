@@ -172,6 +172,7 @@ tru                          || Tomb Raider: Underworld
 TWFC                         || Transformers: War for Cybertron
 UmiByeWin                    || Sayonara UmiharaKawase
 SWTFU                        || Star Wars: The Force Unleashed
+the last tinker              || The Last Tinker: City of Colors
 Valiant Hearts               || Valiant Hearts
 Valkyria                     || Valkyria Chronicles
 witcher2                     || The Witcher 2
