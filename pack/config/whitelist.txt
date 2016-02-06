@@ -129,6 +129,7 @@ MWOClient                    || MechWarrior Online
 Never_Alone                  || Never Alone (Kisima Ingitchuna)
 ninja                        || Mini Ninjas
 OfOrcsAndMen_Steam           || Of Orcs And Men
+Overlord                     || Overlord
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
 PillarsOfEternity            || Pillars of Eternity
