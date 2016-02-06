@@ -10,24 +10,132 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
-Console* Console::latest = NULL;
+Console* Console::latest = nullptr;
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// API independent
+
+float ConsoleLine::draw(float y) {
+	if(ypos<0.0f) ypos = y;
+	else ypos += (y-ypos)*0.2f; 
+	SDLOG(15, "Printed: %s at %f", msg, (10.0f + ypos));
+	Console::get().print(25.0f, (39.0f + ypos), msg.c_str());
+	return t.elapsed() > Settings::get().getMessageSeconds()*1000000.0 ? 0.0f : 38.0f + ypos;
+}
+
+Console& Console::get() {
+	if(latest == NULL) SDLOG(0, "ERROR: NULL Console\n");
+	return *latest;
+}
+
+void Console::setLatest(Console *c) {
+	latest = c;
+}
+
+void Console::add(const string& msg) {
+	SDLOG(1, "Console add: %s\n", msg.c_str());
+	if(Settings::get().getMessageSeconds() > 0) {
+		std::vector<std::string> splitstring;
+		boost::algorithm::split(splitstring, msg, boost::is_any_of("\n\r"));
+		for(const auto& s : splitstring) lines.push_back(ConsoleLine(s));
+		lineHeight = 1.0f;
+	}
+}
+
+void Console::add(StaticTextPtr text) {
+	statics.push_back(text);
+}
+
+bool Console::needsDrawing() {
+	return hasDevice() && lineHeight > 0.0f 
+		|| std::any_of(statics.begin(), statics.end(), [](const StaticTextPtr& p) { return p->show; });
+}
+
+void Console::draw() {
+	SDLOG(5, "Drawing console\n");
+	beginDrawing();
+
+	// draw background quad
+	if(lineHeight > 0.0f) {
+		drawBGQuad(-1.0f, 1.0f, 2.0f, -lineHeight / height);
+	}
+	float y = 0.0f;
+
+	// draw lines
+	if(lines.size() - start > MAX_LINES) start += lines.size() - start - MAX_LINES;
+	for(size_t i = start; i < lines.size(); ++i) {
+		float ret = lines[i].draw(y);
+		if(ret == 0.0f) start = i + 1; // if text timed out increase start
+		else y = ret + 2.0f;
+	}
+	if(y == 0.0f) {
+		if(lineHeight > 0.2f) lineHeight *= 0.6f;
+		else {
+			lineHeight = 0.0f;
+			// clear lines
+			lines.clear();
+			start = 0;
+		}
+	}
+	else lineHeight = y + 15.0f;
+
+	// draw static text
+	for(auto& t : statics) {
+		if(t->show) {
+			auto p = print(t->x, t->y, t->text.c_str(), true);
+			float wborder = 4.0f / width, hborder = 4.0f / height;
+			float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
+			drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder * 8, p.second - bgy - hborder * 8);
+			print(t->x, t->y, t->text.c_str());
+		}
+	}
+}
+
+Console::Position Console::print(float x, float y, const char *text, bool measure) {
+	float xstart = x;
+	Position ret = std::make_pair(-100.0f, 100.0f);
+	if(!measure) {
+		beginText();
+	}
+	while(*text) {
+		if(*text >= 32 && *text < 128) {
+			stbtt_aligned_quad q;
+			stbtt_GetBakedQuad(cdata, BMPSIZE, BMPSIZE, *text - 32, &x, &y, &q, 1); // 1=opengl, 0=old d3d
+			if(!measure) {
+				quad(q);
+			}
+			ret.first = max(ret.first, q.x0 / width - 1.0f);
+			ret.second = min(ret.second, -q.y0 / height + 1.0f);
+		}
+		if(*text == '\n') {
+			y += 36.0f;
+			x = xstart;
+		}
+		++text;
+	}
+	if(!measure) {
+		endText();
+	}
+	return ret;
+}
+
+int Console::getW() {
+	return width;
+}
+
+int Console::getH() {
+	return height;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// DirectX 9
 	
-const D3DVERTEXELEMENT9 Console::vertexElements[3] = {
+const D3DVERTEXELEMENT9 ConsoleDX9::vertexElements[3] = {
     { 0, 0,  D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },
     { 0, 12, D3DDECLTYPE_FLOAT2, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_TEXCOORD,  0 },
     D3DDECL_END()
 };
 
-float ConsoleLine::draw(float y) {
-	if(ypos<0.0f) ypos = y;
-	else ypos += (y-ypos)*0.2f; 
-	//cout << "Printed: " << msg << " at " << (10.0f + ypos) << "\n";
-	Console::get().print(25.0f, (39.0f + ypos), msg.c_str());
-	return t.elapsed() > Settings::get().getMessageSeconds()*1000000.0 ? 0.0f : 38.0f + ypos;
-}
-
-void Console::initialize(IDirect3DDevice9* device, int w, int h) {
-	SDLOG(0, "Initializing Console on device %p\n", device);
+ConsoleDX9::ConsoleDX9(IDirect3DDevice9* device, int w, int h) : Console() {
+	SDLOG(0, "Initializing DX9 Console on device %p\n", device);
 	width = w;
 	height = h;
 	this->device = device;
@@ -79,18 +187,18 @@ void Console::initialize(IDirect3DDevice9* device, int w, int h) {
 	SDLOG(0, " - done\n");
 }
 
-void Console::cleanup() {
-	SDLOG(2, "Console cleanup\n")
-	device = NULL;
+ConsoleDX9::~ConsoleDX9() {
+	SDLOG(2, "ConsoleDX9 cleanup\n")
 	SAFERELEASE(vertexDeclaration);
 	SAFERELEASE(effect);
 	SAFERELEASE(fontTex);
-	lines.clear();
-	statics.clear();
 }
 
+void ConsoleDX9::beginDrawing() {
+	device->SetVertexDeclaration(vertexDeclaration);
+}
 
-void Console::drawBGQuad(float x0, float y0, float w, float h) {
+void ConsoleDX9::drawBGQuad(float x0, float y0, float w, float h) {
 	unsigned passes;
 	FLOAT color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
 	effect->SetFloatArray(rectColorHandle, color, 4);
@@ -101,79 +209,7 @@ void Console::drawBGQuad(float x0, float y0, float w, float h) {
 	effect->End();
 }
 
-void Console::draw() {
-	SDLOG(5, "Drawing console\n");
-	device->SetVertexDeclaration(vertexDeclaration);
-
-	// draw background quad
-	if(lineHeight > 0.0f) {
-		drawBGQuad(-1.0f, 1.0f, 2.0f, -lineHeight / height);
-	}
-	float y = 0.0f;
-
-	// draw lines
-	if(lines.size()-start > MAX_LINES) start += lines.size()-start-MAX_LINES; 
-	for(size_t i=start; i<lines.size(); ++i) {
-		float ret = lines[i].draw(y);
-		if(ret == 0.0f) start = i+1; // if text timed out increase start
-		else y = ret + 2.0f;
-	}
-	if(y == 0.0f) {
-		if(lineHeight>0.2f) lineHeight *= 0.6f;
-		else {
-			lineHeight = 0.0f;
-			// clear lines
-			lines.clear();
-			start = 0;
-		}
-	}
-	else lineHeight = y + 15.0f;
-
-	// draw static text
-	for(auto& t : statics) {
-		if(t->show) {
-			auto p = print(t->x, t->y, t->text.c_str(), true);
-			float wborder = 4.0f / width, hborder = 4.0f / height;
-			float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
-			drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder*8, p.second - bgy - hborder*8);
-			print(t->x, t->y, t->text.c_str());
-		}
-	}
-}
-
-Console::Position Console::print(float x, float y, const char *text, bool measure) {
-	unsigned passes;
-	float xstart = x;
-	Position ret = std::make_pair(-100.0f, 100.0f);
-	if(!measure) {
-		effect->SetTexture(textTex2DHandle, fontTex);
-		effect->Begin(&passes, 0);
-		effect->BeginPass(1);
-	}
-	while(*text) {
-		if(*text >= 32 && *text < 128) {
-			stbtt_aligned_quad q;
-			stbtt_GetBakedQuad(cdata, BMPSIZE, BMPSIZE, *text - 32, &x, &y, &q, 1); // 1=opengl, 0=old d3d
-			if(!measure) {
-				quad(q);
-			}
-			ret.first = max(ret.first, q.x0/width - 1.0f);
-			ret.second = min(ret.second, -q.y0/height + 1.0f);
-		}
-		if(*text == '\n') {
-			y += 36.0f;
-			x = xstart;
-		}
-		++text;
-	}
-	if(!measure) {
-		effect->EndPass();
-		effect->End();
-	}
-	return ret;
-}
-
-void Console::quad(float x, float y, float w, float h) {
+void ConsoleDX9::quad(float x, float y, float w, float h) {
 	float quad[4][5] = {
 		{ x  , y  , 0.0f, 0.0f, 0.0f },
 		{ x+w, y  , 0.0f, 1.0f, 0.0f },
@@ -183,7 +219,7 @@ void Console::quad(float x, float y, float w, float h) {
 	device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &quad[0], sizeof(quad[0]));
 }
 
-void Console::quad(const stbtt_aligned_quad& q) {
+void ConsoleDX9::quad(const stbtt_aligned_quad& q) {
 	float quad[4][5] = {
 		{ -1.0f + q.x0/width, 1.0f - q.y0/height, 0.0f, q.s0, q.t0 },
 		{ -1.0f + q.x1/width, 1.0f - q.y0/height, 0.0f, q.s1, q.t0 },
@@ -193,17 +229,18 @@ void Console::quad(const stbtt_aligned_quad& q) {
 	device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &quad[0], sizeof(quad[0]));
 }
 
-bool Console::needsDrawing() {
-	return device && lineHeight > 0.0f 
-		|| std::any_of(statics.begin(), statics.end(), [](const StaticTextPtr& p) { return p->show; });
+bool ConsoleDX9::hasDevice() {
+	return device != nullptr;
 }
 
-void Console::add(const string& msg) {
-	SDLOG(1, "Console add: %s\n", msg.c_str());
-	if(Settings::get().getMessageSeconds() > 0) {
-		std::vector<std::string> splitstring;
-		boost::algorithm::split(splitstring, msg, boost::is_any_of("\n\r"));
-		for(const auto& s : splitstring) lines.push_back(ConsoleLine(s));
-		lineHeight = 1.0f;
-	}
+void ConsoleDX9::beginText() {
+	unsigned passes;
+	effect->SetTexture(textTex2DHandle, fontTex);
+	effect->Begin(&passes, 0);
+	effect->BeginPass(1);
+}
+
+void ConsoleDX9::endText() {
+	effect->EndPass();
+	effect->End();
 }

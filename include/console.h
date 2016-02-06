@@ -10,31 +10,27 @@ using std::string;
 using std::vector;
 #include <memory>
 
+//////////////////////////////////////////////////////////////////// API independent
+
 class ConsoleLine {
 	Timer t;
 	string msg;
-	float ypos;
-
+	float ypos = -1.0f;
 public:
-	ConsoleLine(const string& msg) : msg(msg), ypos(-1.0f) {
-	}
-
+	ConsoleLine(const string& msg) : msg(msg) {}
 	float draw(float y);
 };
 
 struct StaticText {
 	string text;
 	float x, y;
-	bool show;
-
-	StaticText(string text, float x, float y)
-		: text(text), x(x), y(y), show(false) {
-	}
+	bool show = false;
+	StaticText(string text, float x, float y) : text(text), x(x), y(y) {}
 };
-
 typedef std::shared_ptr<StaticText> StaticTextPtr;
 
 class Console {
+protected:
 	typedef std::pair<float, float> Position;
 	static Console* latest;
 	static const unsigned MAX_LINES = 16;
@@ -46,49 +42,52 @@ class Console {
 	int width, height;
 	float lineHeight;
 
-	IDirect3DDevice9* device = nullptr;
-    IDirect3DVertexDeclaration9* vertexDeclaration = nullptr;
-	IDirect3DTexture9* fontTex = nullptr;
-	LPD3DXEFFECT effect = nullptr;
-	D3DXHANDLE rectColorHandle, textTex2DHandle;
-    static const D3DVERTEXELEMENT9 vertexElements[3];
-	
 	stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
-	
-	void quad(float x, float y, float w, float h);
-	void quad(const stbtt_aligned_quad& q);
 
-	void drawBGQuad(float x0, float y0, float x1, float y1);
+	virtual void beginDrawing() = 0;
+	virtual void beginText() = 0;
+	virtual void endText() = 0;
+	virtual void quad(float x, float y, float w, float h) = 0;
+	virtual void quad(const stbtt_aligned_quad& q) = 0;
+	virtual void drawBGQuad(float x0, float y0, float x1, float y1) = 0;
+	virtual bool hasDevice() = 0;
 
 public:
-	Console() {	}
-	~Console() {
-		SDLOG(0, "Deleting Console on device %p\n", device);
-		cleanup();
-	}
-
-	static Console& get() { 
-		if(latest == NULL) SDLOG(0, "ERROR: NULL Console\n");
-		return *latest; 
-	}
-	static void setLatest(Console *c) {
-		latest = c;
-	}
+	static Console& get();
+	static void setLatest(Console *c);
 
 	void add(const string& msg);
-
-	void add(StaticTextPtr text) {
-		statics.push_back(text);
-	}
-
-	bool needsDrawing(); 
+	void add(StaticTextPtr text);
+	bool needsDrawing();
 	void draw();
 
 	Position print(float x, float y, const char *text, bool measure = false);
+	
+	int getW();
+	int getH();
+};
 
-	void initialize(IDirect3DDevice9* device, int w, int h);
-	void cleanup();
+//////////////////////////////////////////////////////////////////// DirectX 9
 
-	int getW() { return width; }
-	int getH() { return height; }
+class ConsoleDX9 : public Console {
+protected:
+	IDirect3DDevice9* device = nullptr;
+	IDirect3DVertexDeclaration9* vertexDeclaration = nullptr;
+	IDirect3DTexture9* fontTex = nullptr;
+	LPD3DXEFFECT effect = nullptr;
+	D3DXHANDLE rectColorHandle, textTex2DHandle;
+	static const D3DVERTEXELEMENT9 vertexElements[3];
+
+	virtual void beginDrawing() override;
+	virtual void beginText() override;
+	virtual void endText() override;
+	virtual void quad(float x, float y, float w, float h) override;
+	virtual void quad(const stbtt_aligned_quad& q) override;
+	virtual void drawBGQuad(float x0, float y0, float x1, float y1) override;
+
+	virtual bool hasDevice() override;
+
+public:
+	ConsoleDX9(IDirect3DDevice9* device, int w, int h);
+	virtual ~ConsoleDX9();
 };

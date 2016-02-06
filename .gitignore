@@ -9,6 +9,7 @@ Debug
 *.log
 *.exe
 *.vcd
+*.opendb
 stuff
 *SyncToy*
 *.lnk

@@ -47,7 +47,7 @@ protected:
 	std::unique_ptr<PerfTrace> perfTrace;
 
 	// Utilities
-	Console console;
+	std::unique_ptr<Console> console;
 	std::unique_ptr<RenderTargetManager> rtMan;
 	std::unique_ptr<ImageWriter> imgWriter;
 	std::unique_ptr<Scaler> scaler;

@@ -33,10 +33,10 @@ hkIDirect3DDevice9* RSManagerDX9::getHkD3Ddev() {
 
 
 void RSManagerDX9::showStatus() {
-	console.add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
+	console->add(format("%s %s", INTERCEPTOR_NAME, GeDoSaToVersion()));
 	if(getScaler()) getScaler()->showStatus();
-	else console.add("Not downsampling");
-	console.add(format("Plugin loaded: %s", plugin->getName().c_str()));
+	else console->add("Not downsampling");
+	console->add(format("Plugin loaded: %s", plugin->getName().c_str()));
 	plugin->reportStatus();
 }
 
@@ -55,14 +55,14 @@ void RSManagerDX9::initResources(bool downsampling, unsigned rw, unsigned rh,
 	swapEffect = swapEff == D3DSWAPEFFECT_COPY ? SWAP_COPY : (swapEff == D3DSWAPEFFECT_DISCARD ? SWAP_DISCARD : SWAP_FLIP);
 	if(swapEffect == SWAP_FLIP) numBackBuffers++; // account for the "front buffer" in the swap chain
 
-	console.initialize(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh);
-	Console::setLatest(&console);
+	console.reset(new ConsoleDX9(d3ddev, downsampling ? Settings::get().getPresentWidth() : rw, downsampling ? Settings::get().getPresentHeight() : rh));
+	Console::setLatest(console.get());
 	imgWriter.reset(new ImageWriter(d3ddev, max(rw, max(Settings::get().getRenderWidth(), Settings::get().getPresentWidth())), max(rh, max(Settings::get().getRenderHeight(), Settings::get().getPresentHeight()))));
 
 	// performance measurement
-	console.add(frameTimeText);
+	console->add(frameTimeText);
 	perfMonitor.reset(new D3DPerfMonitor(d3ddev, 60));
-	console.add(traceText);
+	console->add(traceText);
 
 	// store current state temporarily
 	IDirect3DStateBlock9 *startState;
@@ -142,18 +142,18 @@ void RSManagerDX9::releaseResources() {
 
 	SDLOG(0, "RenderstateManager releasing resources\n");
 	SAFEDELETE(plugin);
-	perfMonitor.reset(NULL);
+	perfMonitor.reset(nullptr);
+	extraBuffer.reset(nullptr);
+	imgWriter.reset(nullptr);
+	scaler.reset(nullptr);
+	console.reset(nullptr);
 	SAFERELEASE(depthStencilSurf);
-	extraBuffer.reset(NULL);
-	imgWriter.reset(NULL);
-	scaler.reset(NULL);
 	SAFERELEASE(prevStateBlock);
 	SAFERELEASE(initStateBlock);
 	SAFERELEASE(prevVDecl);
 	SAFERELEASE(prevDepthStencilSurf);
 	SAFERELEASE(prevRenderTarget);
 	backBuffers.clear();
-	console.cleanup();
 
 	SDLOG(0, "RenderstateManager resource release completed\n");
 }
@@ -224,7 +224,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		SDLOG(0, "============================================\nFinished dumping frame.\n");
 		Settings::get().restoreLogLevel();
 		dumpingFrame = false;
-		console.add("Finished dumping frame.");
+		console->add("Finished dumping frame.");
 	}
 
 
@@ -239,7 +239,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 	}
 	
 	// Draw console
-	if(console.needsDrawing()) {
+	if(console->needsDrawing()) {
 		storeRenderState();
 		// restore neutral state
 		initStateBlock->Apply();
@@ -247,7 +247,7 @@ void RSManagerDX9::prePresent(bool doNotFlip) {
 		IDirect3DSurface9* realBackBuffer;
 		d3ddev->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &realBackBuffer);
 		if(realBackBuffer) d3ddev->SetRenderTarget(0, realBackBuffer);
-		console.draw();
+		console->draw();
 		if(realBackBuffer) realBackBuffer->Release();
 		d3ddev->EndScene();
 		restoreRenderState();
