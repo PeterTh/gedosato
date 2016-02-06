@@ -6,6 +6,7 @@
 # Exe File Name (or pattern) || Readable Name (optional)
 
 AlanWake                     || Alan Wake
+alan_wakes_american_nightmare || Alan Wake's American Nightmare
 AO                           || Abyss Odyssey
 AoW3                         || Age of Wonders 3
 AssassinsCreed_Dx9           || Assassins Creed
@@ -45,6 +46,7 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 DBXV                         || Dragonball Xenoverse
+deadrising2otr               || Dead Rising 2: Off the Record
 DDDA                         || Dragon's Dogma: Dark Arisen
 Dead Space                   || Dead Space
 deadspace2                   || Dead Space 2
@@ -64,6 +66,8 @@ EoCApp                       || Divinity: Original Sin
 FairyFencer                  || Fairy Fencer F
 Fallout3                     || Fallout 3
 FalloutLauncher              || Fallout 3 Launcher
+FalloutNV                    || Fallout New Vegas
+FalloutNVLauncher            || Fallout New Vegas Launcher
 FarCry2                      || FarCry 2
 fear                         || F.E.A.R.
 FEAR2                        || F.E.A.R. 2
@@ -76,6 +80,7 @@ ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
 FoxGame-Win32-Shipping       || Blacklight: Retribution
 fr-041_debris                || "Debris" by Farbrausch
+Game                         || Gurumin: A Monstrous Adventure
 grimrock                     || Legend of Grimrock
 grimrock2                    || Legend of Grimrock 2
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams
@@ -97,6 +102,8 @@ kb                           || King's Bounty (All Versions)
 KentuckyRouteZero            || Kentucky Route Zero
 kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
+kl2                          || Kane & Lynch 2: Dog Days
+KungFuStrike                 || Kung Fu Strike - The Warrior's Rise
 LaMulanaWin                  || La-Mulana
 Launch                       || Dynasty Warriors 8 XL
 Launcher                     || Launcher (multiple)
@@ -124,12 +131,15 @@ MWOClient                    || MechWarrior Online
 Never_Alone                  || Never Alone (Kisima Ingitchuna)
 ninja                        || Mini Ninjas
 OfOrcsAndMen_Steam           || Of Orcs And Men
+Outland                      || Outland
+Overlord                     || Overlord
 Paranautical Activity        || Paranautical Activity
 PathOfExileSteam             || Path of Exile
 PillarsOfEternity            || Pillars of Eternity
 PKHD-DS-ConfigTool           || Painkiller HD Config
 PKHDGame-Win32-Shipping      || Painkiller HD
 PPSSPPWindows64              || PPSSPP
+Psychonauts                  || Psychonauts	
 Rayman Legends               || Rayman Legends
 RE5DX10                      || Resident Evil 5 (DX10)
 RE5DX9                       || Resident Evil 5 (DX9)
@@ -158,6 +168,7 @@ TESV                         || The Elder Scrolls V: Skyrim
 TFOC                         || Transformers: Fall of Cybertron
 TheFall                      || The Fall
 TheWalkingDead2              || The Walking Dead Season 2
+Torchlight2                  || Torchlight 2
 TribesAscend                 || Tribes Ascend
 trine1_32bit                 || Trine 1 Enchanted Edition
 trine1_launcher              || Trine 1 Enchanted Configurator
@@ -166,9 +177,12 @@ trine2_launcher              || Trine 2 Launcher
 tru                          || Tomb Raider: Underworld
 TWFC                         || Transformers: War for Cybertron
 UmiByeWin                    || Sayonara UmiharaKawase
+SWTFU                        || Star Wars: The Force Unleashed
+the last tinker              || The Last Tinker: City of Colors
 Valiant Hearts               || Valiant Hearts
 Valkyria                     || Valkyria Chronicles
 witcher2                     || The Witcher 2
+witn                         || Lord of the Rings: War in the North
 WL2                          || Wasteland 2
 Wolverine                    || X-Men Origins: Wolverine
 yso_win                      || Ys Origin
