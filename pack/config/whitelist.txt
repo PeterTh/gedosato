@@ -101,6 +101,7 @@ kb                           || King's Bounty (All Versions)
 KentuckyRouteZero            || Kentucky Route Zero
 kick_win                     || Marlow Briggs
 KidGame                      || Killer is Dead
+kl2                          || Kane & Lynch 2: Dog Days
 LaMulanaWin                  || La-Mulana
 Launch                       || Dynasty Warriors 8 XL
 Launcher                     || Launcher (multiple)
