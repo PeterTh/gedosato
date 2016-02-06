@@ -46,6 +46,7 @@ DarksidersPC                 || Darksiders
 DarkSoulsII                  || Dark Souls 2
 DayZ                         || DayZ Standalone
 DBXV                         || Dragonball Xenoverse
+deadrising2otr               || Dead Rising 2: Off the Record
 DDDA                         || Dragon's Dogma: Dark Arisen
 Dead Space                   || Dead Space
 deadspace2                   || Dead Space 2
