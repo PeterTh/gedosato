@@ -24,7 +24,7 @@ RSManagerDX11& RSManager::getDX11() {
 
 void RSManager::setLatest(RSManager *man) {
 	latest = man;
-	Console::setLatest(man->console.get());
+	if(man != nullptr) Console::setLatest(man->console.get());
 }
 
 RenderTargetManager& RSManager::getRTMan() {

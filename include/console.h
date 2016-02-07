@@ -10,6 +10,8 @@ using std::string;
 using std::vector;
 #include <memory>
 
+#include <d3d11.h>
+
 //////////////////////////////////////////////////////////////////// API independent
 
 class ConsoleLine {
@@ -44,6 +46,8 @@ protected:
 
 	stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
 
+	Console(int w, int h);
+
 	virtual void beginDrawing() = 0;
 	virtual void beginText() = 0;
 	virtual void endText() = 0;
@@ -65,12 +69,13 @@ public:
 	
 	int getW();
 	int getH();
+
+	virtual ~Console() {}
 };
 
 //////////////////////////////////////////////////////////////////// DirectX 9
 
 class ConsoleDX9 : public Console {
-protected:
 	IDirect3DDevice9* device = nullptr;
 	IDirect3DVertexDeclaration9* vertexDeclaration = nullptr;
 	IDirect3DTexture9* fontTex = nullptr;
@@ -78,6 +83,7 @@ protected:
 	D3DXHANDLE rectColorHandle, textTex2DHandle;
 	static const D3DVERTEXELEMENT9 vertexElements[3];
 
+protected:
 	virtual void beginDrawing() override;
 	virtual void beginText() override;
 	virtual void endText() override;
@@ -90,4 +96,33 @@ protected:
 public:
 	ConsoleDX9(IDirect3DDevice9* device, int w, int h);
 	virtual ~ConsoleDX9();
+};
+
+
+//////////////////////////////////////////////////////////////////// DirectX 11
+
+class RSManagerDX11;
+struct ID3DX11Effect;
+
+class ConsoleDX11 : public Console {
+	ID3D11Texture2D* fontTex = nullptr;
+	ID3D11ShaderResourceView* fontTexView = nullptr;
+	ID3D11Buffer *vertexBuffer = nullptr, *indexBuffer = nullptr;
+	ID3DX11Effect *effect = nullptr;
+
+protected:
+	ID3D11Device* device = nullptr;
+
+	virtual void beginDrawing() override;
+	virtual void beginText() override;
+	virtual void endText() override;
+	virtual void quad(float x, float y, float w, float h) override;
+	virtual void quad(const stbtt_aligned_quad& q) override;
+	virtual void drawBGQuad(float x0, float y0, float x1, float y1) override;
+
+	virtual bool hasDevice() override;
+
+public:
+	ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, int h);
+	virtual ~ConsoleDX11();
 };

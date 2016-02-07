@@ -17,7 +17,11 @@ hkIDXGIAdapter::hkIDXGIAdapter(IDXGIAdapter **ppIDXGIAdapter) {
 
 HRESULT APIENTRY hkIDXGIAdapter::QueryInterface(REFIID riid, void **ppvObject) {
 	SDLOG(20, "hkIDXGIAdapter::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	auto retVal = pWrapped->QueryInterface(riid, ppvObject);
+	if(*ppvObject == pWrapped) {
+		*ppvObject = this;
+	}
+	return retVal;
 }
 
 ULONG APIENTRY hkIDXGIAdapter::AddRef() {

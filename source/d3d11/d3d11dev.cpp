@@ -8,10 +8,16 @@
 #include "utils/imgproc_utils.h"
 
 hkID3D11Device::hkID3D11Device(ID3D11Device **ppID3D11Device) {
+	// ensure that internal references are tracked correctly
+	pWrapped = *ppID3D11Device;
+	pWrapped->AddRef();
+	auto preCount = pWrapped->Release();
 	rsMan = new RSManagerDX11(*ppID3D11Device);
 	RSManager::setLatest(rsMan);
-	pWrapped = *ppID3D11Device;
 	*ppID3D11Device = this;
+	pWrapped->AddRef();
+	auto postCount = pWrapped->Release() - RSManagerDX11::getInternalRefCount();
+	if(preCount != postCount) SDLOG(-1, "ERROR: DX11 internal reference count mismatch. %d references uncounted\n", postCount);
 }
 
 HRESULT APIENTRY hkID3D11Device::QueryInterface(REFIID riid, void **ppvObject) {
@@ -23,13 +29,25 @@ HRESULT APIENTRY hkID3D11Device::QueryInterface(REFIID riid, void **ppvObject) {
 ULONG APIENTRY hkID3D11Device::AddRef() {
 	RSManager::setLatest(rsMan);
 	SDLOG(20, "hkID3D11Device::AddRef\n");
-	return pWrapped->AddRef();
+	ULONG ret = pWrapped->AddRef();
+	return ret - RSManagerDX11::getInternalRefCount();
 }
 
 ULONG APIENTRY hkID3D11Device::Release() {
 	RSManager::setLatest(rsMan);
 	SDLOG(20, "hkID3D11Device::Release\n");
-	return pWrapped->Release();
+	ULONG ret = pWrapped->Release();
+	SDLOG(20, "-> ret: %d\n", ret);
+	if(ret == RSManagerDX11::getInternalRefCount()) {
+		SDLOG(2, "hkID3D11Device: only internal referencs left, start teardown\n");
+		pWrapped->AddRef();
+		RSManager::setLatest(nullptr);
+		delete rsMan;
+		auto count = pWrapped->Release();
+		if(count != 0) SDLOG(-1, "ERROR: DX11 cleanup incomplete. %d references left\n", count);
+		return count;
+	}
+	return ret - RSManagerDX11::getInternalRefCount();
 }
 
 HRESULT APIENTRY hkID3D11Device::CreateBuffer(const D3D11_BUFFER_DESC *pDesc, const D3D11_SUBRESOURCE_DATA *pInitialData, ID3D11Buffer **ppBuffer) {

@@ -3,6 +3,8 @@
 #include <iostream>
 #include <thread>
 #include <fstream>
+#include <locale>
+#include <codecvt>
 #include <stdio.h>
 #include <time.h>
 #include <sys/types.h>
@@ -44,17 +46,17 @@ extern "C" __declspec(dllexport) const char* GeDoSaToSettings() {
 extern "C" __declspec(dllexport) void GeDoSaToInit() {
 	// read install location from registry
 	getInstallDirectory();
-	OutputDebugString("GeDoSaTo: Got install dir");
+	OutputDebugString("GeDoSaTo: Got install dir\n");
 
 	// loaded in GeDoSaToTool, stay in memory
 	if(getExeFileName() == "GeDoSaToTool") {
-		OutputDebugString("GeDoSaTo: Tool mode");
+		OutputDebugString("GeDoSaTo: Tool mode\n");
 		g_tool = true;
 		return;
 	}
 
 	g_active = true;
-	OutputDebugString(format("GeDoSaTo: Active on %s", getExeFileName()).c_str());
+	OutputDebugString(format("GeDoSaTo: Active on %s\n", getExeFileName()).c_str());
 
 	// initialize log
 	string logFn = format("logs\\%s_%s.log", getExeFileName().c_str(), getTimeString().c_str());
@@ -62,13 +64,13 @@ extern "C" __declspec(dllexport) void GeDoSaToInit() {
 	std::replace(logFn.begin(), logFn.end(), ' ', '_');
 	logFn = getInstalledFileName(logFn);
 	fopen_s(&g_oFile, logFn.c_str(), "w");
-	if(!g_oFile) OutputDebugString(format("GeDoSaTo: Error opening log fn %s", logFn.c_str()).c_str());
-	else OutputDebugString(format("GeDoSaTo: Opening log fn %s, handle: %p", logFn.c_str(), g_oFile).c_str());
-	OutputDebugString("GeDoSaTo: Log file initialized, let that take over");
+	if(!g_oFile) OutputDebugString(format("GeDoSaTo: Error opening log fn %s\n", logFn.c_str()).c_str());
+	else OutputDebugString(format("GeDoSaTo: Opening log fn %s, handle: %p\n", logFn.c_str(), g_oFile).c_str());
+	OutputDebugString("GeDoSaTo: Log file initialized, let that take over\n");
 
 	// startup
 	SDLOG(-1, "===== %s =====\n", getTimeString().c_str());
-	SDLOG(-1, "===== start "INTERCEPTOR_NAME" %s = fn: %s\n", GeDoSaToVersion(), getExeFileName().c_str());
+	SDLOG(-1, "===== start " INTERCEPTOR_NAME " %s = fn: %s\n", GeDoSaToVersion(), getExeFileName().c_str());
 	SDLOG(-1, "===== installation directory: %s\n", getInstallDirectory().c_str());
 
 	// load settings
@@ -97,13 +99,13 @@ extern "C" __declspec(dllexport) void GeDoSaToInit() {
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	
 	if(dwReason == DLL_PROCESS_ATTACH) {
-		OutputDebugString("GeDoSaTo: startup");
+		OutputDebugString("GeDoSaTo: startup\n");
 		DisableThreadLibraryCalls(hDll);
 	}
 	if(dwReason == DLL_PROCESS_DETACH) {
-		OutputDebugString(format("GeDoSaTo: Exiting from %s", getExeFileName()).c_str());
+		OutputDebugString(format("GeDoSaTo: Exiting from %s\n", getExeFileName()).c_str());
 		if(g_active) {
-			OutputDebugString("GeDoSaTo: was active");
+			OutputDebugString("GeDoSaTo: was active\n");
 			Settings::get().shutdown();
 			endDetour();
 			SDLOG(-1, "===== end =\n");
@@ -178,6 +180,11 @@ string getTimeString(bool forDisplay) {
 		strftime(timebuf, 64, "%Y-%d-%m %H:%M:%S", &gmt);
 	}
 	return string(timebuf);
+}
+
+std::wstring strToWStr(const string& input) {
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+	return converter.from_bytes(input);
 }
 
 bool fileExists(const char *filename) {

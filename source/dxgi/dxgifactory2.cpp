@@ -6,79 +6,14 @@
 #include "settings.h"
 
 hkIDXGIFactory2::hkIDXGIFactory2(IDXGIFactory2 **ppIDXGIFactory2) {
+	SDLOG(20, "hkIDXGIFactory2::hkIDXGIFactory2\n");
 	pWrapped = *ppIDXGIFactory2;
 	*ppIDXGIFactory2 = this;
 }
 
-HRESULT APIENTRY hkIDXGIFactory2::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkIDXGIFactory2::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
-}
-
-ULONG APIENTRY hkIDXGIFactory2::AddRef() {
-	SDLOG(20, "hkIDXGIFactory2::AddRef\n");
-	return pWrapped->AddRef();
-}
-
-ULONG APIENTRY hkIDXGIFactory2::Release() {
-	SDLOG(20, "hkIDXGIFactory2::Release\n");
-	return pWrapped->Release();
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::SetPrivateData(REFGUID Name, UINT DataSize, const void *pData) {
-	SDLOG(20, "hkIDXGIFactory2::SetPrivateData\n");
-	return pWrapped->SetPrivateData(Name, DataSize, pData);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::SetPrivateDataInterface(REFGUID Name, const IUnknown *pUnknown) {
-	SDLOG(20, "hkIDXGIFactory2::SetPrivateDataInterface\n");
-	return pWrapped->SetPrivateDataInterface(Name, pUnknown);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::GetPrivateData(REFGUID Name, UINT *pDataSize, void *pData) {
-	SDLOG(20, "hkIDXGIFactory2::GetPrivateData\n");
-	return pWrapped->GetPrivateData(Name, pDataSize, pData);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::GetParent(REFIID riid, void **ppParent) {
-	SDLOG(20, "hkIDXGIFactory2::GetParent\n");
-	return pWrapped->GetParent(riid, ppParent);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::EnumAdapters(UINT Adapter, IDXGIAdapter **ppAdapter) {
-	SDLOG(20, "hkIDXGIFactory2::EnumAdapters\n");
-	return pWrapped->EnumAdapters(Adapter, ppAdapter);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::MakeWindowAssociation(HWND WindowHandle, UINT Flags) {
-	SDLOG(20, "hkIDXGIFactory2::MakeWindowAssociation\n");
-	return pWrapped->MakeWindowAssociation(WindowHandle, Flags);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::GetWindowAssociation(HWND *pWindowHandle) {
-	SDLOG(20, "hkIDXGIFactory2::GetWindowAssociation\n");
-	return pWrapped->GetWindowAssociation(pWindowHandle);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
-	SDLOG(20, "hkIDXGIFactory2::CreateSwapChain\n");
-	return pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::CreateSoftwareAdapter(HMODULE Module, IDXGIAdapter **ppAdapter) {
-	SDLOG(20, "hkIDXGIFactory2::CreateSoftwareAdapter\n");
-	return pWrapped->CreateSoftwareAdapter(Module, ppAdapter);
-}
-
-HRESULT APIENTRY hkIDXGIFactory2::EnumAdapters1(UINT Adapter, IDXGIAdapter1 **ppAdapter) {
-	SDLOG(20, "hkIDXGIFactory2::EnumAdapters1\n");
-	return pWrapped->EnumAdapters1(Adapter, ppAdapter);
-}
-
-BOOL APIENTRY hkIDXGIFactory2::IsCurrent() {
-	SDLOG(20, "hkIDXGIFactory2::IsCurrent\n");
-	return pWrapped->IsCurrent();
-}
+#define hkIDXGIFactory1 hkIDXGIFactory2
+#include "dxgifactory1.cpp"
+#undef hkIDXGIFactory1
 
 BOOL APIENTRY hkIDXGIFactory2::IsWindowedStereoEnabled() {
 	SDLOG(20, "hkIDXGIFactory2::IsWindowedStereoEnabled\n");

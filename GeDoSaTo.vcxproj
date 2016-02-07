@@ -74,22 +74,22 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext;include;defs;C:\dev\steamworks_sdk_135\sdk\public;C:\dev\boost_1_59_0;D:\dev\nvapi-337;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ext;include;defs;$(WindowsSDK_IncludePath);C:\dev\steamworks_sdk_135\sdk\public;C:\dev\boost_1_59_0;D:\dev\nvapi-337;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ext;include;defs;C:\dev\FX11-master\inc;C:\dev\steamworks_sdk_135\sdk\public;C:\dev\boost_1_59_0;D:\dev\nvapi-337;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ext;include;defs;$(WindowsSDK_IncludePath);C:\dev\FX11-master\inc;C:\dev\steamworks_sdk_135\sdk\public;C:\dev\boost_1_59_0;D:\dev\nvapi-337;D:\dev\Selene\Selene-0.3.1\include;D:\dev\lua\32\include;D:\dev\minhook\include;$(IncludePath)</IncludePath>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">GeDoSaTo64</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">GeDoSaTo</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">d3d9</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>C:\dev\minhook\build\VC14\lib\Release;D:\dev\nvapi-337\x86;D:\dev\lua\32;D:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(WindowsSDK_LibraryPath_x86);C:\dev\FX11-master\Bin\Desktop_2015\Win32\Release;C:\dev\minhook\build\VC14\lib\Release;D:\dev\nvapi-337\x86;D:\dev\lua\32;D:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IncludePath>include;defs;C:\dev\boost\boost_1_55_0\;C:\Users\Peter\Documents\GitHub\Selene\include;C:\dev\lua\32\include;C:\dev\minhook\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\dev\boost\boost_1_55_0\stage\lib;C:\dev\lua\32;C:\dev\minhook\lib;C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>C:\dev\minhook\build\VC14\lib\Release;D:\dev\nvapi-337\amd64;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);C:\dev\boost_1_59_0\stage\lib\64;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>$(WindowsSDK_LibraryPath_x64);C:\dev\FX11-master\Bin\Desktop_2015\x64\Release;C:\dev\minhook\build\VC14\lib\Release;D:\dev\nvapi-337\amd64;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x64;$(VC_LibraryPath_x64);C:\dev\boost_1_59_0\stage\lib\64;$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -115,8 +115,9 @@
       <ImportLibrary>
       </ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
-      <ModuleDefinitionFile>GeDoSaTo.def</ModuleDefinitionFile>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;nvapi.lib;Xinput.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;D3DCompiler.lib;Effects11.lib;legacy_stdio_definitions.lib;nvapi.lib;Xinput.lib;libMinHook.x86.lib;winmm.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -163,11 +164,13 @@
     </ClCompile>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalDependencies>legacy_stdio_definitions.lib;nvapi64.lib;Xinput.lib;libMinHook.x64.lib;winmm.lib;psapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dx11.lib;D3DCompiler.lib;Effects11.lib;legacy_stdio_definitions.lib;nvapi64.lib;Xinput.lib;libMinHook.x64.lib;winmm.lib;psapi.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
       <MinimumRequiredVersion>
       </MinimumRequiredVersion>
       <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <ModuleDefinitionFile>
+      </ModuleDefinitionFile>
     </Link>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -283,6 +286,7 @@
     <ClCompile Include="source\d3d9\d3d9swap.cpp" />
     <ClCompile Include="source\d3d9\d3d9tex.cpp" />
     <ClCompile Include="source\d3dperf.cpp" />
+    <ClCompile Include="source\dxgi\dxgifactory2.cpp" />
     <ClCompile Include="source\perf_monitor.cpp" />
     <ClCompile Include="source\plugins\dw8.cpp" />
     <ClCompile Include="source\plugins\ff13.cpp" />

@@ -22,7 +22,7 @@
 #include "dxgi/dxgiswapchain.h"
 #include "dxgi/dxgifactory.h"
 #include "dxgi/dxgifactory1.h"
-//#include "dxgi/dxgifactory2.h"
+#include "dxgi/dxgifactory2.h"
 
 #include "steam/steamfriends.h"
 
@@ -608,9 +608,9 @@ GENERATE_INTERCEPT_HEADER(CreateDXGIFactory1, HRESULT, WINAPI, _In_ REFIID riid,
 GENERATE_INTERCEPT_HEADER(CreateDXGIFactory2, HRESULT, WINAPI, _In_ UINT flags, _In_ const IID &riid, _Out_ void **ppFactory) {
 	SDLOG(0, "DetouredCreateDXGIFactory2\n");
 	HRESULT ret = TrueCreateDXGIFactory2(flags, riid, ppFactory);
-	//if(SUCCEEDED(ret)) {
-	//	if(ppFactory != NULL) new hkIDXGIFactory2(reinterpret_cast<IDXGIFactory2**>(ppFactory));
-	//}
+	if(SUCCEEDED(ret)) {
+		if(ppFactory != NULL) new hkIDXGIFactory2(reinterpret_cast<IDXGIFactory2**>(ppFactory));
+	}
 	return ret;
 }
 

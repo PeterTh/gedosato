@@ -10,6 +10,11 @@
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 
+#include <d3dx11effect.h>
+#include <d3dcompiler.h>
+
+#include "renderstate_manager_dx11.h"
+
 Console* Console::latest = nullptr;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// API independent
@@ -17,10 +22,12 @@ Console* Console::latest = nullptr;
 float ConsoleLine::draw(float y) {
 	if(ypos<0.0f) ypos = y;
 	else ypos += (y-ypos)*0.2f; 
-	SDLOG(15, "Printed: %s at %f", msg, (10.0f + ypos));
+	SDLOG(15, "Printed: %s at %f\n", msg, (10.0f + ypos));
 	Console::get().print(25.0f, (39.0f + ypos), msg.c_str());
 	return t.elapsed() > Settings::get().getMessageSeconds()*1000000.0 ? 0.0f : 38.0f + ypos;
 }
+
+Console::Console(int w, int h) : width(w), height(h) {}
 
 Console& Console::get() {
 	if(latest == NULL) SDLOG(0, "ERROR: NULL Console\n");
@@ -46,12 +53,12 @@ void Console::add(StaticTextPtr text) {
 }
 
 bool Console::needsDrawing() {
-	return hasDevice() && lineHeight > 0.0f 
-		|| std::any_of(statics.begin(), statics.end(), [](const StaticTextPtr& p) { return p->show; });
+	return hasDevice() && (lineHeight > 0.0f 
+		|| std::any_of(statics.begin(), statics.end(), [](const StaticTextPtr& p) { return p->show; }));
 }
 
 void Console::draw() {
-	SDLOG(5, "Drawing console\n");
+	SDLOG(-1, "Drawing console\n");
 	beginDrawing();
 
 	// draw background quad
@@ -134,15 +141,11 @@ const D3DVERTEXELEMENT9 ConsoleDX9::vertexElements[3] = {
     D3DDECL_END()
 };
 
-ConsoleDX9::ConsoleDX9(IDirect3DDevice9* device, int w, int h) : Console() {
+ConsoleDX9::ConsoleDX9(IDirect3DDevice9* device, int w, int h) : Console(w, h), device(device) {
 	SDLOG(0, "Initializing DX9 Console on device %p\n", device);
-	width = w;
-	height = h;
-	this->device = device;
 	
 	// Create font
 	SDLOG(2, " - creating console font\n");
-	SAFERELEASE(fontTex);
 	FILE* ff = fopen(getAssetFileName("font.ttf").c_str(), "rb");
 	unsigned char* ttf_buffer = new unsigned char[1<<20];
 	unsigned char* temp_bitmap = new unsigned char[BMPSIZE*BMPSIZE];
@@ -163,12 +166,10 @@ ConsoleDX9::ConsoleDX9(IDirect3DDevice9* device, int w, int h) : Console() {
 	
 	// Create vertex decl
 	SDLOG(2, " - creating console vertex decl\n");
-	SAFERELEASE(vertexDeclaration);
 	device->CreateVertexDeclaration(vertexElements , &vertexDeclaration);
 
 	// Load effect from file
 	SDLOG(2, " - loading console effect file\n");
-	SAFERELEASE(effect);
 	vector<D3DXMACRO> defines;
 	std::stringstream s;
 	D3DXMACRO null = { NULL, NULL };
@@ -198,13 +199,14 @@ void ConsoleDX9::beginDrawing() {
 	device->SetVertexDeclaration(vertexDeclaration);
 }
 
-void ConsoleDX9::drawBGQuad(float x0, float y0, float w, float h) {
+void ConsoleDX9::beginText() {
 	unsigned passes;
-	FLOAT color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
-	effect->SetFloatArray(rectColorHandle, color, 4);
+	effect->SetTexture(textTex2DHandle, fontTex);
 	effect->Begin(&passes, 0);
-	effect->BeginPass(0);
-	quad(x0, y0, w, h);
+	effect->BeginPass(1);
+}
+
+void ConsoleDX9::endText() {
 	effect->EndPass();
 	effect->End();
 }
@@ -229,18 +231,178 @@ void ConsoleDX9::quad(const stbtt_aligned_quad& q) {
 	device->DrawPrimitiveUP(D3DPT_TRIANGLESTRIP, 2, &quad[0], sizeof(quad[0]));
 }
 
+void ConsoleDX9::drawBGQuad(float x0, float y0, float w, float h) {
+	unsigned passes;
+	FLOAT color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
+	effect->SetFloatArray(rectColorHandle, color, 4);
+	effect->Begin(&passes, 0);
+	effect->BeginPass(0);
+	quad(x0, y0, w, h);
+	effect->EndPass();
+	effect->End();
+}
+
 bool ConsoleDX9::hasDevice() {
 	return device != nullptr;
 }
 
-void ConsoleDX9::beginText() {
-	unsigned passes;
-	effect->SetTexture(textTex2DHandle, fontTex);
-	effect->Begin(&passes, 0);
-	effect->BeginPass(1);
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////// DirectX 11
+
+struct VertexType {
+	D3DXVECTOR3 position;
+	D3DXVECTOR2 texture;
+};
+
+ConsoleDX11::ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, int h) : Console(w,h), device(device) {
+	SDLOG(0, "Initializing DX11 Console on device %p, wxh: %dx%d\n", device, width, height);
+	DX11InternalRefHelper helper(device, manager);
+
+	// Create font
+	SDLOG(2, " - creating console font\n");
+	FILE* ff = fopen(getAssetFileName("font.ttf").c_str(), "rb");
+	unsigned char* ttf_buffer = new unsigned char[1 << 20];
+	unsigned char* temp_bitmap = new unsigned char[BMPSIZE*BMPSIZE];
+	fread(ttf_buffer, 1, 1 << 20, ff);
+	fclose(ff);
+	stbtt_BakeFontBitmap(ttf_buffer, 0, 34.0, temp_bitmap, BMPSIZE, BMPSIZE, 32, 96, cdata); // no guarantee this fits!
+	D3D11_TEXTURE2D_DESC texDesc;
+	texDesc.Width = BMPSIZE;
+	texDesc.Height = BMPSIZE;
+	texDesc.Format = DXGI_FORMAT_A8_UNORM;
+	texDesc.MipLevels = 1;
+	texDesc.ArraySize = 1;
+	texDesc.SampleDesc = {1,0};
+	texDesc.Usage = D3D11_USAGE_DEFAULT;
+	texDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+	texDesc.CPUAccessFlags = 0;
+	texDesc.MiscFlags = 0;
+	D3D11_SUBRESOURCE_DATA data;
+	data.pSysMem = temp_bitmap;
+	data.SysMemPitch = BMPSIZE;
+	data.SysMemSlicePitch = BMPSIZE*BMPSIZE;
+	HRESULT texHr = device->CreateTexture2D(&texDesc, &data, &fontTex);
+	CHECKHR(texHr, "Console: failed to create font texture\n");
+	delete[] ttf_buffer;
+	delete[] temp_bitmap;
+
+	// Create vertex buffer
+	SDLOG(2, " - creating console vertex buffer\n");
+	D3D11_BUFFER_DESC vertexBufferDesc, indexBufferDesc;
+	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+	vertexBufferDesc.ByteWidth = sizeof(VertexType) * 4;
+	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+	vertexBufferDesc.MiscFlags = 0;
+	vertexBufferDesc.StructureByteStride = 0;
+	auto vbuffHr = device->CreateBuffer(&vertexBufferDesc, nullptr, &vertexBuffer);
+	CHECKHR(vbuffHr, "Console: failed to create vertex buffer\n");
+
+	// Create the index buffer
+	D3D11_SUBRESOURCE_DATA indexData;
+	unsigned long indices[6] = { 0, 1, 2, 2, 1, 3};
+	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * 6;
+	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	indexBufferDesc.CPUAccessFlags = 0;
+	indexBufferDesc.MiscFlags = 0;
+	indexBufferDesc.StructureByteStride = 0;
+	indexData.pSysMem = indices;
+	indexData.SysMemPitch = 0;
+	indexData.SysMemSlicePitch = 0;
+	auto ibufferHr = device->CreateBuffer(&indexBufferDesc, &indexData, &indexBuffer);
+	CHECKHR(ibufferHr, "Console: failed to create index buffer\n");
+	
+	// Load effect from file
+	SDLOG(2, " - loading console effect file\n");
+	ID3DBlob *errors;
+	auto effectHr = D3DX11CompileEffectFromFile(strToWStr(getAssetFileName("console.fx")).c_str(), nullptr, nullptr, D3DCOMPILE_OPTIMIZATION_LEVEL2 | D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY, 0, device, &effect, &errors);
+	CHECKHR(effectHr, "Console: failed to create effect:\n%s", errors->GetBufferPointer());
+	
+	// Set variables
+	auto rectColorVar = effect->GetVariableByName("rectColor")->AsVector();
+	FLOAT color[4] = { 0.0f, 0.0f, 0.0f, 0.5f };
+	CHECKHR(rectColorVar->SetFloatVector(color), "Console: failed to set rectColorVar\n");
+	auto texVar = effect->GetVariableByName("textTex2D")->AsShaderResource();
+	CHECKHR(device->CreateShaderResourceView(fontTex, nullptr, &fontTexView), "Console: failed to create shader resource view for font texture\n");
+	CHECKHR(texVar->SetResource(fontTexView), "Console: failed to set texVar\n");
+	
+	SDLOG(0, " - done\n");
 }
 
-void ConsoleDX9::endText() {
-	effect->EndPass();
-	effect->End();
+ConsoleDX11::~ConsoleDX11() {
+	SDLOG(-1, "Console DX11 delete\n");
+	SAFERELEASE(effect);
+	SAFERELEASE(fontTexView);
+	SAFERELEASE(fontTex);
+	SAFERELEASE(vertexBuffer);
+	SAFERELEASE(indexBuffer);
+}
+
+void ConsoleDX11::beginDrawing() {
+
+}
+
+void ConsoleDX11::beginText() {
+	ID3D11DeviceContext *immediateContext;
+	device->GetImmediateContext(&immediateContext);
+	effect->GetTechniqueByIndex(0)->GetPassByIndex(1)->Apply(0, immediateContext);
+	immediateContext->Release();
+}
+
+void ConsoleDX11::endText() {
+
+}
+
+void ConsoleDX11::quad(float x, float y, float w, float h) {
+	ID3D11DeviceContext *immediateContext;
+	device->GetImmediateContext(&immediateContext);
+	float quad[4][5] = {
+		{ x  , y  , 0.0f, 0.0f, 0.0f },
+		{ x + w, y  , 0.0f, 1.0f, 0.0f },
+		{ x  , y + h, 0.0f, 0.0f, 1.0f },
+		{ x + w, y + h, 0.0f, 1.0f, 1.0f }
+	};
+	D3D11_MAPPED_SUBRESOURCE mapped;
+	immediateContext->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	memcpy(mapped.pData, quad, sizeof(quad));
+	immediateContext->Unmap(vertexBuffer, 0);
+
+	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, nullptr, nullptr);
+	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	immediateContext->DrawIndexed(4, 0, 0);
+	immediateContext->Release();
+}
+
+void ConsoleDX11::quad(const stbtt_aligned_quad& q) {
+	ID3D11DeviceContext *immediateContext;
+	device->GetImmediateContext(&immediateContext);
+	float quad[4][5] = {
+		{ -1.0f + q.x0 / width, 1.0f - q.y0 / height, 0.0f, q.s0, q.t0 },
+		{ -1.0f + q.x1 / width, 1.0f - q.y0 / height, 0.0f, q.s1, q.t0 },
+		{ -1.0f + q.x0 / width, 1.0f - q.y1 / height, 0.0f, q.s0, q.t1 },
+		{ -1.0f + q.x1 / width, 1.0f - q.y1 / height, 0.0f, q.s1, q.t1 }
+	};
+	D3D11_MAPPED_SUBRESOURCE mapped;
+	immediateContext->Map(vertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+	memcpy(mapped.pData, quad, sizeof(quad));
+	immediateContext->Unmap(vertexBuffer, 0);
+
+	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, nullptr, nullptr);
+	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	immediateContext->DrawIndexed(4, 0, 0);
+	immediateContext->Release();
+}
+
+void ConsoleDX11::drawBGQuad(float x0, float y0, float w, float h) {
+	ID3D11DeviceContext *immediateContext;
+	device->GetImmediateContext(&immediateContext);
+	effect->GetTechniqueByIndex(0)->GetPassByIndex(0)->Apply(0, immediateContext);
+	quad(x0, y0, w, h);
+	immediateContext->Release();
+}
+
+bool ConsoleDX11::hasDevice() {
+	return device != nullptr;
 }

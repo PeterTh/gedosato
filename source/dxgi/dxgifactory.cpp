@@ -14,6 +14,7 @@
 #include "dxgi/dxgifactory.h"
 
 hkIDXGIFactory::hkIDXGIFactory(IDXGIFactory **ppIDXGIFactory) {
+	SDLOG(20, "hkIDXGIFactory::hkIDXGIFactory\n");
 	pWrapped = *ppIDXGIFactory;
 	*ppIDXGIFactory = this;
 }

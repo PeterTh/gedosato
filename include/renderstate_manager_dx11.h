@@ -11,20 +11,37 @@ class RSManagerDX11 : public RSManager {
 
 	ID3D11Texture2D* backBuffers[10];
 
+	ULONG internalRefCount = 0;
+
 public:
 	RSManagerDX11(ID3D11Device* d3ddev) : RSManager(), d3ddev(d3ddev) {
 		rtMan.reset(new RenderTargetManager(d3ddev));
+		console.reset(new ConsoleDX11(d3ddev, this, renderWidth, renderHeight));
+		Console::setLatest(console.get());
+	}
+
+	~RSManagerDX11() {
+		SDLOG(-1, "~RSManagerDX11\n");
+	}
+
+	void addInternalReferences(ULONG count) {
+		internalRefCount += count;
+	}
+
+	static ULONG getInternalRefCount() {
+		if(latest == nullptr) return 0;
+		return getDX11().internalRefCount;
 	}
 
 	HRESULT redirectCreateSwapChain(IDXGIFactory* factory, IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
 		dxgiFactory = factory;
 		HRESULT ret;
+		renderWidth = pDesc->BufferDesc.Width;
+		renderHeight = pDesc->BufferDesc.Height;
 		SDLOG(2, "RedirectCreateSwapChain dev: %p | RSDev: %p\n", pDevice, d3ddev);
 		if(Settings::getResSettings().setDSRes(pDesc->BufferDesc.Width, pDesc->BufferDesc.Height)) {
 			SDLOG(1, " -> Downsampling resolution!\n");
 			downsampling = true;
-			renderWidth = pDesc->BufferDesc.Width;
-			renderHeight = pDesc->BufferDesc.Height;
 			numBackBuffers = pDesc->BufferCount;
 			// modify swap chain settings
 			DXGI_SWAP_CHAIN_DESC copy = *pDesc;
@@ -65,6 +82,7 @@ public:
 	}
 
 	HRESULT redirectPresent(UINT SyncInterval, UINT Flags) {
+		SDLOG(-1, "RSManagerDX11::redirectPresent\n");
 		if(downsampling) {
 			ID3D11DeviceContext *context;
 			d3ddev->GetImmediateContext(&context);
@@ -78,8 +96,29 @@ public:
 
 			context->Release();
 		}
+		if(console->needsDrawing()) console->draw();
 		return dxgiSwapChain->Present(SyncInterval, Flags);
 	}
 
+	virtual void showStatus() {
+		console->add("Hello DX11 World");
+	}
+};
 
+
+class DX11InternalRefHelper {
+	ID3D11Device* device;
+	RSManagerDX11* manager;
+	ULONG startCount;
+public:
+	DX11InternalRefHelper(ID3D11Device* device, RSManagerDX11* manager) : device(device), manager(manager) {
+		device->AddRef();
+		startCount = device->Release();
+	}
+	~DX11InternalRefHelper() {
+		device->AddRef();
+		ULONG newRefs = device->Release() - startCount;
+		SDASSERT(newRefs >= 0, "DX11InternalRefHelper: lower final ref count")
+			manager->addInternalReferences(newRefs);
+	}
 };

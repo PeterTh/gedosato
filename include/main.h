@@ -54,6 +54,9 @@ using std::string;
 #define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON * (std::max)(1.0f, (std::max)(std::abs(__a), std::abs(__b))))
 #define FLT_EPS(__a, __b, __eps) (std::abs((__a) - (__b)) <= __eps)
 
+#define CHECKHR(__hresult, __message, ...) if(FAILED(__hresult)) { SDLOG(-1, "ERROR: " __message, __VA_ARGS__) }
+#define SDASSERT(__cond, __message, ...) if(!(__cond)) { SDLOG(-1, "ERROR: " __message, __VA_ARGS__) }
+
 #include "d3d9/d3d9.h"
 
 bool fileExists(const char *filename);
@@ -66,6 +69,7 @@ string getInstalledFileName(string filename);
 string getAssetFileName(string filename);
 string getConfigFileName(string filename);
 string getTimeString(bool forDisplay = false);
+std::wstring strToWStr(const string& input);
 
 extern FILE* g_oFile;
 inline void sdlog(const char *fmt) {
