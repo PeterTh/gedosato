@@ -153,14 +153,12 @@
       <PreprocessorDefinitions>_WIN32_WINNT=0x501;PSAPI_VERSION=1;_CRT_SECURE_NO_WARNINGS;_SECURE_SCL=0;WIN32_LEAN_AND_MEAN;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -168,7 +166,6 @@
       <SubSystem>Windows</SubSystem>
       <MinimumRequiredVersion>
       </MinimumRequiredVersion>
-      <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
     </Link>
@@ -286,7 +283,13 @@
     <ClCompile Include="source\d3d9\d3d9swap.cpp" />
     <ClCompile Include="source\d3d9\d3d9tex.cpp" />
     <ClCompile Include="source\d3dperf.cpp" />
+    <ClCompile Include="source\dxgi\dxgiadapter2.cpp" />
+    <ClCompile Include="source\dxgi\dxgidevice.cpp" />
+    <ClCompile Include="source\dxgi\dxgidevice1.cpp" />
+    <ClCompile Include="source\dxgi\dxgidevice2.cpp" />
+    <ClCompile Include="source\dxgi\dxgidevice3.cpp" />
     <ClCompile Include="source\dxgi\dxgifactory2.cpp" />
+    <ClCompile Include="source\dxgi\dxgifactory3.cpp" />
     <ClCompile Include="source\perf_monitor.cpp" />
     <ClCompile Include="source\plugins\dw8.cpp" />
     <ClCompile Include="source\plugins\ff13.cpp" />
@@ -369,6 +372,7 @@
     <ClCompile Include="source\smaa.cpp" />
     <ClCompile Include="source\ssao.cpp" />
     <ClCompile Include="source\utils\imgproc_utils.cpp" />
+    <ClCompile Include="source\utils\interface_registry.cpp" />
     <ClCompile Include="source\utils\string_utils.cpp" />
     <ClCompile Include="source\timer.cpp" />
     <ClCompile Include="source\time_manager.cpp" />
@@ -396,6 +400,11 @@
     <ClInclude Include="include\d3d9\d3d9swap_ex.h" />
     <ClInclude Include="include\d3d9\d3d9tex.h" />
     <ClInclude Include="include\d3dperf.h" />
+    <ClInclude Include="include\dxgi\dxgiadapter2.h" />
+    <ClInclude Include="include\dxgi\dxgidevice.h" />
+    <ClInclude Include="include\dxgi\dxgidevice1.h" />
+    <ClInclude Include="include\dxgi\dxgidevice2.h" />
+    <ClInclude Include="include\dxgi\dxgidevice3.h" />
     <ClInclude Include="include\perf_monitor.h" />
     <ClInclude Include="include\plugins\dw8.h" />
     <ClInclude Include="include\plugins\ff13.h" />
@@ -439,6 +448,7 @@
     <ClInclude Include="include\shader_manager.h" />
     <ClInclude Include="include\smaa.h" />
     <ClInclude Include="include\utils\imgproc_utils.h" />
+    <ClInclude Include="include\utils\interface_registry.h" />
     <ClInclude Include="include\utils\string_utils.h" />
     <ClInclude Include="defs\textures.def" />
     <ClInclude Include="include\renderstate_manager.h" />
@@ -463,6 +473,7 @@
     <None Include="defs\plugins.def" />
     <None Include="defs\settings.def" />
     <None Include="defs\shaders.def" />
+    <None Include="defs\uuids.def" />
     <None Include="defs\xinput.def" />
     <None Include="version.rb" />
   </ItemGroup>

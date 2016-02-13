@@ -6,6 +6,7 @@
 #include "settings.h"
 #include "utils/d3d11_utils.h"
 #include "utils/imgproc_utils.h"
+#include "utils/interface_registry.h"
 
 hkID3D11Device::hkID3D11Device(ID3D11Device **ppID3D11Device) {
 	// ensure that internal references are tracked correctly
@@ -22,8 +23,7 @@ hkID3D11Device::hkID3D11Device(ID3D11Device **ppID3D11Device) {
 
 HRESULT APIENTRY hkID3D11Device::QueryInterface(REFIID riid, void **ppvObject) {
 	RSManager::setLatest(rsMan);
-	SDLOG(20, "hkID3D11Device::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	return InterfaceRegistry::get().QueryInterface("hkID3D11Device", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkID3D11Device::AddRef() {

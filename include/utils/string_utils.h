@@ -5,6 +5,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
+#include <guiddef.h>
+
 using std::string;
 
 bool matchWildcard(const string& str, const string& pattern);
@@ -32,3 +34,5 @@ std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& dt) {
 	os << &(*dt);
 	return os;
 }
+
+std::ostream& operator<<(std::ostream& os, REFGUID guid);

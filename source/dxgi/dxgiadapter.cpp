@@ -3,25 +3,21 @@
 
 #include "dxgi/dxgioutput.h"
 #include "settings.h"
+#include "utils/interface_registry.h"
 
 // ifdef because we could be included from hkIDXGIAdapter1
 #ifndef hkIDXGIAdapter
 #include "dxgi/dxgiadapter.h"
 
 hkIDXGIAdapter::hkIDXGIAdapter(IDXGIAdapter **ppIDXGIAdapter) {
-	SDLOG(20, "hkIDXGIAdapter constructor\n");
+	SDLOG(5, "hkIDXGIAdapter::hkIDXGIAdapter(%p)\n", *ppIDXGIAdapter);
 	pWrapped = *ppIDXGIAdapter;
 	*ppIDXGIAdapter = this;
 }
 #endif
 
 HRESULT APIENTRY hkIDXGIAdapter::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkIDXGIAdapter::QueryInterface\n");
-	auto retVal = pWrapped->QueryInterface(riid, ppvObject);
-	if(*ppvObject == pWrapped) {
-		*ppvObject = this;
-	}
-	return retVal;
+	return InterfaceRegistry::get().QueryInterface("hkIDXGIAdapter", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkIDXGIAdapter::AddRef() {
@@ -50,8 +46,7 @@ HRESULT APIENTRY hkIDXGIAdapter::GetPrivateData(REFGUID Name, UINT *pDataSize, v
 }
 
 HRESULT APIENTRY hkIDXGIAdapter::GetParent(REFIID riid, void **ppParent) {
-	SDLOG(20, "hkIDXGIAdapter::GetParent\n");
-	return pWrapped->GetParent(riid, ppParent);
+	return InterfaceRegistry::get().GetParent("hkIDXGIAdapter", pWrapped, riid, ppParent);
 }
 
 HRESULT APIENTRY hkIDXGIAdapter::EnumOutputs(UINT Output, IDXGIOutput **ppOutput) {

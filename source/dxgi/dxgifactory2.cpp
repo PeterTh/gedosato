@@ -1,9 +1,12 @@
 // wrapper for IDXGIFactory2 in dxgi1_2.h
 // generated using wrapper_gen11.rb
 
-#include "dxgi/dxgifactory2.h"
-
 #include "settings.h"
+
+// could be included from dxgifactory3
+#ifndef hkIDXGIFactory2
+
+#include "dxgi/dxgifactory2.h"
 
 hkIDXGIFactory2::hkIDXGIFactory2(IDXGIFactory2 **ppIDXGIFactory2) {
 	SDLOG(20, "hkIDXGIFactory2::hkIDXGIFactory2\n");
@@ -11,9 +14,11 @@ hkIDXGIFactory2::hkIDXGIFactory2(IDXGIFactory2 **ppIDXGIFactory2) {
 	*ppIDXGIFactory2 = this;
 }
 
+#endif // not def hkIDXGIFactory1
+
 #define hkIDXGIFactory1 hkIDXGIFactory2
 #include "dxgifactory1.cpp"
-#undef hkIDXGIFactory1
+#undef hkIDXGIFactory
 
 BOOL APIENTRY hkIDXGIFactory2::IsWindowedStereoEnabled() {
 	SDLOG(20, "hkIDXGIFactory2::IsWindowedStereoEnabled\n");

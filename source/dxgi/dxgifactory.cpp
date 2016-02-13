@@ -6,6 +6,7 @@
 #include "dxgi/dxgiadapter1.h"
 #include "settings.h"
 #include "utils/dxgi_utils.h"
+#include "utils/interface_registry.h"
 #include "renderstate_manager_dx11.h"
 
 // could be included from dxgifactory1
@@ -22,8 +23,7 @@ hkIDXGIFactory::hkIDXGIFactory(IDXGIFactory **ppIDXGIFactory) {
 #endif // not def hkIDXGIFactory
 
 HRESULT APIENTRY hkIDXGIFactory::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkIDXGIFactory::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	return InterfaceRegistry::get().QueryInterface("hkIDXGIFactory", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkIDXGIFactory::AddRef() {
@@ -52,8 +52,7 @@ HRESULT APIENTRY hkIDXGIFactory::GetPrivateData(REFGUID Name, UINT *pDataSize, v
 }
 
 HRESULT APIENTRY hkIDXGIFactory::GetParent(REFIID riid, void **ppParent) {
-	SDLOG(20, "hkIDXGIFactory::GetParent\n");
-	return pWrapped->GetParent(riid, ppParent);
+	return InterfaceRegistry::get().GetParent("hkIDXGIFactory", pWrapped, riid, ppParent);
 }
 
 HRESULT APIENTRY hkIDXGIFactory::EnumAdapters(UINT Adapter, IDXGIAdapter **ppAdapter) {
@@ -78,7 +77,7 @@ HRESULT APIENTRY hkIDXGIFactory::GetWindowAssociation(HWND *pWindowHandle) {
 
 HRESULT APIENTRY hkIDXGIFactory::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
 	SDLOG(2, "hkIDXGIFactory::CreateSwapChain with device %p, requested:\n%s\n", pDevice, DxgiSwapChainDescToString(*pDesc));
-	HRESULT hr = RSManager::getDX11().redirectCreateSwapChain(pWrapped, pDevice, pDesc, ppSwapChain); // pWrapped->CreateSwapChain(pDevice, pDesc, ppSwapChain);
+	HRESULT hr = RSManager::getDX11().redirectCreateSwapChain(pWrapped, pDevice, pDesc, ppSwapChain);
 	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
 		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n%s\n", DxgiSwapChainDescToString(*pDesc));
 		new hkIDXGISwapChain(ppSwapChain, &RSManager::getDX11());

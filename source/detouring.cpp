@@ -599,6 +599,7 @@ GENERATE_INTERCEPT_HEADER(CreateDXGIFactory, HRESULT, WINAPI, _In_ REFIID riid, 
 }
 GENERATE_INTERCEPT_HEADER(CreateDXGIFactory1, HRESULT, WINAPI, _In_ REFIID riid, _Out_ void **ppFactory) {
 	SDLOG(0, "DetouredCreateDXGIFactory1\n");
+	OutputDebugString("GeDoSaTo: DetouredCreateDXGIFactory1\n");
 	HRESULT ret = TrueCreateDXGIFactory1(riid, ppFactory);
 	if(SUCCEEDED(ret)) {
 		if(ppFactory != NULL) new hkIDXGIFactory1(reinterpret_cast<IDXGIFactory1**>(ppFactory));
@@ -734,6 +735,21 @@ GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
 	return TrueSteamFriends();
 }
 
+// GetProcAddress ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GENERATE_INTERCEPT_HEADER(GetProcAddress, FARPROC, WINAPI, _In_ HMODULE hModule, _In_ LPCSTR lpProcName) {
+	SDLOG(15, "DetouredGetProcAddress %s\n", lpProcName);
+
+	#define HOOK(__name, __dllname) \
+	if(string(#__name) == lpProcName) { \
+		SDLOG(15, " -> returning hooked function\n", lpProcName); \
+		return (FARPROC)&Detoured##__name; \
+	}
+	#include "Hooks.def"
+
+	return TrueGetProcAddress(hModule, lpProcName);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Actual detouring /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -784,7 +800,7 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 		SDLOG(36, "Trying to hook %s in %s\n", name, dllname);
 		HMODULE dllhandle = findDll(dllname);
 		if(dllhandle) {
-			*ppTarget = GetProcAddress(dllhandle, name);
+			*ppTarget = completedGetProcAddressDetour ? TrueGetProcAddress(dllhandle, name) : GetProcAddress(dllhandle, name);
 			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); 
 			if(ret == MH_OK) { SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); } 
 			else { SDLOG(0, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle); } 

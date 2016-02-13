@@ -2,6 +2,7 @@
 // generated using wrapper_gen11.rb
 
 #include "settings.h"
+#include "utils/interface_registry.h"
 
 // could be included from dxgidevice1
 #ifndef hkIDXGIDevice 
@@ -47,8 +48,7 @@ HRESULT APIENTRY hkIDXGIDevice::GetPrivateData(REFGUID Name, UINT *pDataSize, vo
 }
 
 HRESULT APIENTRY hkIDXGIDevice::GetParent(REFIID riid, void **ppParent) {
-	SDLOG(20, "hkIDXGIDevice::GetParent\n");
-	return pWrapped->GetParent(riid, ppParent);
+	return InterfaceRegistry::get().GetParent("hkIDXGIDevice", pWrapped, riid, ppParent);
 }
 
 HRESULT APIENTRY hkIDXGIDevice::GetAdapter(IDXGIAdapter **pAdapter) {

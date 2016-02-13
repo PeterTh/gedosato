@@ -9,7 +9,7 @@
 #include "dxgi/dxgidevice1.h"
 
 hkIDXGIDevice1::hkIDXGIDevice1(IDXGIDevice1 **ppIDXGIDevice1) {
-	SDLOG(5, "hkIDXGIDevice1::hkIDXGIDevice1(%p)", *ppIDXGIDevice1);
+	SDLOG(5, "hkIDXGIDevice1::hkIDXGIDevice1(%p)\n", *ppIDXGIDevice1);
 	pWrapped = *ppIDXGIDevice1;
 	*ppIDXGIDevice1 = this;
 }
