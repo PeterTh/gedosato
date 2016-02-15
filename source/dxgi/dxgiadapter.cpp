@@ -27,7 +27,12 @@ ULONG APIENTRY hkIDXGIAdapter::AddRef() {
 
 ULONG APIENTRY hkIDXGIAdapter::Release() {
 	SDLOG(20, "hkIDXGIAdapter::Release\n");
-	return pWrapped->Release();
+	auto ret = pWrapped->Release();
+	if(ret == 0) {
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
+	}
+	return ret;
 }
 
 HRESULT APIENTRY hkIDXGIAdapter::SetPrivateData(REFGUID Name, UINT DataSize, const void *pData) {
@@ -53,7 +58,7 @@ HRESULT APIENTRY hkIDXGIAdapter::EnumOutputs(UINT Output, IDXGIOutput **ppOutput
 	SDLOG(20, "hkIDXGIAdapter::EnumOutputs\n");
 	HRESULT res = pWrapped->EnumOutputs(Output, ppOutput);
 	if(SUCCEEDED(res)) {
-		new hkIDXGIOutput(ppOutput);
+		*ppOutput = InterfaceRegistry::get().getWrappedInterface<IDXGIOutput>(*ppOutput);
 	}
 	return res;
 }

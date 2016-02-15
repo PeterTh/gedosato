@@ -8,6 +8,7 @@
 #include "utils/string_utils.h"
 #include "utils/d3d9_utils.h"
 #include "utils/win_utils.h"
+#include "utils/interface_registry.h"
 
 #include "settings.h"
 #include "renderstate_manager_dx9.h"
@@ -643,8 +644,8 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDevice, HRESULT, WINAPI,
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
 	// also check if call was delegated to D3D11CreateDeviceAndSwapChain internally
 	if(SUCCEEDED(ret) && g_NeedD3D11Hooking) {
-		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
-		if(ppImmediateContext != NULL) new hkID3D11DeviceContext(ppImmediateContext);
+		if(ppDevice != NULL) *ppDevice = InterfaceRegistry::get().getWrappedInterface<ID3D11Device>(*ppDevice);
+		if(ppImmediateContext != NULL) *ppImmediateContext = InterfaceRegistry::get().getWrappedInterface<ID3D11DeviceContext>(*ppImmediateContext);
 		g_NeedD3D11Hooking = false;
 	}
 	return ret;
@@ -670,9 +671,9 @@ GENERATE_INTERCEPT_HEADER(D3D11CreateDeviceAndSwapChain, HRESULT, WINAPI,
 		ppDevice, ppDevice ? *ppDevice : NULL, ppImmediateContext, ppImmediateContext ? *ppImmediateContext : NULL, ppSwapChain, ppSwapChain ? *ppSwapChain : NULL);
 	// Check for success and non-null ppDevice and context (can be set to null to check feature level)
 	if(SUCCEEDED(ret)) {
-		if(ppDevice != NULL) new hkID3D11Device(ppDevice);
-		if(ppImmediateContext != NULL) new hkID3D11DeviceContext(ppImmediateContext);
-		if(ppSwapChain != NULL) new hkIDXGISwapChain(ppSwapChain, &RSManager::getDX11());
+		if(ppDevice != NULL) *ppDevice = InterfaceRegistry::get().getWrappedInterface<ID3D11Device>(*ppDevice);
+		if(ppImmediateContext != NULL) *ppImmediateContext = InterfaceRegistry::get().getWrappedInterface<ID3D11DeviceContext>(*ppImmediateContext);
+		if(ppSwapChain != NULL) *ppSwapChain = InterfaceRegistry::get().getWrappedInterface<IDXGISwapChain>(*ppSwapChain);
 		g_NeedD3D11Hooking = false;
 	}
 	return ret;
@@ -685,10 +686,16 @@ GENERATE_INTERCEPT_HEADER(QueryPerformanceCounter, BOOL, WINAPI, _Out_ LARGE_INT
 	BOOL ret = TimeManager::get().redirectQueryPerformanceCounter(lpPerformanceCount);
 	return ret;
 }
+BOOL WINAPI SafeQueryPerformanceCounter(_Out_ LARGE_INTEGER *lpPerformanceCount) {
+	return completedQueryPerformanceCounterDetour ? TrueQueryPerformanceCounter(lpPerformanceCount) : QueryPerformanceCounter(lpPerformanceCount);
+}
 
 GENERATE_INTERCEPT_HEADER(timeGetTime, DWORD, WINAPI) {
 	SDLOG(35, "DetouredtimeGetTime\n");
 	return TimeManager::get().redirectTimeGetTime();
+}
+DWORD WINAPI SafetimeGetTime() {
+	return completedtimeGetTimeDetour ? TruetimeGetTime() : timeGetTime();
 }
 
 GENERATE_INTERCEPT_HEADER(Sleep, VOID, WINAPI, _In_ DWORD dwMilliseconds) {
@@ -742,7 +749,7 @@ GENERATE_INTERCEPT_HEADER(GetProcAddress, FARPROC, WINAPI, _In_ HMODULE hModule,
 
 	#define HOOK(__name, __dllname) \
 	if(string(#__name) == lpProcName) { \
-		SDLOG(15, " -> returning hooked function\n", lpProcName); \
+		SDLOG(15, " -> returning hooked function\n"); \
 		return (FARPROC)&Detoured##__name; \
 	}
 	#include "Hooks.def"

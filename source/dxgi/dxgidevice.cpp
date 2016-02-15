@@ -29,7 +29,12 @@ ULONG APIENTRY hkIDXGIDevice::AddRef() {
 
 ULONG APIENTRY hkIDXGIDevice::Release() {
 	SDLOG(20, "hkIDXGIDevice::Release\n");
-	return pWrapped->Release();
+	auto ret = pWrapped->Release();
+	if(ret == 0) {
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
+	}
+	return ret;
 }
 
 HRESULT APIENTRY hkIDXGIDevice::SetPrivateData(REFGUID Name, UINT DataSize, const void *pData) {

@@ -24,6 +24,7 @@
 #include "registry.h"
 #include "blacklist.h"
 #include "utils/string_utils.h"
+#include "utils/debug_utils.h"
 
 FILE* g_oFile = NULL;
 bool g_active = false, g_tool = false;
@@ -44,6 +45,12 @@ extern "C" __declspec(dllexport) const char* GeDoSaToSettings() {
 }
 
 extern "C" __declspec(dllexport) void GeDoSaToInit() {
+	// enum and freeze other threads
+	//OutputDebugString("Enumerating other threads.\n");
+	//std::vector<uint32_t> other_threads = enumThreads();
+	//OutputDebugString("Freezing other threads.\n");
+	//freezeThreads(other_threads);
+
 	// read install location from registry
 	getInstallDirectory();
 	OutputDebugString("GeDoSaTo: Got install dir\n");
@@ -93,8 +100,13 @@ extern "C" __declspec(dllexport) void GeDoSaToInit() {
 		LoadLibrary(dllname.c_str());
 	}
 
+
 	// detour
 	startDetour();
+
+	// restart other threads
+	//SDLOG(2, "Restarting application threads.\n");
+	//unfreezeThreads(other_threads);
 }
 
 BOOL WINAPI DllMain(HMODULE hDll, DWORD dwReason, PVOID pvReserved) {	

@@ -41,10 +41,11 @@ ULONG APIENTRY hkID3D11Device::Release() {
 	if(ret == RSManagerDX11::getInternalRefCount()) {
 		SDLOG(2, "hkID3D11Device: only internal referencs left, start teardown\n");
 		pWrapped->AddRef();
-		RSManager::setLatest(nullptr);
 		delete rsMan;
 		auto count = pWrapped->Release();
 		if(count != 0) SDLOG(-1, "ERROR: DX11 cleanup incomplete. %d references left\n", count);
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
 		return count;
 	}
 	return ret - RSManagerDX11::getInternalRefCount();

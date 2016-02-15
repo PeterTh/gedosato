@@ -5,6 +5,7 @@
 
 #include "settings.h"
 #include "utils/dxgi_utils.h"
+#include "utils/interface_registry.h"
 
 hkIDXGIOutput::hkIDXGIOutput(IDXGIOutput **ppIDXGIOutput) {
 	pWrapped = *ppIDXGIOutput;
@@ -12,8 +13,7 @@ hkIDXGIOutput::hkIDXGIOutput(IDXGIOutput **ppIDXGIOutput) {
 }
 
 HRESULT APIENTRY hkIDXGIOutput::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkIDXGIOutput::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	return InterfaceRegistry::get().QueryInterface("hkIDXGIOutput", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkIDXGIOutput::AddRef() {
@@ -23,7 +23,12 @@ ULONG APIENTRY hkIDXGIOutput::AddRef() {
 
 ULONG APIENTRY hkIDXGIOutput::Release() {
 	SDLOG(20, "hkIDXGIOutput::Release\n");
-	return pWrapped->Release();
+	auto ret = pWrapped->Release();
+	if(ret == 0) {
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
+	}
+	return ret;
 }
 
 HRESULT APIENTRY hkIDXGIOutput::SetPrivateData(REFGUID Name, UINT DataSize, const void *pData) {

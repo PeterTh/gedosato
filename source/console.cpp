@@ -38,6 +38,11 @@ void Console::setLatest(Console *c) {
 	latest = c;
 }
 
+void Console::setSize(int w, int h) {
+	width = w;
+	height = h;
+}
+
 void Console::add(const string& msg) {
 	SDLOG(1, "Console add: %s\n", msg.c_str());
 	if(Settings::get().getMessageSeconds() > 0) {
@@ -63,38 +68,38 @@ void Console::draw() {
 
 	// draw background quad
 	if(lineHeight > 0.0f) {
-		drawBGQuad(-1.0f, 1.0f, 2.0f, -lineHeight / height);
+		drawBGQuad(-1.0f, -1.0f, 2.0f, 2.0f);
 	}
 	float y = 0.0f;
 
-	// draw lines
-	if(lines.size() - start > MAX_LINES) start += lines.size() - start - MAX_LINES;
-	for(size_t i = start; i < lines.size(); ++i) {
-		float ret = lines[i].draw(y);
-		if(ret == 0.0f) start = i + 1; // if text timed out increase start
-		else y = ret + 2.0f;
-	}
-	if(y == 0.0f) {
-		if(lineHeight > 0.2f) lineHeight *= 0.6f;
-		else {
-			lineHeight = 0.0f;
-			// clear lines
-			lines.clear();
-			start = 0;
-		}
-	}
-	else lineHeight = y + 15.0f;
+	//// draw lines
+	//if(lines.size() - start > MAX_LINES) start += lines.size() - start - MAX_LINES;
+	//for(size_t i = start; i < lines.size(); ++i) {
+	//	float ret = lines[i].draw(y);
+	//	if(ret == 0.0f) start = i + 1; // if text timed out increase start
+	//	else y = ret + 2.0f;
+	//}
+	//if(y == 0.0f) {
+	//	if(lineHeight > 0.2f) lineHeight *= 0.6f;
+	//	else {
+	//		lineHeight = 0.0f;
+	//		// clear lines
+	//		lines.clear();
+	//		start = 0;
+	//	}
+	//}
+	//else lineHeight = y + 15.0f;
 
-	// draw static text
-	for(auto& t : statics) {
-		if(t->show) {
-			auto p = print(t->x, t->y, t->text.c_str(), true);
-			float wborder = 4.0f / width, hborder = 4.0f / height;
-			float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
-			drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder * 8, p.second - bgy - hborder * 8);
-			print(t->x, t->y, t->text.c_str());
-		}
-	}
+	//// draw static text
+	//for(auto& t : statics) {
+	//	if(t->show) {
+	//		auto p = print(t->x, t->y, t->text.c_str(), true);
+	//		float wborder = 4.0f / width, hborder = 4.0f / height;
+	//		float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
+	//		drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder * 8, p.second - bgy - hborder * 8);
+	//		print(t->x, t->y, t->text.c_str());
+	//	}
+	//}
 }
 
 Console::Position Console::print(float x, float y, const char *text, bool measure) {
@@ -299,9 +304,9 @@ ConsoleDX11::ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, in
 
 	// Create the index buffer
 	D3D11_SUBRESOURCE_DATA indexData;
-	unsigned long indices[6] = { 0, 1, 2, 2, 1, 3};
+	unsigned long indices[4] = { 0, 1, 2, 3};
 	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(unsigned long) * 6;
+	indexBufferDesc.ByteWidth = sizeof(unsigned long) * 4;
 	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	indexBufferDesc.CPUAccessFlags = 0;
 	indexBufferDesc.MiscFlags = 0;
@@ -314,9 +319,10 @@ ConsoleDX11::ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, in
 	
 	// Load effect from file
 	SDLOG(2, " - loading console effect file\n");
+	D3D_SHADER_MACRO defines[] = { { "DX11", "1" }, {nullptr, nullptr} };
 	ID3DBlob *errors;
-	auto effectHr = D3DX11CompileEffectFromFile(strToWStr(getAssetFileName("console.fx")).c_str(), nullptr, nullptr, D3DCOMPILE_OPTIMIZATION_LEVEL2 | D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY, 0, device, &effect, &errors);
-	CHECKHR(effectHr, "Console: failed to create effect:\n%s", errors->GetBufferPointer());
+	auto effectHr = D3DX11CompileEffectFromFile(strToWStr(getAssetFileName("console.fx")).c_str(), defines, nullptr, D3DCOMPILE_OPTIMIZATION_LEVEL2 | D3DCOMPILE_ENABLE_BACKWARDS_COMPATIBILITY, 0, device, &effect, &errors);
+	CHECKHR(effectHr, "Console: failed to create effect:\n%s", (char*)errors->GetBufferPointer());
 	
 	// Set variables
 	auto rectColorVar = effect->GetVariableByName("rectColor")->AsVector();
@@ -325,12 +331,27 @@ ConsoleDX11::ConsoleDX11(ID3D11Device* device, RSManagerDX11* manager, int w, in
 	auto texVar = effect->GetVariableByName("textTex2D")->AsShaderResource();
 	CHECKHR(device->CreateShaderResourceView(fontTex, nullptr, &fontTexView), "Console: failed to create shader resource view for font texture\n");
 	CHECKHR(texVar->SetResource(fontTexView), "Console: failed to set texVar\n");
+
+	// Create input layout
+	D3DX11_PASS_SHADER_DESC passShaderDesc;
+	effect->GetTechniqueByIndex(0)->GetPassByIndex(0)->GetVertexShaderDesc(&passShaderDesc);
+	D3DX11_EFFECT_SHADER_DESC effectVsDesc;
+	passShaderDesc.pShaderVariable->GetShaderDesc(passShaderDesc.ShaderIndex, &effectVsDesc);
+	const void *vsCodePtr = effectVsDesc.pBytecode;
+	unsigned vsCodeLen = effectVsDesc.BytecodeLength;
+
+	D3D11_INPUT_ELEMENT_DESC inputDesc[] = {
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,  D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+	CHECKHR(device->CreateInputLayout(inputDesc, _countof(inputDesc), vsCodePtr, vsCodeLen, &inputLayout), "Console: failed to create input layout\n");
 	
 	SDLOG(0, " - done\n");
 }
 
 ConsoleDX11::~ConsoleDX11() {
 	SDLOG(-1, "Console DX11 delete\n");
+	SAFERELEASE(inputLayout);
 	SAFERELEASE(effect);
 	SAFERELEASE(fontTexView);
 	SAFERELEASE(fontTex);
@@ -339,7 +360,10 @@ ConsoleDX11::~ConsoleDX11() {
 }
 
 void ConsoleDX11::beginDrawing() {
-
+	ID3D11DeviceContext *immediateContext;
+	device->GetImmediateContext(&immediateContext);
+	immediateContext->IASetInputLayout(inputLayout);
+	immediateContext->Release();
 }
 
 void ConsoleDX11::beginText() {
@@ -357,9 +381,9 @@ void ConsoleDX11::quad(float x, float y, float w, float h) {
 	ID3D11DeviceContext *immediateContext;
 	device->GetImmediateContext(&immediateContext);
 	float quad[4][5] = {
-		{ x  , y  , 0.0f, 0.0f, 0.0f },
-		{ x + w, y  , 0.0f, 1.0f, 0.0f },
-		{ x  , y + h, 0.0f, 0.0f, 1.0f },
+		{ x    , y    , 0.0f, 0.0f, 0.0f },
+		{ x + w, y    , 0.0f, 1.0f, 0.0f },
+		{ x    , y + h, 0.0f, 0.0f, 1.0f },
 		{ x + w, y + h, 0.0f, 1.0f, 1.0f }
 	};
 	D3D11_MAPPED_SUBRESOURCE mapped;
@@ -367,10 +391,12 @@ void ConsoleDX11::quad(float x, float y, float w, float h) {
 	memcpy(mapped.pData, quad, sizeof(quad));
 	immediateContext->Unmap(vertexBuffer, 0);
 
-	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, nullptr, nullptr);
-	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	UINT strides[] = { sizeof(VertexType) }, offsets[] = { 0 };
+	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
+	//immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	immediateContext->DrawIndexed(4, 0, 0);
+	//immediateContext->DrawIndexed(4, 0, 0);
+	immediateContext->Draw(4, 0);
 	immediateContext->Release();
 }
 
@@ -388,10 +414,12 @@ void ConsoleDX11::quad(const stbtt_aligned_quad& q) {
 	memcpy(mapped.pData, quad, sizeof(quad));
 	immediateContext->Unmap(vertexBuffer, 0);
 
-	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, nullptr, nullptr);
-	immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	UINT strides[] = { sizeof(VertexType) }, offsets[] = { 0 };
+	immediateContext->IASetVertexBuffers(0, 1, &vertexBuffer, strides, offsets);
+	//immediateContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	immediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	immediateContext->DrawIndexed(4, 0, 0);
+	//immediateContext->DrawIndexed(4, 0, 0);
+	immediateContext->Draw(4, 0);
 	immediateContext->Release();
 }
 

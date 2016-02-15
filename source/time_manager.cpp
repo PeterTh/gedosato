@@ -3,8 +3,8 @@
 std::unique_ptr<TimeManager> TimeManager::instance;
 
 TimeManager::TimeManager() {
-	startTimeGetTime = TruetimeGetTime();
-	TrueQueryPerformanceCounter(&startPerfCounter);
+	startTimeGetTime = SafetimeGetTime();
+	SafeQueryPerformanceCounter(&startPerfCounter);
 }
 
 void TimeManager::toggleFreeze() {

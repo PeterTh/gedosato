@@ -33,7 +33,12 @@ ULONG APIENTRY hkIDXGIFactory::AddRef() {
 
 ULONG APIENTRY hkIDXGIFactory::Release() {
 	SDLOG(20, "hkIDXGIFactory::Release\n");
-	return pWrapped->Release();
+	auto ret = pWrapped->Release();
+	if(ret == 0) {
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
+	}
+	return ret;
 }
 
 HRESULT APIENTRY hkIDXGIFactory::SetPrivateData(REFGUID Name, UINT DataSize, const void *pData) {
@@ -60,7 +65,7 @@ HRESULT APIENTRY hkIDXGIFactory::EnumAdapters(UINT Adapter, IDXGIAdapter **ppAda
 	HRESULT res = pWrapped->EnumAdapters(Adapter, ppAdapter);
 	if(SUCCEEDED(res)) {
 		SDLOG(20, "--> Success, wrapping %p\n", *ppAdapter);
-		new hkIDXGIAdapter(ppAdapter);
+		*ppAdapter = InterfaceRegistry::get().getWrappedInterface<IDXGIAdapter>(*ppAdapter);
 	}
 	return res;
 }
@@ -80,7 +85,7 @@ HRESULT APIENTRY hkIDXGIFactory::CreateSwapChain(IUnknown *pDevice, DXGI_SWAP_CH
 	HRESULT hr = RSManager::getDX11().redirectCreateSwapChain(pWrapped, pDevice, pDesc, ppSwapChain);
 	if(SUCCEEDED(hr) && ppSwapChain != NULL && *ppSwapChain != NULL) {
 		SDLOG(2, " -> hkIDXGIFactory::CreateSwapChain hooked, received:\n%s\n", DxgiSwapChainDescToString(*pDesc));
-		new hkIDXGISwapChain(ppSwapChain, &RSManager::getDX11());
+		*ppSwapChain = InterfaceRegistry::get().getWrappedInterface<IDXGISwapChain>(*ppSwapChain);
 	}
 	return hr;
 }

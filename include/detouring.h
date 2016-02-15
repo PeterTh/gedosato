@@ -19,6 +19,7 @@ void setDisplayFaking(bool fake);
 
 #define GENERATE_INTERCEPT_DECLARATION(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
+extern __rettype __convention Safe##__name(__VA_ARGS__); \
 extern __name##_FNType True##__name;
 
 //GENERATE_INTERCEPT_DECLARATION(SetWindowPos, BOOL, WINAPI, _In_ HWND hWnd, _In_opt_ HWND hWndInsertAfter, _In_ int X, _In_ int Y, _In_ int cx, _In_ int cy, _In_ UINT uFlags);

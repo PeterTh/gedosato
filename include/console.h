@@ -60,6 +60,8 @@ public:
 	static Console& get();
 	static void setLatest(Console *c);
 
+	void setSize(int w, int h);
+
 	void add(const string& msg);
 	void add(StaticTextPtr text);
 	bool needsDrawing();
@@ -109,6 +111,7 @@ class ConsoleDX11 : public Console {
 	ID3D11ShaderResourceView* fontTexView = nullptr;
 	ID3D11Buffer *vertexBuffer = nullptr, *indexBuffer = nullptr;
 	ID3DX11Effect *effect = nullptr;
+	ID3D11InputLayout *inputLayout = nullptr;
 
 protected:
 	ID3D11Device* device = nullptr;

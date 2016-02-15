@@ -3,6 +3,8 @@
 #include "renderstate_manager.h"
 
 #include "d3d11/d3d11.h"
+#include "key_actions.h"
+#include "utils/interface_registry.h"
 
 class RSManagerDX11 : public RSManager {
 	ID3D11Device* d3ddev = NULL;
@@ -22,6 +24,7 @@ public:
 
 	~RSManagerDX11() {
 		SDLOG(-1, "~RSManagerDX11\n");
+		setLatest(nullptr);
 	}
 
 	void addInternalReferences(ULONG count) {
@@ -34,10 +37,18 @@ public:
 	}
 
 	HRESULT redirectCreateSwapChain(IDXGIFactory* factory, IUnknown *pDevice, DXGI_SWAP_CHAIN_DESC *pDesc, IDXGISwapChain **ppSwapChain) {
+		// unwrap device
+		if(InterfaceRegistry::get().isWrapper(pDevice)) {
+			pDevice->QueryInterface(g_unwrapUUID, (void**)&pDevice);			
+		} else {
+			SDLOG(-1, "WARNING: redirectCreateSwapChain on non-intercepted device");
+		}
+
 		dxgiFactory = factory;
 		HRESULT ret;
 		renderWidth = pDesc->BufferDesc.Width;
 		renderHeight = pDesc->BufferDesc.Height;
+		console->setSize(renderWidth, renderHeight);
 		SDLOG(2, "RedirectCreateSwapChain dev: %p | RSDev: %p\n", pDevice, d3ddev);
 		if(Settings::getResSettings().setDSRes(pDesc->BufferDesc.Width, pDesc->BufferDesc.Height)) {
 			SDLOG(1, " -> Downsampling resolution!\n");
@@ -75,6 +86,7 @@ public:
 		else {
 			ret = dxgiFactory->CreateSwapChain(pDevice, pDesc, ppSwapChain);
 		}
+		
 		if(SUCCEEDED(ret)) {
 			dxgiSwapChain = *ppSwapChain;
 		}
@@ -83,6 +95,11 @@ public:
 
 	HRESULT redirectPresent(UINT SyncInterval, UINT Flags) {
 		SDLOG(-1, "RSManagerDX11::redirectPresent\n");
+		
+		//////////////////////////////////////////// IO
+		KeyActions::get().processIO();
+		//////////////////////////////////////////// IO
+
 		if(downsampling) {
 			ID3D11DeviceContext *context;
 			d3ddev->GetImmediateContext(&context);
@@ -96,7 +113,36 @@ public:
 
 			context->Release();
 		}
-		if(console->needsDrawing()) console->draw();
+		if(console->needsDrawing()) {
+			SDLOG(-1, "Draw stage 0");
+			ID3D11DeviceContext *context = nullptr;
+			d3ddev->GetImmediateContext(&context);
+			if(context) {
+				SDLOG(-1, "Draw stage 1");
+				ID3D11Texture2D *realBackBuffer = nullptr;
+				dxgiSwapChain->GetBuffer(0, __uuidof(realBackBuffer), reinterpret_cast<void**>(&realBackBuffer));
+				if(realBackBuffer) {
+					SDLOG(-1, "Draw stage 2");
+					ID3D11RenderTargetView* rtView = nullptr;
+					d3ddev->CreateRenderTargetView(realBackBuffer, NULL, &rtView);
+					if(rtView) {
+						SDLOG(-1, "Draw stage 3");
+						context->OMSetRenderTargets(1, &rtView, nullptr);
+						FLOAT clearCol[] = {0.0f,0.0f,0.0f,0.0f};
+						//context->ClearRenderTargetView(rtView, clearCol);
+						//D3D11_VIEWPORT vp = {0.0f, 0.0f, renderWidth, renderHeight, 0.0f, 1.0f};
+						//context->RSSetViewports(1, &vp);
+
+
+						console->draw();
+						
+						rtView->Release();
+					}
+					realBackBuffer->Release();
+				}			
+				context->Release();
+			}
+		}
 		return dxgiSwapChain->Present(SyncInterval, Flags);
 	}
 

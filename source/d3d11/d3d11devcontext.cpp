@@ -4,6 +4,7 @@
 #include "d3d11/d3d11devcontext.h"
 
 #include "settings.h"
+#include "utils/interface_registry.h"
 
 hkID3D11DeviceContext::hkID3D11DeviceContext(ID3D11DeviceContext **ppID3D11DeviceContext) {
 	pWrapped = *ppID3D11DeviceContext;
@@ -11,8 +12,7 @@ hkID3D11DeviceContext::hkID3D11DeviceContext(ID3D11DeviceContext **ppID3D11Devic
 }
 
 HRESULT APIENTRY hkID3D11DeviceContext::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkID3D11DeviceContext::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	return InterfaceRegistry::get().QueryInterface("hkID3D11DeviceContext", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkID3D11DeviceContext::AddRef() {
@@ -22,7 +22,12 @@ ULONG APIENTRY hkID3D11DeviceContext::AddRef() {
 
 ULONG APIENTRY hkID3D11DeviceContext::Release() {
 	SDLOG(20, "hkID3D11DeviceContext::Release\n");
-	return pWrapped->Release();
+	auto ret = pWrapped->Release();
+	if(ret == 0) {
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
+	}
+	return ret;
 }
 
 void APIENTRY hkID3D11DeviceContext::GetDevice(ID3D11Device **ppDevice) {

@@ -64,3 +64,27 @@ technique t0
 		AlphaTestEnable = false;
 	}
 }
+
+#ifdef DX11
+RasterizerState NoCull {
+	CullMode = NONE;
+};
+
+technique11 Render
+{
+	pass P0
+	{
+		SetVertexShader( CompileShader( vs_4_0, FrameVS() ) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader( ps_4_0, flat() ) );
+		SetRasterizerState(NoCull);
+	}
+	pass P1
+	{
+		SetVertexShader( CompileShader( vs_4_0, FrameVS() ) );
+		SetGeometryShader( NULL );
+		SetPixelShader( CompileShader( ps_4_0, font() ) );
+		SetRasterizerState(NoCull);
+	}
+}
+#endif

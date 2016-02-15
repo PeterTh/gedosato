@@ -12,7 +12,7 @@ interface hkIDXGISwapChain : public IDXGISwapChain {
 	RSManagerDX11* rsMan = NULL;
 	
 public:
-	hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain, RSManagerDX11* rsMan);
+	hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain);
 	
 	// original interface
 

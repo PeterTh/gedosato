@@ -5,15 +5,15 @@
 
 #include "settings.h"
 #include "renderstate_manager_dx11.h"
+#include "utils/interface_registry.h"
 
-hkIDXGISwapChain::hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain, RSManagerDX11* rsMan) : rsMan(rsMan) {
+hkIDXGISwapChain::hkIDXGISwapChain(IDXGISwapChain **ppIDXGISwapChain) : rsMan(&RSManager::getDX11()) {
 	pWrapped = *ppIDXGISwapChain;
 	*ppIDXGISwapChain = this;
 }
 
 HRESULT APIENTRY hkIDXGISwapChain::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkIDXGISwapChain::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	return InterfaceRegistry::get().QueryInterface("hkIDXGISwapChain", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkIDXGISwapChain::AddRef() {
@@ -23,7 +23,12 @@ ULONG APIENTRY hkIDXGISwapChain::AddRef() {
 
 ULONG APIENTRY hkIDXGISwapChain::Release() {
 	SDLOG(20, "hkIDXGISwapChain::Release\n");
-	return pWrapped->Release();
+	auto ret = pWrapped->Release();
+	if(ret == 0) {
+		InterfaceRegistry::get().unregisterWrapper(this);
+		delete this;
+	}
+	return ret;
 }
 
 HRESULT APIENTRY hkIDXGISwapChain::SetPrivateData(REFGUID Name, UINT DataSize, const void *pData) {
@@ -54,7 +59,6 @@ HRESULT APIENTRY hkIDXGISwapChain::GetDevice(REFIID riid, void **ppDevice) {
 HRESULT APIENTRY hkIDXGISwapChain::Present(UINT SyncInterval, UINT Flags) {
 	SDLOG(20, "hkIDXGISwapChain::Present\n");
 	return rsMan->redirectPresent(SyncInterval, Flags);
-	//return pWrapped->Present(SyncInterval, Flags);
 }
 
 HRESULT APIENTRY hkIDXGISwapChain::GetBuffer(UINT Buffer, REFIID riid, void **ppSurface) {
