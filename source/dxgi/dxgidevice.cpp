@@ -18,8 +18,7 @@ hkIDXGIDevice::hkIDXGIDevice(IDXGIDevice **ppIDXGIDevice) {
 #endif // not def hkIDXGIDevice  
 
 HRESULT APIENTRY hkIDXGIDevice::QueryInterface(REFIID riid, void **ppvObject) {
-	SDLOG(20, "hkIDXGIDevice::QueryInterface\n");
-	return pWrapped->QueryInterface(riid, ppvObject);
+	return InterfaceRegistry::get().QueryInterface("hkIDXGIDevice", pWrapped, riid, ppvObject);
 }
 
 ULONG APIENTRY hkIDXGIDevice::AddRef() {

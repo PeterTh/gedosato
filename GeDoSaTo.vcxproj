@@ -183,6 +183,12 @@
     <PostBuildEvent>
       <Command>copy "$(TargetPath)" "$(ProjectDir)pack"</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>ruby version.rb</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Versioning</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -296,6 +302,7 @@
     <ClCompile Include="source\plugins\lrff13.cpp" />
     <ClCompile Include="source\plugins\symphonia.cpp" />
     <ClCompile Include="source\plugins\zestiria.cpp" />
+    <ClCompile Include="source\renderstate_manager_dx11.cpp" />
     <ClCompile Include="source\shader_manager.cpp" />
     <ClCompile Include="source\steam\steamfriends.cpp" />
     <ClCompile Include="source\utils\d3d11_utils.cpp" />

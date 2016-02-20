@@ -73,6 +73,6 @@ HOOK(timeGetTime, "Winmm.dll")
 
 HOOK(SteamFriends, "steam_api.dll")
 
-HOOK(GetProcAddress, "Kernel32.dll")
+//HOOK(GetProcAddress, "Kernel32.dll")
 
 #undef HOOK

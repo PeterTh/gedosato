@@ -39,6 +39,7 @@ void Console::setLatest(Console *c) {
 }
 
 void Console::setSize(int w, int h) {
+	SDLOG(-1, "Console setSize %dx%d\n", w, h);
 	width = w;
 	height = h;
 }
@@ -68,38 +69,38 @@ void Console::draw() {
 
 	// draw background quad
 	if(lineHeight > 0.0f) {
-		drawBGQuad(-1.0f, -1.0f, 2.0f, 2.0f);
+		drawBGQuad(-1.0f, 1.0f, 2.0f, -lineHeight / height);
 	}
 	float y = 0.0f;
 
-	//// draw lines
-	//if(lines.size() - start > MAX_LINES) start += lines.size() - start - MAX_LINES;
-	//for(size_t i = start; i < lines.size(); ++i) {
-	//	float ret = lines[i].draw(y);
-	//	if(ret == 0.0f) start = i + 1; // if text timed out increase start
-	//	else y = ret + 2.0f;
-	//}
-	//if(y == 0.0f) {
-	//	if(lineHeight > 0.2f) lineHeight *= 0.6f;
-	//	else {
-	//		lineHeight = 0.0f;
-	//		// clear lines
-	//		lines.clear();
-	//		start = 0;
-	//	}
-	//}
-	//else lineHeight = y + 15.0f;
+	// draw lines
+	if(lines.size() - start > MAX_LINES) start += lines.size() - start - MAX_LINES;
+	for(size_t i = start; i < lines.size(); ++i) {
+		float ret = lines[i].draw(y);
+		if(ret == 0.0f) start = i + 1; // if text timed out increase start
+		else y = ret + 2.0f;
+	}
+	if(y == 0.0f) {
+		if(lineHeight > 0.2f) lineHeight *= 0.6f;
+		else {
+			lineHeight = 0.0f;
+			// clear lines
+			lines.clear();
+			start = 0;
+		}
+	}
+	else lineHeight = y + 15.0f;
 
-	//// draw static text
-	//for(auto& t : statics) {
-	//	if(t->show) {
-	//		auto p = print(t->x, t->y, t->text.c_str(), true);
-	//		float wborder = 4.0f / width, hborder = 4.0f / height;
-	//		float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
-	//		drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder * 8, p.second - bgy - hborder * 8);
-	//		print(t->x, t->y, t->text.c_str());
-	//	}
-	//}
+	// draw static text
+	for(auto& t : statics) {
+		if(t->show) {
+			auto p = print(t->x, t->y, t->text.c_str(), true);
+			float wborder = 4.0f / width, hborder = 4.0f / height;
+			float bgx = t->x / width - 1.0f, bgy = -(t->y - 32.0f) / height + 1.0f;
+			drawBGQuad(bgx - wborder, bgy + hborder, p.first - bgx + wborder * 8, p.second - bgy - hborder * 8);
+			print(t->x, t->y, t->text.c_str());
+		}
+	}
 }
 
 Console::Position Console::print(float x, float y, const char *text, bool measure) {

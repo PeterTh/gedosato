@@ -809,21 +809,34 @@ void hookFunction(const char* name, const char* dllname, void **ppTarget, void* 
 		if(dllhandle) {
 			*ppTarget = completedGetProcAddressDetour ? TrueGetProcAddress(dllhandle, name) : GetProcAddress(dllhandle, name);
 			MH_STATUS ret = MH_CreateHook(*ppTarget, pDetour, ppOriginal); 
-			if(ret == MH_OK) { SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); } 
-			else { SDLOG(0, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle); } 
+			if(ret == MH_OK) { 
+				SDLOG(1, " -> Created hook for %s, target: %p, dll: %p\n", name, ppTarget, dllhandle); 
+			} 
+			else { 
+				SDLOG(-1, " -> ERROR %d creating hook for %s, target: %p, dll: %p\n", ret, name, ppTarget, dllhandle);
+				return;
+			} 
 			ret = MH_EnableHook(*ppTarget); 
 			if(ret == MH_OK) { 
 				SDLOG(1, " -> Enabled hook for %s\n", name); 
 				flag = true;
 			} 
-			else { SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); } 
+			else { 
+				SDLOG(0, " -> ERROR %d enabling hook for %s\n", ret, name); 
+			} 
 		} else SDLOG(36, " -> DLL not found!\n")
 	}
 }
 
 // perform hooking using MinHook
 void startDetour() {
-	MH_Initialize();
+	static std::mutex mutex;
+	std::lock_guard<std::mutex> lock(mutex);
+	static bool inited = false;
+	if(!inited) {
+		MH_Initialize();
+		inited = true;
+	}
 
 	#define HOOK(__name, __dllname) \
 	hookFunction(#__name, __dllname, (void**)&__name##Pointer, Detoured##__name, (void**)&True##__name, completed##__name##Detour);
