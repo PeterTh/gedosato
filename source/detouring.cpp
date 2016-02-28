@@ -27,6 +27,8 @@
 
 #include "steam/steamfriends.h"
 
+#include <gl/GL.h>
+
 #define GENERATE_INTERCEPT_HEADER(__name, __rettype, __convention, ...) \
 typedef __rettype (__convention * __name##_FNType)(__VA_ARGS__); \
 __name##_FNType True##__name, __name##Pointer; \
@@ -741,6 +743,11 @@ GENERATE_INTERCEPT_HEADER(SteamFriends, ISteamFriends*, WINAPI) {
 	}
 	return TrueSteamFriends();
 }
+
+// OpenGL ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+GENERATE_INTERCEPT_HEADER(glTexImage2D, void, WINAPI, GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid * data);
+GENERATE_INTERCEPT_HEADER(glPixelMapfv, void, WINAPI, GLenum map, GLsizei mapsize, const GLfloat * values);
 
 // GetProcAddress ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

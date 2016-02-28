@@ -4,6 +4,7 @@
 
 #include "d3d9/d3d9dev_ex.h"
 #include "d3d9/d3d9swap.h"
+#include "d3d9/d3d9tex.h"
 #include "utils/d3d9_utils.h"
 #include "key_actions.h"
 #include "detouring.h"
@@ -828,6 +829,29 @@ void RSManagerDX9::redirectSetCursorPosition(int X, int Y, DWORD Flags) {
 	d3ddev->SetCursorPosition(X, Y, Flags);
 }
 
+HRESULT RSManagerDX9::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTexture) {
+	if(pTexture != NULL && (Settings::get().getEnableAlternativeTextureDumping() || Settings::get().getTextureScalingFactor() > 1)) {
+		void *unused;
+		if(pTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
+			pTexture = reinterpret_cast<hkIDirect3DTexture9*>(pTexture)->m_pWrapped;
+			SDLOG(6, " - wrapper for %p\n", pTexture);
+		}
+	}
+	if(Settings::get().getLogLevel() > 10 && pTexture) {
+		IDirect3DTexture9 *tex;
+		if(pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex) == S_OK) {
+			D3DSURFACE_DESC desc;
+			tex->GetLevelDesc(0, &desc);
+			SDLOG(10, " -- size: %dx%d RT? %s\n", desc.Width, desc.Height, (desc.Usage & D3DUSAGE_RENDERTARGET) ? "true" : "false");
+			if(dumpingFrame) {
+				dumpTexture(format("framedump_settexture%03u_stage%d_texture_%p", renderTargetSwitches++, Stage, pTexture).c_str(), tex);
+			}
+			tex->Release();
+		}
+	}
+	return d3ddev->SetTexture(Stage, pTexture);
+}
+
 HRESULT RSManagerDX9::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
 	if(dumpingFrame) {
 		IDirect3DSurface9* rt;
@@ -875,6 +899,13 @@ HRESULT RSManagerDX9::redirectSetPixelShaderConstantF(UINT StartRegister, CONST 
 }
 
 HRESULT RSManagerDX9::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
+	if((Settings::get().getEnableAlternativeTextureDumping() || Settings::get().getTextureScalingFactor()>1) && !(Usage & D3DUSAGE_RENDERTARGET) && Width > 1 && Height > 1) {
+		HRESULT hr = plugin->redirectCreateTexture(Width*Settings::get().getTextureScalingFactor(), Height*Settings::get().getTextureScalingFactor(), Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
+		if(SUCCEEDED(hr)) {
+			new hkIDirect3DTexture9(ppTexture);
+		}
+		return hr;
+	}
 	return plugin->redirectCreateTexture(Width, Height, Levels, Usage, Format, Pool, ppTexture, pSharedHandle);
 }
 

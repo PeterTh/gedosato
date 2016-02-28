@@ -161,7 +161,7 @@ const char* GetDeviceCapsParamToString(int index) {
 
 string RectToString(const RECT* rect) {
 	if(!rect) return string("NULL_RECT");
-	return format("RECT[%4ld/%4ld/%4ld/%4ld]", rect->left, rect->top, rect->right, rect->bottom);
+	return format("RECT[%4ld..%4ld/%4ld..%4ld]", rect->left, rect->right, rect->top, rect->bottom);
 }
 
 DWORD RunSilent(const char* command) {

@@ -660,23 +660,7 @@ HRESULT APIENTRY hkIDirect3DDevice9::SetStreamSourceFreq(UINT StreamNumber,UINT 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTexture) {
 	RSManager::setLatest(rsMan);
 	SDLOG(6, "setTexture %d, %p\n", Stage, pTexture);
-	if(pTexture != NULL && Settings::get().getEnableAlternativeTextureDumping()) {
-		void *unused;
-		if(pTexture->QueryInterface(IID_GedosatoTexture, &unused) == S_OK) {
-			pTexture = reinterpret_cast<hkIDirect3DTexture9*>(pTexture)->m_pWrapped;
-			SDLOG(6, " - wrapper for %p\n", pTexture);
-		}
-	}
-	if(Settings::get().getLogLevel() > 10 && pTexture) {
-		IDirect3DTexture9 *tex;
-		if(pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex) == S_OK) {
-			D3DSURFACE_DESC desc;
-			tex->GetLevelDesc(0, &desc);
-			SDLOG(10, " -- size: %dx%d RT? %s\n", desc.Width, desc.Height, (desc.Usage & D3DUSAGE_RENDERTARGET) ? "true" : "false");
-			tex->Release();
-		}
-	}
-	return m_pD3Ddev->SetTexture(Stage, pTexture);
+	return rsMan->redirectSetTexture(Stage, pTexture);
 }
 
 HRESULT APIENTRY hkIDirect3DDevice9::SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value) {

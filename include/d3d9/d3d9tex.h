@@ -10,6 +10,8 @@ const extern GUID IID_GedosatoTexture;
 interface hkIDirect3DTexture9 : public IDirect3DTexture9 {
 	IDirect3DTexture9 *m_pWrapped;
 	bool dirty = false;
+	D3DLOCKED_RECT* lockedRect = nullptr;
+	RECT rect;
 		
 public:
 	hkIDirect3DTexture9(IDirect3DTexture9 **ppIDirect3DTexture9);

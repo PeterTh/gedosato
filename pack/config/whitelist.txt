@@ -76,6 +76,7 @@ ffxiv*                       || Final Fantasy XIV Launcher or Configurator
 FirefallClient               || Firefall
 FoxGame-Win32-Shipping       || Blacklight: Retribution
 fr-041_debris                || "Debris" by Farbrausch
+Grim Dawn                    || Grim Dawn
 grimrock                     || Legend of Grimrock
 grimrock2                    || Legend of Grimrock 2
 GSGameExe_DX9                || Giana Sisters: Twisted Dreams

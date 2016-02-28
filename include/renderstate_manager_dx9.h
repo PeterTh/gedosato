@@ -109,6 +109,7 @@ public:
 	HRESULT redirectGetDepthStencilSurface(IDirect3DSurface9 ** ppZStencilSurface);
 	void redirectSetCursorPosition(int X, int Y, DWORD Flags);
 
+	HRESULT redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTexture);
 	HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader);
 	HRESULT redirectSetVertexShader(IDirect3DVertexShader9* pvShader);
 	HRESULT redirectSetRenderState(D3DRENDERSTATETYPE State, DWORD Value);

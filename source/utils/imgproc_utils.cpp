@@ -489,13 +489,6 @@ bool TextureScaler::IsEmptyOrFlat(u32* data, int pixels) {
 }
 
 void TextureScaler::Scale(u32* &data, int &width, int &height, int factor) {
-	// prevent processing empty or flat textures (this happens a lot in some games)
-	// doesn't hurt the standard case, will be very quick for textures with actual texture
-	if(IsEmptyOrFlat(data, width*height)) {
-		SDLOG(20, "TextureScaler: early exit -- empty/flat texture");
-		return;
-	}
-
 	#ifdef SCALING_MEASURE_TIME
 	double t_start = real_time_now();
 	#endif
@@ -515,21 +508,25 @@ void TextureScaler::Scale(u32* &data, int &width, int &height, int factor) {
 	}
 
 	// scale 
-	switch(Settings::get().getTextureScalingMode()) {
-	case XBRZ:
-		ScaleXBRZ(factor, inputBuf, outputBuf, width, height);
-		break;
-	case HYBRID:
-		ScaleHybrid(factor, inputBuf, outputBuf, width, height);
-		break;
-	case BICUBIC:
-		ScaleBicubicMitchell(factor, inputBuf, outputBuf, width, height);
-		break;
-	case HYBRID_BICUBIC:
-		ScaleHybrid(factor, inputBuf, outputBuf, width, height, true);
-		break;
-	default:
-		SDLOG(-1, "Unknown scaling type: %d", Settings::get().getTextureScalingMode());
+	if(factor == 1) {
+		memcpy(outputBuf, inputBuf, 4*width*height);
+	} else {
+		switch(Settings::get().getTextureScalingMode()) {
+		case XBRZ:
+			ScaleXBRZ(factor, inputBuf, outputBuf, width, height);
+			break;
+		case HYBRID:
+			ScaleHybrid(factor, inputBuf, outputBuf, width, height);
+			break;
+		case BICUBIC:
+			ScaleBicubicMitchell(factor, inputBuf, outputBuf, width, height);
+			break;
+		case HYBRID_BICUBIC:
+			ScaleHybrid(factor, inputBuf, outputBuf, width, height, true);
+			break;
+		default:
+			SDLOG(-1, "Unknown scaling type: %d", Settings::get().getTextureScalingMode());
+		}
 	}
 
 	// update values accordingly
