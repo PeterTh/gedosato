@@ -5,173 +5,187 @@
 # Format: 
 # Exe File Name (or pattern) || Readable Name (optional)
 
-AlanWake                     || Alan Wake
-AO                           || Abyss Odyssey
-AoW3                         || Age of Wonders 3
-AssassinsCreed_Dx9           || Assassins Creed
-AssassinsCreedIIGame         || Assassin's Creed 2
-Astebreed                    || Astebreed
-AvP                          || Aliens vs Predator 2010
-BatmanAC                     || Batman: Arkham City GOTY
-BatmanOrigins                || Batman: Arkham Origins (Single Player)
-BFBC2Game                    || Battlefield: Bad Company 2
-BH6                          || Resident Evil 6
-Bio4                         || Resident Evil 4 PC
-bionic_commando              || Bionic Commando
-Bioshock                     || BioShock
-Bioshock2                    || BioShock 2
-Blackguards                  || Blackguards (The Dark Eye)
-bladesoftime                 || Blades of Time
-Borderlands                  || Borderlands
-Borderlands2                 || Borderlands 2
-bsnes                        || bsnes SNES emulator
-CastlevaniaLoSUE             || Castlevania: Lords of Shadow - Ultimate Edition
-ChildofLight                 || Child of Light
-CLOS2                        || Castlevania Lords of Shadow 2
-CMOF                         || Castlevania: Lords of Shadow - Mirror of Fate HD
-cnc3game                     || Command & Conquer 3: Tiberium Wars
-Cognition Episode*           || Cognition: An Erica Reed Thriller
-Condemned                    || Condemned: Criminal Origins
-config                       || Configurator (multiple)
-Configurator                 || Configurator (multiple)
-consortium                   || Consortium
-Crysis                       || Crysis & Crysis Warhead
-Crysis2                      || Crysis 2
-csgo                         || Counter-Strike: Global Offensive
-DAOrigins                    || Dragon Age: Origins
-DAOriginsConfig              || Dragon Age: Origins Configurator
-Darksiders2                  || Darksiders 2
-DarksidersPC                 || Darksiders
-DarkSoulsII                  || Dark Souls 2
-DayZ                         || DayZ Standalone
-DBXV                         || Dragonball Xenoverse
-DDDA                         || Dragon's Dogma: Dark Arisen
-Dead Space                   || Dead Space
-deadspace2                   || Dead Space 2
-default                      || Mushihimesama
-demoniconR                   || Demonicon
-DevilMayCry4_DX9             || Devil May Cry 4 (DX9)
-Diablo III                   || Diablo III
-Dishonored                   || Dishonored
-dmc3se                       || Devil May Cry 3 Special Edition
-DMC-DevilMayCry              || DmC Devil May Cry
-dota                         || Dota 2
-DragonAge2                   || Dragon Age 2
-DragonAge2*                  || Dragon Age 2 Launcher or Configurator
-Earth2160*                   || Earth 2160
-Elminage                     || Elminage Gothic
-EoCApp                       || Divinity: Original Sin
-FairyFencer                  || Fairy Fencer F
-Fallout3                     || Fallout 3
-FalloutLauncher              || Fallout 3 Launcher
-FarCry2                      || FarCry 2
-fear                         || F.E.A.R.
-FEAR2                        || F.E.A.R. 2
-FEARXP                       || F.E.A.R. Extraction Point
-FEARXP2                      || F.E.A.R. Perseus Mandate
-ffxiii2img                   || Final Fantasy XIII-2
-ffxiiiimg                    || Final Fantasy XIII
-ffxiv                        || Final Fantasy XIV
-ffxiv*                       || Final Fantasy XIV Launcher or Configurator
-FirefallClient               || Firefall
-FoxGame-Win32-Shipping       || Blacklight: Retribution
-fr-041_debris                || "Debris" by Farbrausch
-Grim Dawn                    || Grim Dawn
-grimrock                     || Legend of Grimrock
-grimrock2                    || Legend of Grimrock 2
-GSGameExe_DX9                || Giana Sisters: Twisted Dreams
-GSLauncher                   || Giana Sisters: Twisted Dreams Launcher
-GTAIV                        || Grand Theft Auto 4
-halo                         || Halo: Combat Evolved
-halo2                        || Halo 2
-haloce                       || Halo: Custom Edition
-hardreset                    || Hard Reset
-HawkenGame-Win32-Shipping    || Hawken
-HitmanBloodMoney             || Hitman: Blood Money
-hl2                          || Half-Life 2, Portal
-Injustice                    || Injustice: Gods Among Us
-iw3sp                        || Call of Duty: Modern Warfare
-JacobJonesGame               || Jacob Jones and the Bigfoot Mystery: Episode 1
-jetsetradio                  || Jet Set Radio
-jsrsetup                     || Jet Set Radio Config Tool
-kb                           || King's Bounty (All Versions)
-KentuckyRouteZero            || Kentucky Route Zero
-kick_win                     || Marlow Briggs
-KidGame                      || Killer is Dead
-LaMulanaWin                  || La-Mulana
-Launch                       || Dynasty Warriors 8 XL
-Launcher                     || Launcher (multiple)
-lcgol                        || Lara Croft and the Guardian of Light
-left4dead2                   || Left 4 Dead 2
-LEGOMARVEL                   || LEGO Marvel Superheroes
-Leviathan                    || Leviathan: Warships
-LostPlanetDX9                || Lost Planet: Extreme Condition (DX9)
-LRFF13                       || Lightning Returns Final Fantasy XIII
-Mafia2                       || Mafia II
-MassEffect                   || Mass Effect
-MassEffect2                  || Mass Effect 2
-MassEffect2Config            || Mass Effect 2 Configurator
-MassEffect3                  || Mass Effect 3
-MassEffect3Config            || Mass Effect 3 Configurator
-MassEffectConfig             || Mass Effect Configurator
-MazeGame-Win32-Shipping      || Lili: Child of Geos
-mgs2*                        || Metal Gear Solid 2
-Might and Magic X Legacy     || Might and Magic X Legacy
-MirrorsEdge                  || Mirror's Edge
-mitsurugi                    || Mitsurugi Kamui Hikae
-mm                           || Dark Messiah of Might and Magic Single Player
-MOHA                         || Medal of Honor: Airborne
-MWOClient                    || MechWarrior Online
-Never_Alone                  || Never Alone (Kisima Ingitchuna)
-ninja                        || Mini Ninjas
-OfOrcsAndMen_Steam           || Of Orcs And Men
-Paranautical Activity        || Paranautical Activity
-PathOfExileSteam             || Path of Exile
-PillarsOfEternity            || Pillars of Eternity
-PKHD-DS-ConfigTool           || Painkiller HD Config
-PKHDGame-Win32-Shipping      || Painkiller HD
-PPSSPPWindows64              || PPSSPP
-Rayman Legends               || Rayman Legends
-RE5DX10                      || Resident Evil 5 (DX10)
-RE5DX9                       || Resident Evil 5 (DX9)
-Reckoning                    || Kingdom's of Amalur: Reckoning
-RelicCOH                     || Company of Heroes (New Steam Version)
-RememberMe                   || Remember Me
-rfg                          || Red Faction: Guerrilla (DX9)
-Risen                        || Risen
-Risen2                       || Risen 2
-Risen3                       || Risen 3
-RoA                          || Rock of Ages
-runner2                      || BIT:TRIP Runner 2
-sec*                         || Tales of Symphonia
-Shadowrun                    || Shadowrun Returns
-Sherlock                     || Sherlock Holmes: Crimes and Punishments
-ShippingPC-BmGame            || Batman: Arkham Asylum GOTY
-ShippingPC-SkyGame           || Dark Void
-ShippingPC-StormGame         || Bulletstorm
-ShooterGame-Win32-Shipping   || Dirty Bomb
-SkyrimLauncher               || The Elder Scrolls V: Skyrim Configurator
-SonicGenerations             || Sonic Generations
-SpaceMarine                  || Warhammer 40,000: Space Marine
-SpecOpsTheLine               || Spec Ops: The Line
-StateOfDecay                 || State Of Decay
-StrangerOfSwordCity          || Stranger of Sword City
-Tales of Zestiria            || Tales of Zestiria
-TESV                         || The Elder Scrolls V: Skyrim
-TFOC                         || Transformers: Fall of Cybertron
-TheFall                      || The Fall
-TheWalkingDead2              || The Walking Dead Season 2
-TribesAscend                 || Tribes Ascend
-trine1_32bit                 || Trine 1 Enchanted Edition
-trine1_launcher              || Trine 1 Enchanted Configurator
-trine2_32bit                 || Trine 2
-trine2_launcher              || Trine 2 Launcher
-tru                          || Tomb Raider: Underworld
-TWFC                         || Transformers: War for Cybertron
-UmiByeWin                    || Sayonara UmiharaKawase
-Valiant Hearts               || Valiant Hearts
-Valkyria                     || Valkyria Chronicles
-witcher2                     || The Witcher 2
-WL2                          || Wasteland 2
-Wolverine                    || X-Men Origins: Wolverine
-yso_win                      || Ys Origin
+alan_wakes_american_nightmare || Alan Wake's American Nightmare
+AlanWake                      || Alan Wake
+AO                            || Abyss Odyssey
+AoW3                          || Age of Wonders 3
+AssassinsCreed_Dx9            || Assassins Creed
+AssassinsCreedIIGame          || Assassin's Creed 2
+Astebreed                     || Astebreed
+AvP                           || Aliens vs Predator 2010
+BatmanAC                      || Batman: Arkham City GOTY
+BatmanOrigins                 || Batman: Arkham Origins (Single Player)
+BFBC2Game                     || Battlefield: Bad Company 2
+BH6                           || Resident Evil 6
+Bio4                          || Resident Evil 4 PC
+bionic_commando               || Bionic Commando
+Bioshock                      || BioShock
+Bioshock2                     || BioShock 2
+Blackguards                   || Blackguards (The Dark Eye)
+bladesoftime                  || Blades of Time
+Borderlands                   || Borderlands
+Borderlands2                  || Borderlands 2
+bsnes                         || bsnes SNES emulator
+CastlevaniaLoSUE              || Castlevania: Lords of Shadow - Ultimate Edition
+ChildofLight                  || Child of Light
+CLOS2                         || Castlevania Lords of Shadow 2
+CMOF                          || Castlevania: Lords of Shadow - Mirror of Fate HD
+cnc3game                      || Command & Conquer 3: Tiberium Wars
+Cognition Episode*            || Cognition: An Erica Reed Thriller
+Condemned                     || Condemned: Criminal Origins
+config                        || Configurator (multiple)
+Configurator                  || Configurator (multiple)
+consortium                    || Consortium
+Crysis                        || Crysis & Crysis Warhead
+Crysis2                       || Crysis 2
+csgo                          || Counter-Strike: Global Offensive
+DAOrigins                     || Dragon Age: Origins
+DAOriginsConfig               || Dragon Age: Origins Configurator
+Darksiders2                   || Darksiders 2
+DarksidersPC                  || Darksiders
+DarkSoulsII                   || Dark Souls 2
+DayZ                          || DayZ Standalone
+DBXV                          || Dragonball Xenoverse
+DDDA                          || Dragon's Dogma: Dark Arisen
+Dead Space                    || Dead Space
+deadrising2otr                || Dead Rising 2: Off the Record
+deadspace2                    || Dead Space 2
+default                       || Mushihimesama
+demoniconR                    || Demonicon
+DevilMayCry4_DX9              || Devil May Cry 4 (DX9)
+Diablo III                    || Diablo III
+Dishonored                    || Dishonored
+dmc3se                        || Devil May Cry 3 Special Edition
+DMC-DevilMayCry               || DmC Devil May Cry
+dota                          || Dota 2
+DragonAge2                    || Dragon Age 2
+DragonAge2*                   || Dragon Age 2 Launcher or Configurator
+Earth2160*                    || Earth 2160
+Elminage                      || Elminage Gothic
+EoCApp                        || Divinity: Original Sin
+FairyFencer                   || Fairy Fencer F
+Fallout3                      || Fallout 3
+FalloutLauncher               || Fallout 3 Launcher
+FalloutNV                     || Fallout New Vegas
+FalloutNVLauncher             || Fallout New Vegas Launcher
+FarCry2                       || FarCry 2
+fear                          || F.E.A.R.
+FEAR2                         || F.E.A.R. 2
+FEARXP                        || F.E.A.R. Extraction Point
+FEARXP2                       || F.E.A.R. Perseus Mandate
+ffxiii2img                    || Final Fantasy XIII-2
+ffxiiiimg                     || Final Fantasy XIII
+ffxiv                         || Final Fantasy XIV
+ffxiv*                        || Final Fantasy XIV Launcher or Configurator
+FirefallClient                || Firefall
+FoxGame-Win32-Shipping        || Blacklight: Retribution
+fr-041_debris                 || "Debris" by Farbrausch
+Game                          || Gurumin: A Monstrous Adventure
+Grim Dawn                     || Grim Dawn
+grimrock                      || Legend of Grimrock
+grimrock2                     || Legend of Grimrock 2
+GSGameExe_DX9                 || Giana Sisters: Twisted Dreams
+GSLauncher                    || Giana Sisters: Twisted Dreams Launcher
+GTAIV                         || Grand Theft Auto 4
+halo                          || Halo: Combat Evolved
+halo2                         || Halo 2
+haloce                        || Halo: Custom Edition
+hardreset                     || Hard Reset
+HawkenGame-Win32-Shipping     || Hawken
+HitmanBloodMoney              || Hitman: Blood Money
+hl2                           || Half-Life 2, Portal
+Injustice                     || Injustice: Gods Among Us
+iw3sp                         || Call of Duty: Modern Warfare
+JacobJonesGame                || Jacob Jones and the Bigfoot Mystery: Episode 1
+jetsetradio                   || Jet Set Radio
+jsrsetup                      || Jet Set Radio Config Tool
+kb                            || King's Bounty (All Versions)
+KentuckyRouteZero             || Kentucky Route Zero
+kick_win                      || Marlow Briggs
+KidGame                       || Killer is Dead
+kl2                           || Kane & Lynch 2: Dog Days
+KungFuStrike                  || Kung Fu Strike - The Warrior's Rise
+LaMulanaWin                   || La-Mulana
+Launch                        || Dynasty Warriors 8 XL
+Launcher                      || Launcher (multiple)
+lcgol                         || Lara Croft and the Guardian of Light
+left4dead2                    || Left 4 Dead 2
+LEGOMARVEL                    || LEGO Marvel Superheroes
+Leviathan                     || Leviathan: Warships
+LostPlanetDX9                 || Lost Planet: Extreme Condition (DX9)
+LRFF13                        || Lightning Returns Final Fantasy XIII
+Mafia2                        || Mafia II
+MassEffect                    || Mass Effect
+MassEffect2                   || Mass Effect 2
+MassEffect2Config             || Mass Effect 2 Configurator
+MassEffect3                   || Mass Effect 3
+MassEffect3Config             || Mass Effect 3 Configurator
+MassEffectConfig              || Mass Effect Configurator
+MazeGame-Win32-Shipping       || Lili: Child of Geos
+mgs2*                         || Metal Gear Solid 2
+Might and Magic X Legacy      || Might and Magic X Legacy
+MirrorsEdge                   || Mirror's Edge
+mitsurugi                     || Mitsurugi Kamui Hikae
+mm                            || Dark Messiah of Might and Magic Single Player
+MOHA                          || Medal of Honor: Airborne
+MWOClient                     || MechWarrior Online
+Never_Alone                   || Never Alone (Kisima Ingitchuna)
+ninja                         || Mini Ninjas
+OfOrcsAndMen_Steam            || Of Orcs And Men
+Outland                       || Outland
+Overlord                      || Overlord
+Paranautical Activity         || Paranautical Activity
+PathOfExileSteam              || Path of Exile
+PillarsOfEternity             || Pillars of Eternity
+PKHD-DS-ConfigTool            || Painkiller HD Config
+PKHDGame-Win32-Shipping       || Painkiller HD
+PPSSPPWindows64               || PPSSPP
+Psychonauts                   || Psychonauts 
+Rayman Legends                || Rayman Legends
+RE5DX10                       || Resident Evil 5 (DX10)
+RE5DX9                        || Resident Evil 5 (DX9)
+Reckoning                     || Kingdom's of Amalur: Reckoning
+RelicCOH                      || Company of Heroes (New Steam Version)
+RememberMe                    || Remember Me
+rfg                           || Red Faction: Guerrilla (DX9)
+Risen                         || Risen
+Risen2                        || Risen 2
+Risen3                        || Risen 3
+RoA                           || Rock of Ages
+runner2                       || BIT:TRIP Runner 2
+sec*                          || Tales of Symphonia
+Shadowrun                     || Shadowrun Returns
+Sherlock                      || Sherlock Holmes: Crimes and Punishments
+ShippingPC-BmGame             || Batman: Arkham Asylum GOTY
+ShippingPC-SkyGame            || Dark Void
+ShippingPC-StormGame          || Bulletstorm
+ShooterGame-Win32-Shipping    || Dirty Bomb
+SkyrimLauncher                || The Elder Scrolls V: Skyrim Configurator
+SonicGenerations              || Sonic Generations
+SpaceMarine                   || Warhammer 40,000: Space Marine
+SpecOpsTheLine                || Spec Ops: The Line
+StateOfDecay                  || State Of Decay
+StrangerOfSwordCity           || Stranger of Sword City
+SWTFU                         || Star Wars: The Force Unleashed
+Tales of Zestiria             || Tales of Zestiria
+TESV                          || The Elder Scrolls V: Skyrim
+TFOC                          || Transformers: Fall of Cybertron
+the last tinker               || The Last Tinker: City of Colors
+TheFall                       || The Fall
+TheWalkingDead2               || The Walking Dead Season 2
+Torchlight2                   || Torchlight 2
+TribesAscend                  || Tribes Ascend
+trine1_32bit                  || Trine 1 Enchanted Edition
+trine1_launcher               || Trine 1 Enchanted Configurator
+trine2_32bit                  || Trine 2
+trine2_launcher               || Trine 2 Launcher
+tru                           || Tomb Raider: Underworld
+TWFC                          || Transformers: War for Cybertron
+UmiByeWin                     || Sayonara UmiharaKawase
+Valiant Hearts                || Valiant Hearts
+Valkyria                      || Valkyria Chronicles
+witcher2                      || The Witcher 2
+witn                          || Lord of the Rings: War in the North
+WL2                           || Wasteland 2
+Wolverine                     || X-Men Origins: Wolverine
+yso_win                       || Ys Origin
