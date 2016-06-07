@@ -10,6 +10,7 @@
 #include "plugins/zestiria.h"
 #include "plugins/lrff13.h"
 #include "plugins/symphonia.h"
+#include "plugins/stranger.h"
 
 #include "utils/string_utils.h"
 

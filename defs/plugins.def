@@ -8,6 +8,7 @@ PLUGIN("Mitsurugi Kamui Hikae", "mitsurugi", MitsurugiPlugin)
 PLUGIN("Tales of Zestiria", "Tales of Zestiria", ZestiriaPlugin)
 PLUGIN("Lightning Returns FInal Fantasy XIII", "LRFF13", LightningReturnsPlugin)
 PLUGIN("Tales of Symphonia", "Symphonia", SymphoniaPlugin)
+PLUGIN("Stranger of Sword City", "StrangerOfSwordCity", StrangerOfSwordCityPlugin)
 
 // this should always be last
 PLUGIN("Generic", "*", GenericPlugin)

@@ -51,7 +51,7 @@ using std::string;
 #define SAFEDELETEARR(_p) { if(_p) { delete [] (_p); SDLOG(10, "Safedeletearr: %p, loc: %s : %d\n", (_p), __FILE__, __LINE__); (_p) = nullptr; } }
 
 #define EPSILON (std::numeric_limits<float>::epsilon()*10)
-#define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON * (std::max)(1.0f, (std::max)(std::abs(__a), std::abs(__b))))
+#define FLT_EQ(__a, __b) (std::abs((__a) - (__b)) <= EPSILON)
 #define FLT_EPS(__a, __b, __eps) (std::abs((__a) - (__b)) <= __eps)
 
 #define CHECKHR(__hresult, __message, ...) if(FAILED(__hresult)) { SDLOG(-1, "ERROR: " __message, __VA_ARGS__) }
