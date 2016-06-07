@@ -59,7 +59,7 @@ HRESULT StrangerOfSwordCityPlugin::redirectSetPixelShader(IDirect3DPixelShader9*
 HRESULT StrangerOfSwordCityPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	if(PrimitiveCount==2) {
 		//float* vertexData = (float*)pVertexStreamZeroData;
-		auto floatStride = VertexStreamZeroStride / sizeof(float);
+		size_t floatStride = VertexStreamZeroStride / sizeof(float);
 		//static float replacementVertexData[100];// = (float*)alloca(floatStride * 2 * sizeof(float));
 		//memcpy(replacementVertexData, pVertexStreamZeroData, VertexStreamZeroStride*2);
 		float* vertexData = (float*)pVertexStreamZeroData;
