@@ -10,6 +10,7 @@
 
 
 class StrangerOfSwordCityPlugin : public GenericPlugin {
+	bool finishedFrame = false;
 
 public:
 	StrangerOfSwordCityPlugin(IDirect3DDevice9* device, RSManagerDX9 &manager);
@@ -28,4 +29,5 @@ public:
 	virtual HRESULT redirectSetPixelShader(IDirect3DPixelShader9* pShader) override;
 	virtual HRESULT redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) override;
 
+	virtual HRESULT redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) override;
 };

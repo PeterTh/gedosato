@@ -23,6 +23,7 @@ void StrangerOfSwordCityPlugin::initialize(unsigned rw, unsigned rh, D3DFORMAT b
 
 void StrangerOfSwordCityPlugin::prePresent() {
 	PluginBase::prePresent();
+	finishedFrame = false;
 }
 
 HRESULT StrangerOfSwordCityPlugin::redirectCreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9** ppTexture, HANDLE* pSharedHandle) {
@@ -57,7 +58,7 @@ HRESULT StrangerOfSwordCityPlugin::redirectSetPixelShader(IDirect3DPixelShader9*
 }
 
 HRESULT StrangerOfSwordCityPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
-	if(PrimitiveCount==2) {
+	if(!finishedFrame && PrimitiveCount==2) {
 		//float* vertexData = (float*)pVertexStreamZeroData;
 		size_t floatStride = VertexStreamZeroStride / sizeof(float);
 		//static float replacementVertexData[100];// = (float*)alloca(floatStride * 2 * sizeof(float));
@@ -66,11 +67,11 @@ HRESULT StrangerOfSwordCityPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE Prim
 		float orientation = 1.0f;
 		if(vertexData[6 + 1*floatStride] < vertexData[6 + 2*floatStride]) orientation = -1.0f;
 		for(int vert = 0; vert < 4; ++vert) {
-			for(int i = 0; i < floatStride; ++i) {
+			for(size_t i = 0; i < floatStride; ++i) {
 				//SDLOG(20, "%8.4f ", vertexData[i]);
 				float& val = vertexData[i + vert*floatStride];
-				if(i == 0 && !FLT_EQ(val, 2560)) val *= 3;
-				if(i == 1 && !FLT_EQ(val, 1440)) val *= 3;
+				if(i == 0) val *= 3;
+				if(i == 1) val *= 3;
 				if(i == 5 && vert <= 1) val -= 1.0f / (1280.0f * 1.333f);
 				if(i == 6 && vert%2==1) val -= orientation * (1.0f / ( 720.0f * 1.666f));
 			}
@@ -79,4 +80,15 @@ HRESULT StrangerOfSwordCityPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE Prim
 		return PluginBase::redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, vertexData, VertexStreamZeroStride);
 	}
 	return PluginBase::redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
+}
+
+HRESULT StrangerOfSwordCityPlugin::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
+	IDirect3DTexture9 *tex;
+	if(pTexture->QueryInterface(IID_IDirect3DTexture9, (void**)&tex) == S_OK) {
+		D3DSURFACE_DESC desc;
+		tex->GetLevelDesc(0, &desc);
+		if(desc.Width == 3840 && desc.Height == 2160) finishedFrame = true;
+		tex->Release();
+	}
+	return PluginBase::redirectSetTexture(Stage, pTexture);
 }

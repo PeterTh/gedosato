@@ -101,4 +101,8 @@ public:
 	virtual HRESULT redirectBeginScene() {
 		return d3ddev->BeginScene();
 	}
+
+	virtual HRESULT redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9* pTexture) {
+		return d3ddev->SetTexture(Stage, pTexture);
+	}
 };

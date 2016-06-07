@@ -849,7 +849,7 @@ HRESULT RSManagerDX9::redirectSetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTe
 			tex->Release();
 		}
 	}
-	return d3ddev->SetTexture(Stage, pTexture);
+	return plugin->redirectSetTexture(Stage, pTexture);
 }
 
 HRESULT RSManagerDX9::redirectSetPixelShader(IDirect3DPixelShader9* pShader) {
