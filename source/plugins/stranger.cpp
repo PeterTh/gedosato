@@ -59,25 +59,28 @@ HRESULT StrangerOfSwordCityPlugin::redirectSetPixelShader(IDirect3DPixelShader9*
 
 HRESULT StrangerOfSwordCityPlugin::redirectDrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT PrimitiveCount, CONST void* pVertexStreamZeroData, UINT VertexStreamZeroStride) {
 	if(!finishedFrame && PrimitiveCount==2) {
-		//float* vertexData = (float*)pVertexStreamZeroData;
+		// scale draw calls for 2D UI elements
 		size_t floatStride = VertexStreamZeroStride / sizeof(float);
-		//static float replacementVertexData[100];// = (float*)alloca(floatStride * 2 * sizeof(float));
-		//memcpy(replacementVertexData, pVertexStreamZeroData, VertexStreamZeroStride*2);
 		float* vertexData = (float*)pVertexStreamZeroData;
-		float orientation = 1.0f;
-		if(vertexData[6 + 1*floatStride] < vertexData[6 + 2*floatStride]) orientation = -1.0f;
+		// first, determine whether we are dealing with flipped textures
+		float orientation_v = 1.0f;
+		if(vertexData[6 + 1 * floatStride] < vertexData[6 + 2 * floatStride]) orientation_v = -1.0f;
+		float orientation_h = 1.0f;
+		if(vertexData[5 + 0 * floatStride] < vertexData[5 + 2 * floatStride]) orientation_h = -1.0f;
+		// then adjust coordiantes
 		for(int vert = 0; vert < 4; ++vert) {
 			for(size_t i = 0; i < floatStride; ++i) {
-				//SDLOG(20, "%8.4f ", vertexData[i]);
+				SDLOG(20, "%8.4f ", vertexData[i]);
 				float& val = vertexData[i + vert*floatStride];
+				// vertex coords
 				if(i == 0) val *= 3;
 				if(i == 1) val *= 3;
-				if(i == 5 && vert <= 1) val -= 1.0f / (1280.0f * 1.333f);
-				if(i == 6 && vert%2==1) val -= orientation * (1.0f / ( 720.0f * 1.666f));
+				// texture coords
+				if(i == 5 && vert <= 1) val -= orientation_h * (1.0f / (1280.0f * 1.333f));
+				if(i == 6 && vert%2==1) val -= orientation_v * (1.0f / ( 720.0f * 1.666f));
 			}
-			//SDLOG(20, "\n");
+			SDLOG(20, "\n");
 		}
-		return PluginBase::redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, vertexData, VertexStreamZeroStride);
 	}
 	return PluginBase::redirectDrawPrimitiveUP(PrimitiveType, PrimitiveCount, pVertexStreamZeroData, VertexStreamZeroStride);
 }

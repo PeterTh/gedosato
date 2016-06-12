@@ -13,6 +13,9 @@ Tales of Symphonia:
 - Added Plugin, fix resolution lock
 - Also fix postprocessing
 - Add toggle for black character outlines
+Stranger of Sword City:
+- Added plugin, fixed resolution lock
+- Fixed texture breakage on horizontal mirrored tiling textures
 
 28-01-2016 -- beta 20 - "Hopeful Jasper"
 ========================================

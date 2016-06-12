@@ -6,9 +6,9 @@ const char* VER_NAME = "How Could Hell Be Any Worse";
 
 const unsigned VER_MAJOR = 0;
 const unsigned VER_MINOR = 21;
-const unsigned VER_BUILD = 2307;
+const unsigned VER_BUILD = 2310;
 
-const char* VER_STRING = "version 0.21.2307 built on 2016/06/07 22:36:05";
+const char* VER_STRING = "version 0.21.2310 built on 2016/06/12 10:30:28";
 
 #ifdef _DEBUG
 const char* MODE_STRING = "DEBUG";
